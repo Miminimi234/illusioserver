@@ -7,7 +7,6 @@ import { AnimatePresence } from "framer-motion";
 
 
 // Dynamically import all components to avoid SSR issues
-const MobileNotSupported = dynamic(() => import("@/components/MobileNotSupported"), { ssr: false });
 const BackgroundVideo = dynamic(() => import("@/components/BackgroundVideo"), { ssr: false });
 const LeftTypewriter = dynamic(() => import("@/components/LeftTypewriter"), { ssr: false });
 const RadialVideoButtons = dynamic(() => import("@/components/RadialVideoButtons"), { ssr: false });
@@ -18,6 +17,7 @@ const Scope = dynamic(() => import("@/components/Scope"), { ssr: false });
 const NavigationHub = dynamic(() => import("@/components/NavigationHub"), { ssr: false });
 const OracleHub = dynamic(() => import("@/components/OracleHub"), { ssr: false });
 const RetroGeometry = dynamic(() => import("@/components/RetroGeometry"), { ssr: false });
+const Manifesto = dynamic(() => import("@/components/Manifesto"), { ssr: false });
 const CornerLogo = dynamic(() => import("@/components/CornerLogo"), { ssr: false });
 
 export default function Page() {
@@ -27,6 +27,7 @@ export default function Page() {
   const [isNavigationHubOpen, setIsNavigationHubOpen] = useState(false);
   const [isScopeOpen, setIsScopeOpen] = useState(false);
   const [isOracleHubOpen, setIsOracleHubOpen] = useState(false);
+  const [isManifestoOpen, setIsManifestoOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [cornerLogoVisible, setCornerLogoVisible] = useState(true);
 
@@ -54,7 +55,7 @@ export default function Page() {
 
   // Debug logging for state changes
   useEffect(() => {
-    console.log("🎯 STATE CHANGED - isScopeOpen:", isScopeOpen, "isNavigationHubOpen:", isNavigationHubOpen, "isOracleHubOpen:", isOracleHubOpen);
+    console.log("🎯 STATE CHANGED - isScopeOpen:", isScopeOpen, "isNavigationHubOpen:", isNavigationHubOpen, "isOracleHubOpen:", isOracleHubOpen, "isManifestoOpen:", isManifestoOpen);
     
     // Additional debug info
     if (isScopeOpen) {
@@ -66,7 +67,7 @@ export default function Page() {
 
   // Smooth CornerLogo visibility transitions
   useEffect(() => {
-    const shouldBeVisible = !isScopeOpen && !isNavigationHubOpen && !isOracleHubOpen;
+    const shouldBeVisible = !isScopeOpen && !isNavigationHubOpen && !isOracleHubOpen && !isManifestoOpen;
     
     if (shouldBeVisible) {
       // Show immediately when closing hubs
@@ -78,7 +79,7 @@ export default function Page() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [isScopeOpen, isNavigationHubOpen, isOracleHubOpen]);
+  }, [isScopeOpen, isNavigationHubOpen, isOracleHubOpen, isManifestoOpen]);
 
   // Check localStorage on component mount
   useEffect(() => {
@@ -87,6 +88,7 @@ export default function Page() {
     const savedScopeOpen = localStorage.getItem('isScopeOpen');
     const savedNavigationOpen = localStorage.getItem('isNavigationHubOpen');
     const savedOracleOpen = localStorage.getItem('isOracleHubOpen');
+    const savedManifestoOpen = localStorage.getItem('isManifestoOpen');
     
     if (savedBirthday && savedZodiacSign) {
       setUserBirthday(new Date(savedBirthday));
@@ -106,6 +108,9 @@ export default function Page() {
     }
     if (savedOracleOpen) {
       setIsOracleHubOpen(savedOracleOpen === 'true');
+    }
+    if (savedManifestoOpen) {
+      setIsManifestoOpen(savedManifestoOpen === 'true');
     }
     
     setIsLoading(false);
@@ -159,6 +164,11 @@ export default function Page() {
     localStorage.setItem('isOracleHubOpen', isOpen.toString());
   };
 
+  const saveManifestoState = (isOpen: boolean) => {
+    setIsManifestoOpen(isOpen);
+    localStorage.setItem('isManifestoOpen', isOpen.toString());
+  };
+
   // Show loading state while checking localStorage
   if (isLoading) {
     return <div className="fixed inset-0 bg-black flex items-center justify-center">
@@ -179,9 +189,6 @@ export default function Page() {
   // Show main page
   return (
     <ErrorBoundary>
-      {/* Mobile detection - show mobile message if on mobile */}
-      <MobileNotSupported />
-      
       <main className="fixed inset-0 overflow-visible">
         {/* Always show background components - Scope will overlay on top */}
         <RetroGeometry isSlow={isNavigationHubOpen} isOracleOpen={isOracleHubOpen} isScopeOpen={isScopeOpen} />
@@ -195,6 +202,8 @@ export default function Page() {
           setIsScopeOpen={saveScopeState}
           isOracleHubOpen={isOracleHubOpen}
           setIsOracleHubOpen={saveOracleState}
+          isManifestoOpen={isManifestoOpen}
+          setIsManifestoOpen={saveManifestoState}
         />
         <BottomNavigation isNavigationHubOpen={isNavigationHubOpen} isOracleHubOpen={isOracleHubOpen} isScopeOpen={isScopeOpen} />
         
@@ -240,6 +249,17 @@ export default function Page() {
               key="oracle"
               isOpen={isOracleHubOpen}
               onClose={() => saveOracleState(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* MANIFESTO component - overlays on top of background */}
+        <AnimatePresence mode="wait">
+          {isManifestoOpen && (
+            <Manifesto 
+              key="manifesto"
+              isOpen={isManifestoOpen}
+              onClose={() => saveManifestoState(false)}
             />
           )}
         </AnimatePresence>

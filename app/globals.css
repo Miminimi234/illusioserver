@@ -306,6 +306,29 @@ img[src*=".gif"] {
   backface-visibility: hidden;
 }
 
+/* Mobile gating CSS fallback */
+@media (max-width: 1024px) {
+  #app {
+    display: none !important;
+  }
+  
+  #mobileGate {
+    display: block !important;
+  }
+}
+
+/* Mobile gate fallback styles */
+#mobileGate {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: black;
+  z-index: 9999;
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

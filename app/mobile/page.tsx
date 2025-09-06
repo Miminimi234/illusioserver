@@ -1,0 +1,114 @@
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'FUTURE - Mobile Coming Soon',
+  description: 'FUTURE mobile version coming soon. Visit us on desktop for the full experience.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+  },
+}
+
+export default function MobilePage() {
+  return (
+    <div className="min-h-screen bg-black flex items-center justify-center p-6">
+      <div className="max-w-md mx-auto text-center">
+        {/* Logo */}
+        <div className="mb-8">
+          <div className="w-24 h-24 mx-auto bg-gradient-to-br from-cyan-400 to-purple-600 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Main Message */}
+        <h1 className="text-3xl font-bold text-white mb-4">
+          FUTURE
+        </h1>
+        
+        <p className="text-gray-300 text-lg mb-6 leading-relaxed">
+          Mobile version coming soon
+        </p>
+
+        {/* Features Card */}
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center mr-3">
+              <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-white">What's Coming</h2>
+          </div>
+          
+          <div className="space-y-3 text-left">
+            <div className="flex items-center text-gray-300">
+              <svg className="w-5 h-5 mr-3 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm">Advanced trading interface</span>
+            </div>
+            <div className="flex items-center text-gray-300">
+              <svg className="w-5 h-5 mr-3 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm">AI-powered market analysis</span>
+            </div>
+            <div className="flex items-center text-gray-300">
+              <svg className="w-5 h-5 mr-3 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <span className="text-sm">Real-time Solana data</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="space-y-4">
+          <button 
+            onClick={() => {
+              const url = window.location.origin;
+              navigator.clipboard.writeText(url).then(() => {
+                alert('Link copied! Open on desktop to access FUTURE.');
+              }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Link copied! Open on desktop to access FUTURE.');
+              });
+            }}
+            className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+          >
+            Open on Desktop
+          </button>
+          
+          <div className="flex justify-center space-x-6 text-sm">
+            <a 
+              href="https://twitter.com/yourhandle" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+            >
+              Follow
+            </a>
+            <a 
+              href="mailto:contact@yourdomain.com" 
+              className="text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+            >
+              Contact
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

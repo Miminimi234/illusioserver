@@ -28,7 +28,33 @@ const nextConfig = {
   // },
   experimental: {
     esmExternals: 'loose'
-  }
+  },
+  // Optimize bundle splitting for mobile route
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.optimization.splitChunks = {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...config.optimization.splitChunks.cacheGroups,
+          // Separate mobile route chunks
+          mobile: {
+            test: /[\\/]app[\\/]mobile[\\/]/,
+            name: 'mobile',
+            chunks: 'all',
+            priority: 20,
+          },
+          // Keep desktop chunks separate
+          desktop: {
+            test: /[\\/]app[\\/](?!mobile)[\\/]/,
+            name: 'desktop',
+            chunks: 'all',
+            priority: 10,
+          },
+        },
+      }
+    }
+    return config
+  },
 }
 
 module.exports = nextConfig

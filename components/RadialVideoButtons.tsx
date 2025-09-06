@@ -8,9 +8,11 @@ interface RadialVideoButtonsProps {
   setIsScopeOpen: (open: boolean) => void;
   isOracleHubOpen: boolean;
   setIsOracleHubOpen: (open: boolean) => void;
+  isManifestoOpen: boolean;
+  setIsManifestoOpen: (open: boolean) => void;
 }
 
-export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigationHubOpen, isScopeOpen, setIsScopeOpen, isOracleHubOpen, setIsOracleHubOpen }: RadialVideoButtonsProps) {
+export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigationHubOpen, isScopeOpen, setIsScopeOpen, isOracleHubOpen, setIsOracleHubOpen, isManifestoOpen, setIsManifestoOpen }: RadialVideoButtonsProps) {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const [rotation, setRotation] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
@@ -24,8 +26,8 @@ export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigatio
 
   // Debug: Log when buttons are rendered (but only when state changes to avoid infinite loops)
   useEffect(() => {
-    console.log("🎯 BUTTONS STATE CHANGED - isScopeOpen:", isScopeOpen, "isNavigationHubOpen:", isNavigationHubOpen, "isOracleHubOpen:", isOracleHubOpen);
-  }, [isScopeOpen, isNavigationHubOpen, isOracleHubOpen]);
+    console.log("🎯 BUTTONS STATE CHANGED - isScopeOpen:", isScopeOpen, "isNavigationHubOpen:", isNavigationHubOpen, "isOracleHubOpen:", isOracleHubOpen, "isManifestoOpen:", isManifestoOpen);
+  }, [isScopeOpen, isNavigationHubOpen, isOracleHubOpen, isManifestoOpen]);
 
 
 
@@ -78,7 +80,7 @@ export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigatio
 
   const BUTTONS = [
     { pos: "top",    color: "#FF6B6B", alt: "Top",    onClick: () => setIsNavigationHubOpen(true), video: "/1.webm" },
-    { pos: "right",  color: "#4ECDC4", alt: "Right",  onClick: () => console.log("Right"), video: "/2.webm" },
+    { pos: "right",  color: "#4ECDC4", alt: "Right",  onClick: () => setIsManifestoOpen(true), video: "/2.webm" },
     { pos: "bottom", color: "#45B7D1", alt: "Bottom", onClick: () => {
       console.log("🎯 BOTTOM BUTTON CLICKED - Setting isScopeOpen to true");
       console.log("🎯 BEFORE: isScopeOpen should be false");
@@ -111,7 +113,7 @@ export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigatio
   // Staggered appearance of buttons after zoom animation, or show all immediately if any hub is open
   useEffect(() => {
     // If any hub is open, show all buttons immediately
-    if (isNavigationHubOpen || isScopeOpen || isOracleHubOpen) {
+    if (isNavigationHubOpen || isScopeOpen || isOracleHubOpen || isManifestoOpen) {
       setVisibleButtons([0, 1, 2, 3]);
       return;
     }
@@ -151,7 +153,7 @@ export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigatio
     }, 3500); // Wait for zoom animation to fully complete (zoom takes ~3.5 seconds)
 
     return () => clearTimeout(timer);
-  }, [isNavigationHubOpen, isScopeOpen, isOracleHubOpen, hasButtonsAppeared]);
+  }, [isNavigationHubOpen, isScopeOpen, isOracleHubOpen, isManifestoOpen, hasButtonsAppeared]);
 
   useEffect(() => {
     // Start rotation immediately when zoom finishes (when first button appears)
@@ -186,7 +188,7 @@ export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigatio
       <div className="fixed inset-0 z-[30] pointer-events-none radial-video-buttons">
         <div 
           className={`absolute top-1/2 -translate-y-1/2 pointer-events-auto transition-all duration-500 ease-out rotating-container ${
-            isOracleHubOpen || isScopeOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
+            isOracleHubOpen || isScopeOpen || isManifestoOpen ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
           }`}
           style={{
             left: '75%',
@@ -285,6 +287,24 @@ export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigatio
           <div className="text-lg font-bold mb-2">Oracle</div>
           <div className="text-sm text-white/80 leading-relaxed">
             Retrocausality made conversational. AI agents debate trades as if tomorrow already happened, weaving time-bent insights into a market outlook.
+          </div>
+        </div>
+      )}
+      
+      {/* Tooltip for Manifesto */}
+      {hoveredButton === "right" && (
+        <div 
+          className="fixed z-[60] bg-black/90 border border-white/20 rounded-lg p-4 text-white max-w-xs pointer-events-none"
+          style={{
+            left: mousePosition.x + 10,
+            top: mousePosition.y - 10,
+            transform: 'translateY(-100%)',
+            fontFamily: 'VT323, monospace',
+          }}
+        >
+          <div className="text-lg font-bold mb-2">Manifesto</div>
+          <div className="text-sm text-white/80 leading-relaxed">
+            Our philosophy on markets, simulation, and the tools we build to cut through the noise and find the truth.
           </div>
         </div>
       )}
