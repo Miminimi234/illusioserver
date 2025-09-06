@@ -129,90 +129,87 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
               background: 'radial-gradient(circle at center bottom, #000000, #111111)',
             }}
           >
-        {/* Top Bar */}
-        <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-sm border-b border-white/10 px-4 lg:px-6 py-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            {/* Left: Title */}
-            <div className="flex items-center justify-between lg:justify-start gap-3">
-              <div className="flex items-center gap-3">
-                <h1 className="text-lg lg:text-xl font-bold text-white tracking-wider">RETROCAUSALITY LAB</h1>
-                <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
-                  BETA
-                </span>
-              </div>
-              
-              {/* Mobile Actions */}
-              <div className="flex items-center gap-2 lg:hidden">
-                <button
-                  onClick={() => setShowHelp(true)}
-                  className="p-2 text-white/70 hover:text-white border border-white/20 rounded hover:border-white/40 cursor-pointer"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={onClose}
-                  className="p-2 text-white/70 hover:text-white cursor-pointer"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+        {/* Header - Matching SCOPE UI Design */}
+        <div className="bg-black/80 border-b border-neutral-800/60 p-4 flex-shrink-0">
+          <div className="grid grid-cols-3 items-center">
+            {/* Left side - RETROCAUSALITY LAB title */}
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-white">
+                RETROCAUSALITY LAB
+              </h1>
+              <span className="ml-3 px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
+                BETA
+              </span>
             </div>
-
-            {/* Center: Search */}
-            <div className="flex-1 max-w-md lg:mx-8">
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  placeholder="Paste token name or CA..."
-                  className="w-full px-4 py-2 bg-black/50 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400/50"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={copyToClipboard}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </button>
+        
+            {/* Center - Search Bar (Rounded like SCOPE) */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center space-x-2">
+                <form onSubmit={handleSearchSubmit} className="relative">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    placeholder="Paste token name or CA..."
+                    className="w-80 px-4 py-2 bg-transparent border border-white/30 rounded-full text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={copyToClipboard}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  )}
+                </form>
+                {isAnalyzing && (
+                  <div className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">
+                    Analyzing...
+                  </div>
                 )}
-              </form>
-              {isAnalyzing && (
-                <div className="absolute top-full left-0 right-0 mt-1 px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded border border-blue-500/30">
-                  Analyzing...
-                </div>
-              )}
+              </div>
             </div>
-
-            {/* Right: Actions (Desktop) */}
-            <div className="hidden lg:flex items-center gap-3">
+        
+            {/* Right side - Legend Button, Help Button and Close Button (Rounded like SCOPE) */}
+            <div className="flex justify-end items-center space-x-3">
+              {/* Legend Button - Rounded like SCOPE */}
               <button
                 onClick={() => setShowLegend(!showLegend)}
-                className="px-3 py-1 text-sm text-white/70 hover:text-white border border-white/20 rounded hover:border-white/40 cursor-pointer"
+                className="px-3 py-2 bg-black/20 hover:bg-black/40 border border-gray-700 rounded-full text-white/70 hover:text-white text-sm transition-all duration-200 shadow-md shadow-black/30"
               >
                 Legend
               </button>
+              
+              {/* Help Button - Rounded like SCOPE */}
               <button
                 onClick={() => setShowHelp(true)}
-                className="p-2 text-white/70 hover:text-white border border-white/20 rounded hover:border-white/40 cursor-pointer"
+                className="relative p-2 rounded-full transition-all duration-300 bg-black/20 hover:bg-black/40 border border-gray-700 shadow-md shadow-black/30"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg 
+                  className="w-5 h-5 text-white transition-colors duration-200" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+                  />
                 </svg>
               </button>
+
+              {/* Close Button - Rounded like SCOPE */}
               <button
                 onClick={onClose}
-                className="p-2 text-white/70 hover:text-white cursor-pointer"
+                className="text-white/60 hover:text-white transition-colors duration-200"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>

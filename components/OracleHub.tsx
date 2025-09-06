@@ -15,7 +15,8 @@ interface ChatMessage {
 }
 
 export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
-  const [animateIn, setAnimateIn] = useState(false);
+  const [animateIn, setAnimateIn] = useState(isOpen);
+  const [isVisible, setIsVisible] = useState(isOpen);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -68,12 +69,20 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
 
   useEffect(() => {
     if (isOpen) {
-      const id = requestAnimationFrame(() => setAnimateIn(true));
-      return () => cancelAnimationFrame(id);
-    } else {
+      setIsVisible(true);
+      // Small delay to ensure the component is rendered before animating
+      const id = setTimeout(() => setAnimateIn(true), 10);
+      return () => clearTimeout(id);
+    } else if (isVisible) {
+      // Only animate out if we were previously visible
       setAnimateIn(false);
+      // Delay hiding the component until animation completes
+      const timeoutId = setTimeout(() => {
+        setIsVisible(false);
+      }, 700); // Match the animation duration
+      return () => clearTimeout(timeoutId);
     }
-  }, [isOpen]);
+  }, [isOpen, isVisible]);
 
   // Initialize chat with dummy data
   useEffect(() => {
@@ -82,9 +91,14 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
     }
   }, [isOpen]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to top (which is bottom in reversed layout) when new messages arrive
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatEndRef.current) {
+      const container = chatEndRef.current.parentElement?.parentElement;
+      if (container) {
+        container.scrollTop = 0; // Scroll to top since we're using flex-col-reverse
+      }
+    }
   }, [chatMessages]);
 
   // Simulate new messages every 15 seconds (reduced frequency to prevent crashes)
@@ -193,6 +207,8 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
     }
   }, [isOpen, onClose]);
 
+  if (!isVisible) return null;
+
   return (
     <>
       {/* No backdrop - removed to prevent any dimming of the left geometry */}
@@ -210,7 +226,7 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
       >
         <button
           onClick={onClose}
-          className="hub-close-button absolute top-6 left-6 text-white/60 hover:text-white transition-colors duration-200 z-50 cursor-pointer"
+          className="hub-close-button absolute top-4 right-4 text-white/60 hover:text-white transition-colors duration-200 z-50 cursor-pointer"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -228,62 +244,62 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
         </div>
         
         {/* Content Area */}
-        <div className="flex-1 p-8 overflow-hidden">
-          <div className="space-y-8">
+        <div className="flex-1 p-4 overflow-hidden">
+          <div className="space-y-4 h-full flex flex-col">
             {/* AI Agents Section */}
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'VT323, monospace' }}>
+            <div className="flex-shrink-0">
+              <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
                 AI Agents
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white/5 border border-white/20 rounded-lg p-4">
-                  <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white/5 border border-white/20 rounded p-2">
+                  <h3 className="text-sm font-bold text-white mb-1" style={{ fontFamily: 'VT323, monospace' }}>
                     The Analyzer
                   </h3>
-                  <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                    Analyzes wallet movements, trading patterns, and market structure to identify key insights.
+                  <p className="text-white/70 text-xs leading-tight" style={{ fontFamily: 'VT323, monospace' }}>
+                    Analyzes wallet movements and trading patterns.
                   </p>
                 </div>
-                <div className="bg-white/5 border border-white/20 rounded-lg p-4">
-                  <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
+                <div className="bg-white/5 border border-white/20 rounded p-2">
+                  <h3 className="text-sm font-bold text-white mb-1" style={{ fontFamily: 'VT323, monospace' }}>
                     The Predictor
                   </h3>
-                  <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                    Projects future price movements and market trends based on current data patterns.
+                  <p className="text-white/70 text-xs leading-tight" style={{ fontFamily: 'VT323, monospace' }}>
+                    Projects future price movements and trends.
                   </p>
                 </div>
-                <div className="bg-white/5 border border-white/20 rounded-lg p-4">
-                  <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
+                <div className="bg-white/5 border border-white/20 rounded p-2">
+                  <h3 className="text-sm font-bold text-white mb-1" style={{ fontFamily: 'VT323, monospace' }}>
                     The Quantum Eraser
                   </h3>
-                  <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                    Removes noise from data streams to reveal the true quantum signals in market behavior.
+                  <p className="text-white/70 text-xs leading-tight" style={{ fontFamily: 'VT323, monospace' }}>
+                    Removes noise to reveal quantum signals.
                   </p>
                 </div>
-                <div className="bg-white/5 border border-white/20 rounded-lg p-4">
-                  <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
+                <div className="bg-white/5 border border-white/20 rounded p-2">
+                  <h3 className="text-sm font-bold text-white mb-1" style={{ fontFamily: 'VT323, monospace' }}>
                     The Retrocausal
                   </h3>
-                  <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                    Reasons backwards from future outcomes to identify present decision points and opportunities.
+                  <p className="text-white/70 text-xs leading-tight" style={{ fontFamily: 'VT323, monospace' }}>
+                    Reasons backwards from future outcomes.
                   </p>
                 </div>
               </div>
             </div>
             
             {/* Live Chat Archive */}
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'VT323, monospace' }}>
+            <div className="flex-1 flex flex-col min-h-0">
+              <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
                 Live Chat Archive
               </h2>
               
               {/* Chat Container */}
-              <div className="bg-black/50 border border-white/20 rounded-lg p-4 overflow-y-auto" style={{ height: 'calc(100vh - 400px)' }}>
-                <div className="space-y-3">
-                  {chatMessages.map((message) => {
+              <div className="bg-black/50 border border-white/20 rounded p-2 overflow-y-auto flex-1 flex flex-col-reverse">
+                <div className="space-y-2">
+                  {chatMessages.slice().reverse().map((message) => {
                     const agentInfo = getAgentInfo(message.agent);
                     return (
-                      <div key={message.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                      <div key={message.id} className="flex items-end space-x-3 mb-3">
                         {/* Avatar with GIF */}
                         <div className="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden">
                           <img 
@@ -297,14 +313,14 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
                               target.style.display = 'none';
                               const parent = target.parentElement;
                               if (parent) {
-                                parent.innerHTML = `<div class="w-full h-full bg-white/20 rounded-full flex items-center justify-center text-white text-xs font-bold">${agentInfo.name.charAt(0)}</div>`;
+                                parent.innerHTML = `<div class="w-full h-full bg-white/20 rounded-full flex items-center justify-center text-white text-sm font-bold">${agentInfo.name.charAt(0)}</div>`;
                               }
                             }}
                           />
                         </div>
                         
-                        {/* Message Content */}
-                        <div className="flex-1 min-w-0">
+                        {/* Message Bubble */}
+                        <div className="flex flex-col max-w-[80%]">
                           <div className="flex items-center space-x-2 mb-1">
                             <h4 className="font-bold text-white text-sm" style={{ fontFamily: 'VT323, monospace' }}>
                               {agentInfo.name}
@@ -313,28 +329,37 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
                               {formatTime(message.timestamp)}
                             </span>
                           </div>
-                          <p className="text-white/90 text-sm leading-relaxed" style={{ fontFamily: 'VT323, monospace' }}>
-                            {message.message}
-                          </p>
+                          <div className="bg-white/10 border border-white/20 rounded-2xl rounded-bl-md px-4 py-3 shadow-lg">
+                            <p className="text-white/90 text-sm leading-relaxed" style={{ fontFamily: 'VT323, monospace' }}>
+                              {message.message}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     );
                   })}
                   
-                  {/* Typing Indicator */}
+                  {/* Typing Indicator - appears at bottom */}
                   {isTyping && (
-                    <div className="flex items-start space-x-3 p-3 rounded-lg">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                    <div className="flex items-end space-x-3 mb-3">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                         <div className="flex space-x-1">
                           <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce"></div>
                           <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                           <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-white/60 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                          A companion is analyzing...
-                        </p>
+                      <div className="flex flex-col max-w-[80%]">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h4 className="font-bold text-white text-sm" style={{ fontFamily: 'VT323, monospace' }}>
+                            System
+                          </h4>
+                        </div>
+                        <div className="bg-white/10 border border-white/20 rounded-2xl rounded-bl-md px-4 py-3 shadow-lg">
+                          <p className="text-white/60 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
+                            A companion is analyzing...
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}

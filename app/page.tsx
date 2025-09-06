@@ -243,15 +243,10 @@ export default function Page() {
         </AnimatePresence>
 
         {/* ORACLE HUB component - overlays on top of background */}
-        <AnimatePresence mode="wait">
-          {isOracleHubOpen && (
-            <OracleHub 
-              key="oracle"
-              isOpen={isOracleHubOpen}
-              onClose={() => saveOracleState(false)}
-            />
-          )}
-        </AnimatePresence>
+        <OracleHub 
+          isOpen={isOracleHubOpen}
+          onClose={() => saveOracleState(false)}
+        />
 
         {/* MANIFESTO component - overlays on top of background */}
         <AnimatePresence mode="wait">
