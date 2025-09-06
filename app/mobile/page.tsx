@@ -8,17 +8,47 @@ useEffect(() => {
   if (metaDescription) {
     metaDescription.setAttribute('content', 'FUTURE mobile version coming soon. Visit us on desktop for the full experience.');
   }
+  
+  // Force hide any other content that might be interfering
+  const app = document.getElementById('app');
+  if (app) {
+    app.style.display = 'block';
+    app.style.visibility = 'visible';
+    app.style.opacity = '1';
+  }
+  
+  // Hide any other potential interfering elements
+  const body = document.body;
+  if (body) {
+    body.style.overflow = 'auto';
+    body.style.position = 'static';
+  }
 }, []);
 
 export default function MobilePage() {
   console.log('Mobile page rendering...');
   
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6" style={{ backgroundColor: '#000000', minHeight: '100vh' }}>
+    <div 
+      className="min-h-screen bg-black flex items-center justify-center p-6" 
+      style={{ 
+        backgroundColor: '#000000', 
+        minHeight: '100vh',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
       <div className="max-w-md mx-auto text-center" style={{ backgroundColor: 'transparent' }}>
         {/* Debug indicator */}
         <div className="mb-4 p-2 bg-red-500 text-white text-xs">
-          MOBILE PAGE LOADED
+          MOBILE PAGE LOADED - FIXED POSITION
         </div>
         
         {/* Logo */}
