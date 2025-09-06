@@ -32,7 +32,7 @@ export default function MobilePage() {
   
   return (
     <>
-      {/* Immediate black background to prevent any flash */}
+      {/* Immediate black background with text to prevent any flash */}
       <div 
         style={{ 
           position: 'fixed',
@@ -42,9 +42,21 @@ export default function MobilePage() {
           bottom: 0,
           backgroundColor: '#000000',
           zIndex: 10000,
-          pointerEvents: 'none'
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#ffffff',
+          fontFamily: 'VT323, monospace',
+          fontSize: '18px',
+          textAlign: 'center',
+          padding: '20px'
         }}
-      />
+      >
+        <div>
+          <div style={{ fontSize: '24px', marginBottom: '10px', color: '#00ffff' }}>FUTURE</div>
+          <div>Desktop version available now</div>
+        </div>
+      </div>
       
       <div 
         className="min-h-screen bg-black flex items-center justify-center p-6" 

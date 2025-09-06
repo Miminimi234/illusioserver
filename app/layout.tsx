@@ -49,6 +49,14 @@ export default function RootLayout({
               if (app) {
                 app.style.backgroundColor = '#000000';
               }
+              
+              // Add immediate text for mobile users
+              if (window.innerWidth <= 768) {
+                const textDiv = document.createElement('div');
+                textDiv.innerHTML = '<div style="color: #00ffff; font-size: 24px; margin-bottom: 10px; font-family: VT323, monospace;">FUTURE</div><div style="color: #ffffff; font-size: 18px; font-family: VT323, monospace;">Desktop version available now</div>';
+                textDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; z-index: 999999; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px;';
+                document.body.appendChild(textDiv);
+              }
             }
           `
         }} />

@@ -318,7 +318,8 @@ img[src*=".gif"] {
   
   /* Ensure immediate black background on mobile */
   body::before {
-    content: '';
+    content: 'FUTURE\ADesktop version available now';
+    white-space: pre-line;
     position: fixed;
     top: 0;
     left: 0;
@@ -326,6 +327,28 @@ img[src*=".gif"] {
     bottom: 0;
     background-color: #000000;
     z-index: 999999;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  /* Style the FUTURE text in the pseudo-element */
+  body::after {
+    content: 'FUTURE';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    color: #00ffff;
+    font-family: 'VT323', monospace;
+    font-size: 24px;
+    z-index: 1000000;
     pointer-events: none;
   }
 }
