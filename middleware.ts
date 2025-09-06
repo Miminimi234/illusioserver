@@ -32,16 +32,23 @@ export function middleware(request: NextRequest) {
 }
 
 function detectMobileDevice(userAgent: string): boolean {
-  // Comprehensive mobile detection
-  const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile safari|mobile/i
+  // More conservative mobile detection - only detect actual mobile devices
+  const mobileRegex = /android|webos|iphone|ipod|blackberry|iemobile|opera mini/i
   
-  // Special handling for iPadOS in mobile Safari mode
+  // Special handling for iPadOS - only treat as mobile if explicitly in mobile mode
   const isIPad = /ipad/i.test(userAgent)
   const isMobileSafari = /mobile safari/i.test(userAgent)
   
   // iPadOS in mobile Safari mode should be treated as mobile
   if (isIPad && isMobileSafari) {
     return true
+  }
+  
+  // Exclude desktop browsers that might contain "mobile" in user agent
+  const isDesktopBrowser = /chrome|firefox|safari|edge|opera/i.test(userAgent) && !/mobile|android|iphone|ipad|ipod/i.test(userAgent)
+  
+  if (isDesktopBrowser) {
+    return false
   }
   
   // Standard mobile detection

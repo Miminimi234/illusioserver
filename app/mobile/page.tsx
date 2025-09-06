@@ -1,17 +1,14 @@
-import { Metadata } from 'next'
+"use client";
+import { useEffect } from 'react';
 
-export const metadata: Metadata = {
-  title: 'FUTURE - Mobile Coming Soon',
-  description: 'FUTURE mobile version coming soon. Visit us on desktop for the full experience.',
-  robots: {
-    index: false,
-    follow: false,
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-  },
-}
+// Set metadata using useEffect for client components
+useEffect(() => {
+  document.title = 'FUTURE - Mobile Coming Soon';
+  const metaDescription = document.querySelector('meta[name="description"]');
+  if (metaDescription) {
+    metaDescription.setAttribute('content', 'FUTURE mobile version coming soon. Visit us on desktop for the full experience.');
+  }
+}, []);
 
 export default function MobilePage() {
   return (
