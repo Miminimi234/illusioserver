@@ -19,6 +19,39 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Prevent flash on mobile pages */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Prevent flash on mobile pages */
+            body {
+              background-color: #000000 !important;
+            }
+            #app {
+              background-color: #000000 !important;
+            }
+            /* Ensure mobile page is immediately black */
+            @media (max-width: 768px) {
+              body, #app {
+                background-color: #000000 !important;
+                color: #ffffff !important;
+              }
+            }
+          `
+        }} />
+        {/* Immediate script to prevent flash */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            // Set background immediately to prevent flash
+            if (typeof document !== 'undefined') {
+              document.documentElement.style.backgroundColor = '#000000';
+              document.body.style.backgroundColor = '#000000';
+              const app = document.getElementById('app');
+              if (app) {
+                app.style.backgroundColor = '#000000';
+              }
+            }
+          `
+        }} />
         {/* Prevent MetaMask from trying to connect to this Solana app */}
         <script
           dangerouslySetInnerHTML={{
