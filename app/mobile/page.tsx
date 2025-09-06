@@ -11,9 +11,16 @@ useEffect(() => {
 }, []);
 
 export default function MobilePage() {
+  console.log('Mobile page rendering...');
+  
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6" style={{ backgroundColor: '#000000' }}>
-      <div className="max-w-md mx-auto text-center">
+    <div className="min-h-screen bg-black flex items-center justify-center p-6" style={{ backgroundColor: '#000000', minHeight: '100vh' }}>
+      <div className="max-w-md mx-auto text-center" style={{ backgroundColor: 'transparent' }}>
+        {/* Debug indicator */}
+        <div className="mb-4 p-2 bg-red-500 text-white text-xs">
+          MOBILE PAGE LOADED
+        </div>
+        
         {/* Logo */}
         <div className="mb-8">
           <div className="w-24 h-24 mx-auto bg-gradient-to-br from-cyan-400 to-purple-600 rounded-full flex items-center justify-center mb-4">
