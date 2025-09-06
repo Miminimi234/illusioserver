@@ -12,7 +12,7 @@ useEffect(() => {
 
 export default function MobilePage() {
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6">
+    <div className="min-h-screen bg-black flex items-center justify-center p-6" style={{ backgroundColor: '#000000' }}>
       <div className="max-w-md mx-auto text-center">
         {/* Logo */}
         <div className="mb-8">
@@ -24,16 +24,16 @@ export default function MobilePage() {
         </div>
 
         {/* Main Message */}
-        <h1 className="text-3xl font-bold text-white mb-4">
+        <h1 className="text-3xl font-bold text-white mb-4" style={{ color: '#ffffff' }}>
           FUTURE
         </h1>
         
-        <p className="text-gray-300 text-lg mb-6 leading-relaxed">
+        <p className="text-gray-300 text-lg mb-6 leading-relaxed" style={{ color: '#d1d5db' }}>
           Mobile version coming soon
         </p>
 
         {/* Features Card */}
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8" style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
           <div className="flex items-center justify-center mb-4">
             <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center mr-3">
               <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

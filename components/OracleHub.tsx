@@ -1,13 +1,70 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 interface OracleHubProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+interface ChatMessage {
+  id: string;
+  agent: 'analyzer' | 'predictor' | 'quantum-eraser' | 'retrocausal';
+  message: string;
+  timestamp: Date;
+  type: 'message' | 'analysis' | 'prediction';
+}
+
 export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
   const [animateIn, setAnimateIn] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Dummy chat data with correct companions
+  const dummyMessages: ChatMessage[] = [
+    {
+      id: '1',
+      agent: 'analyzer',
+      message: 'I\'ve detected a significant pattern in the wallet movements. The top 10 holders have been accumulating steadily over the past 24 hours, with minimal selling pressure.',
+      timestamp: new Date(Date.now() - 300000),
+      type: 'analysis'
+    },
+    {
+      id: '2',
+      agent: 'predictor',
+      message: 'Based on the current momentum and volume patterns, I\'m projecting a 15-20% upward movement within the next 4 hours. The key resistance level is at $0.000052.',
+      timestamp: new Date(Date.now() - 240000),
+      type: 'prediction'
+    },
+    {
+      id: '3',
+      agent: 'quantum-eraser',
+      message: 'I\'ve erased the noise from the data stream. The true signal shows a 73% probability of continued upward movement, with quantum interference patterns suggesting a major move is imminent.',
+      timestamp: new Date(Date.now() - 180000),
+      type: 'analysis'
+    },
+    {
+      id: '4',
+      agent: 'retrocausal',
+      message: 'From tomorrow\'s perspective, I can see that today\'s price action at 2:47 PM EST will be the critical decision point. The retrocausal feedback loop is already influencing current market behavior.',
+      timestamp: new Date(Date.now() - 120000),
+      type: 'prediction'
+    },
+    {
+      id: '5',
+      agent: 'analyzer',
+      message: 'The liquidity depth analysis reveals strong support at $0.000045. The order book shows institutional-sized buy walls that weren\'t there yesterday.',
+      timestamp: new Date(Date.now() - 60000),
+      type: 'analysis'
+    },
+    {
+      id: '6',
+      agent: 'predictor',
+      message: 'My models are showing a divergence between price and sentiment. The market is undervaluing this token by approximately 40% based on current fundamentals.',
+      timestamp: new Date(Date.now() - 30000),
+      type: 'prediction'
+    }
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -17,6 +74,110 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
       setAnimateIn(false);
     }
   }, [isOpen]);
+
+  // Initialize chat with dummy data
+  useEffect(() => {
+    if (isOpen && chatMessages.length === 0) {
+      setChatMessages(dummyMessages);
+    }
+  }, [isOpen]);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
+
+  // Simulate new messages every 15 seconds (reduced frequency to prevent crashes)
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const interval = setInterval(() => {
+      try {
+        const agents: ('analyzer' | 'predictor' | 'quantum-eraser' | 'retrocausal')[] = ['analyzer', 'predictor', 'quantum-eraser', 'retrocausal'];
+        const randomAgent = agents[Math.floor(Math.random() * agents.length)];
+        
+        const newMessages = [
+          'The market is showing interesting patterns today.',
+          'I\'m detecting unusual volume spikes in the last hour.',
+          'The quantum field is fluctuating - something big is coming.',
+          'From tomorrow\'s perspective, this dip looks like a buying opportunity.',
+          'The sentiment indicators are diverging from price action.',
+          'I see multiple timeline probabilities converging at this price point.',
+          'The retrocausal signals suggest a major move within 24 hours.',
+          'Whale movements are creating ripples in the quantum field.'
+        ];
+
+        const newMessage: ChatMessage = {
+          id: Date.now().toString(),
+          agent: randomAgent,
+          message: newMessages[Math.floor(Math.random() * newMessages.length)],
+          timestamp: new Date(),
+          type: 'message'
+        };
+
+        setIsTyping(true);
+        setTimeout(() => {
+          setChatMessages(prev => {
+            // Limit messages to prevent memory issues
+            const maxMessages = 50;
+            const newMessages = [...prev, newMessage];
+            return newMessages.length > maxMessages ? newMessages.slice(-maxMessages) : newMessages;
+          });
+          setIsTyping(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Error adding new message:', error);
+        setIsTyping(false);
+      }
+    }, 15000); // Increased to 15 seconds to reduce load
+
+    return () => clearInterval(interval);
+  }, [isOpen]);
+
+  // Helper functions for agent styling
+  const getAgentInfo = (agent: string) => {
+    switch (agent) {
+      case 'analyzer':
+        return { 
+          name: 'The Analyzer', 
+          gif: '/WIZZARD/The Analyzer.gif',
+          bgColor: 'bg-white/5',
+          borderColor: 'border-white/20'
+        };
+      case 'predictor':
+        return { 
+          name: 'The Predictor', 
+          gif: '/WIZZARD/The Predictor.gif',
+          bgColor: 'bg-white/5',
+          borderColor: 'border-white/20'
+        };
+      case 'quantum-eraser':
+        return { 
+          name: 'The Quantum Eraser', 
+          gif: '/WIZZARD/The Quantum Eraser.gif',
+          bgColor: 'bg-white/5',
+          borderColor: 'border-white/20'
+        };
+      case 'retrocausal':
+        return { 
+          name: 'The Retrocausal', 
+          gif: '/WIZZARD/The Retrocasual.gif',
+          bgColor: 'bg-white/5',
+          borderColor: 'border-white/20'
+        };
+      default:
+        return { 
+          name: 'Unknown', 
+          gif: '',
+          bgColor: 'bg-white/5',
+          borderColor: 'border-white/20'
+        };
+    }
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   // ESC key handler
   useEffect(() => {
@@ -49,7 +210,7 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
       >
         <button
           onClick={onClose}
-          className="hub-close-button absolute top-6 left-6 text-white/60 hover:text-white transition-colors duration-200 z-50"
+          className="hub-close-button absolute top-6 left-6 text-white/60 hover:text-white transition-colors duration-200 z-50 cursor-pointer"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -67,7 +228,7 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
         </div>
         
         {/* Content Area */}
-        <div className="flex-1 p-8 overflow-auto">
+        <div className="flex-1 p-8 overflow-hidden">
           <div className="space-y-8">
             {/* AI Agents Section */}
             <div>
@@ -77,79 +238,108 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white/5 border border-white/20 rounded-lg p-4">
                   <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
-                    Bull Agent
+                    The Analyzer
                   </h3>
                   <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                    Optimistic AI that sees upward potential in every market movement.
+                    Analyzes wallet movements, trading patterns, and market structure to identify key insights.
                   </p>
                 </div>
                 <div className="bg-white/5 border border-white/20 rounded-lg p-4">
                   <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
-                    Bear Agent
+                    The Predictor
                   </h3>
                   <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                    Cautious AI that identifies risks and downward trends.
+                    Projects future price movements and market trends based on current data patterns.
                   </p>
                 </div>
                 <div className="bg-white/5 border border-white/20 rounded-lg p-4">
                   <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
-                    Quantum Agent
+                    The Quantum Eraser
                   </h3>
                   <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                    AI that operates in superposition, considering all possible outcomes simultaneously.
+                    Removes noise from data streams to reveal the true quantum signals in market behavior.
                   </p>
                 </div>
                 <div className="bg-white/5 border border-white/20 rounded-lg p-4">
                   <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
-                    Retrocausal Agent
+                    The Retrocausal
                   </h3>
                   <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                    AI that reasons backwards from future outcomes to present decisions.
+                    Reasons backwards from future outcomes to identify present decision points and opportunities.
                   </p>
                 </div>
               </div>
             </div>
             
-            {/* Market Insights Section */}
+            {/* Live Chat Archive */}
             <div>
               <h2 className="text-2xl font-bold text-white mb-4" style={{ fontFamily: 'VT323, monospace' }}>
-                Time-Bent Insights
+                Live Chat Archive
               </h2>
-              <div className="bg-white/5 border border-white/20 rounded-lg p-6">
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="text-white font-bold" style={{ fontFamily: 'VT323, monospace' }}>
-                        Future Market Sentiment
-                      </h4>
-                      <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                        AI agents debate the emotional state of tomorrow's traders.
-                      </p>
+              
+              {/* Chat Container */}
+              <div className="bg-black/50 border border-white/20 rounded-lg p-4 overflow-y-auto" style={{ height: 'calc(100vh - 400px)' }}>
+                <div className="space-y-3">
+                  {chatMessages.map((message) => {
+                    const agentInfo = getAgentInfo(message.agent);
+                    return (
+                      <div key={message.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-white/5 transition-colors">
+                        {/* Avatar with GIF */}
+                        <div className="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden">
+                          <img 
+                            src={agentInfo.gif} 
+                            alt={agentInfo.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            onError={(e) => {
+                              // Fallback to a colored circle if GIF fails to load
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `<div class="w-full h-full bg-white/20 rounded-full flex items-center justify-center text-white text-xs font-bold">${agentInfo.name.charAt(0)}</div>`;
+                              }
+                            }}
+                          />
+                        </div>
+                        
+                        {/* Message Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h4 className="font-bold text-white text-sm" style={{ fontFamily: 'VT323, monospace' }}>
+                              {agentInfo.name}
+                            </h4>
+                            <span className="text-white/40 text-xs" style={{ fontFamily: 'VT323, monospace' }}>
+                              {formatTime(message.timestamp)}
+                            </span>
+                          </div>
+                          <p className="text-white/90 text-sm leading-relaxed" style={{ fontFamily: 'VT323, monospace' }}>
+                            {message.message}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Typing Indicator */}
+                  {isTyping && (
+                    <div className="flex items-start space-x-3 p-3 rounded-lg">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-white/60 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
+                          A companion is analyzing...
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="text-white font-bold" style={{ fontFamily: 'VT323, monospace' }}>
-                        Quantum Price Probabilities
-                      </h4>
-                      <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                        Superposition of all possible price movements.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="text-white font-bold" style={{ fontFamily: 'VT323, monospace' }}>
-                        Retrocausal Patterns
-                      </h4>
-                      <p className="text-white/70 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
-                        How future events influence present market behavior.
-                      </p>
-                    </div>
-                  </div>
+                  )}
+                  
+                  <div ref={chatEndRef} />
                 </div>
               </div>
             </div>
