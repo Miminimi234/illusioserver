@@ -124,6 +124,8 @@ export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigatio
       return;
     }
 
+    let intervalId: NodeJS.Timeout | null = null;
+    
     const timer = setTimeout(() => {
       // Start appearing buttons one by one with 800ms delay between each
       const showButtons = () => {
@@ -145,14 +147,17 @@ export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigatio
 
       // Show first button immediately, then stagger the rest
       showButtons();
-      const interval = setInterval(() => {
+      intervalId = setInterval(() => {
         showButtons();
       }, 800);
-
-      return () => clearInterval(interval);
     }, 3500); // Wait for zoom animation to fully complete (zoom takes ~3.5 seconds)
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, [isNavigationHubOpen, isScopeOpen, isOracleHubOpen, isManifestoOpen, hasButtonsAppeared]);
 
   useEffect(() => {

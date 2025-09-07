@@ -38,7 +38,11 @@ export default function RetroGeometry({ isSlow = false, isOracleOpen = false, is
   // Force complete reset when Scope state changes
   useEffect(() => {
     if (hostRef.current && hostRef.current.children.length > 0) {
-      // Completely clear and recreate when Scope state changes
+      // Properly dispose of existing p5.js instance before clearing
+      const existingInstance = (hostRef.current as any)._p5Instance;
+      if (existingInstance) {
+        existingInstance.remove();
+      }
       hostRef.current.innerHTML = '';
     }
   }, [isScopeOpen]);
@@ -48,11 +52,16 @@ export default function RetroGeometry({ isSlow = false, isOracleOpen = false, is
 
     // Clean up any existing instance
     if (hostRef.current.children.length > 0) {
+      const existingInstance = (hostRef.current as any)._p5Instance;
+      if (existingInstance) {
+        existingInstance.remove();
+      }
       hostRef.current.innerHTML = '';
     }
 
     const sketch = (p: p5) => {
       let gfx: p5.Graphics;
+      let outerGfx: p5.Graphics; // Reuse outer graphics buffer
       let t = 0;
       let mouseX = 0;
       let mouseY = 0;
@@ -75,6 +84,8 @@ export default function RetroGeometry({ isSlow = false, isOracleOpen = false, is
         p.pixelDensity(DENSITY);
         gfx = p.createGraphics(p.width, p.height);
         gfx.pixelDensity(DENSITY);
+        outerGfx = p.createGraphics(p.width, p.height); // Create outer buffer once
+        outerGfx.pixelDensity(DENSITY);
         p.noCursor();
         // Hide default cursor on the entire document
         document.body.style.cursor = 'none';
@@ -100,6 +111,8 @@ export default function RetroGeometry({ isSlow = false, isOracleOpen = false, is
         p.resizeCanvas(p.windowWidth, p.windowHeight);
         gfx = p.createGraphics(p.width, p.height);
         gfx.pixelDensity(DENSITY);
+        outerGfx = p.createGraphics(p.width, p.height); // Recreate outer buffer on resize
+        outerGfx.pixelDensity(DENSITY);
       };
 
       p.draw = () => {
@@ -178,8 +191,8 @@ export default function RetroGeometry({ isSlow = false, isOracleOpen = false, is
         p.image(gfx, 0, 0);
         ctx.globalCompositeOperation = "source-over";
 
-        const outerGfx = p.createGraphics(p.width, p.height);
-        outerGfx.pixelDensity(DENSITY);
+        // Clear and reuse the existing outer graphics buffer
+        outerGfx.clear();
         outerGfx.push();
         // Move outer geometry to left side when Oracle hub is open with smooth transition
         const outerTargetX = isOracleOpen ? p.width * 0.25 : p.width * 0.75;
@@ -321,11 +334,16 @@ export default function RetroGeometry({ isSlow = false, isOracleOpen = false, is
     };
 
     const instance = new p5(sketch, hostRef.current);
+    // Store instance reference for proper cleanup
+    if (hostRef.current) {
+      (hostRef.current as any)._p5Instance = instance;
+    }
     return () => {
       if (instance) {
         instance.remove();
       }
       if (hostRef.current) {
+        (hostRef.current as any)._p5Instance = null;
         hostRef.current.innerHTML = '';
       }
       // Restore default cursor when component unmounts

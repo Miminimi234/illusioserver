@@ -437,9 +437,13 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
                               imageRendering: 'auto'
                             }}
                             onError={(e) => {
-                              // Simple fallback - just hide the image
+                              // Fallback to colored circle if GIF fails
                               const target = e.target as HTMLImageElement;
                               target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `<div class="w-full h-full rounded-full flex items-center justify-center" style="background-color: ${getAgentColor(message.agent)}"><span class="text-white text-sm font-bold">${agentInfo.name.charAt(0)}</span></div>`;
+                              }
                             }}
                           />
                         </div>

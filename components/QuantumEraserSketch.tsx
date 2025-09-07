@@ -21,6 +21,10 @@ export default function QuantumEraserSketch({ onNodeHover, predictionData }: Qua
 
     // Clean up any existing instance
     if (sketchRef.current.children.length > 0) {
+      const existingInstance = (sketchRef.current as any)._p5Instance;
+      if (existingInstance) {
+        existingInstance.remove();
+      }
       sketchRef.current.innerHTML = '';
     }
 
@@ -388,9 +392,16 @@ export default function QuantumEraserSketch({ onNodeHover, predictionData }: Qua
     };
 
     const p5Instance = new p5(sketch, sketchRef.current);
+    // Store instance reference for proper cleanup
+    if (sketchRef.current) {
+      (sketchRef.current as any)._p5Instance = p5Instance;
+    }
     
     return () => {
       p5Instance.remove();
+      if (sketchRef.current) {
+        (sketchRef.current as any)._p5Instance = null;
+      }
     };
   }, [onNodeHover, predictionData]);
 

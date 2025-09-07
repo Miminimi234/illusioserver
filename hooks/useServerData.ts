@@ -388,7 +388,7 @@ export const useServerData = (isOpen: boolean) => {
         return () => clearInterval(interval);
       }
     }
-  }, [isOpen, live, fetchTokens]);
+  }, [isOpen, live]);
 
   return {
     tokens,

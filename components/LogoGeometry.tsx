@@ -10,6 +10,7 @@ export default function LogoGeometry() {
 
     const sketch = (p: p5) => {
       let gfx: p5.Graphics;
+      let cursorGfx: p5.Graphics; // Reuse cursor graphics buffer
       let t = 0;
       let mouseX = 0;
       let mouseY = 0;
@@ -32,6 +33,8 @@ export default function LogoGeometry() {
         p.pixelDensity(DENSITY);
         gfx = p.createGraphics(p.width, p.height);
         gfx.pixelDensity(DENSITY);
+        cursorGfx = p.createGraphics(p.width, p.height); // Create cursor buffer once
+        cursorGfx.pixelDensity(DENSITY);
         p.noCursor();
         
         // Start with black background to prevent video flash
@@ -68,6 +71,8 @@ export default function LogoGeometry() {
         p.resizeCanvas(150, 150);
         gfx = p.createGraphics(p.width, p.height);
         gfx.pixelDensity(DENSITY);
+        cursorGfx = p.createGraphics(p.width, p.height); // Recreate cursor buffer on resize
+        cursorGfx.pixelDensity(DENSITY);
       };
 
       p.draw = () => {
@@ -202,10 +207,8 @@ export default function LogoGeometry() {
       }
 
       function drawCursor(p: p5) {
-        // Create a separate graphics buffer for cursor
-        const cursorGfx = p.createGraphics(p.width, p.height);
-        cursorGfx.pixelDensity(DENSITY);
-        
+        // Clear and reuse the existing cursor graphics buffer
+        cursorGfx.clear();
         cursorGfx.push();
         cursorGfx.translate(mouseX, mouseY);
         
@@ -234,7 +237,14 @@ export default function LogoGeometry() {
     };
 
     const instance = new p5(sketch, hostRef.current);
-    return () => instance.remove();
+    return () => {
+      instance.remove();
+      // Remove window event listeners to prevent memory leaks
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('mouseenter', handleMouseEnter);
+        window.removeEventListener('mouseleave', handleMouseLeave);
+      }
+    };
   }, []);
 
   return <div ref={hostRef} className="fixed top-4 left-4 w-[150px] h-[150px] z-[100]" />;

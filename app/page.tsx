@@ -49,7 +49,7 @@ export default function Page() {
     filterByStatus,
     refresh,
     newTokenMint,
-  } = useServerData(true); // Always true - monitoring NEVER stops, regardless of Scope state
+  } = useServerData(false); // DISABLED - no backend server running
 
 
 

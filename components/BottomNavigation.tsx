@@ -55,6 +55,8 @@ export default function BottomNavigation({ isNavigationHubOpen = false, isOracle
     // If buttons have already appeared, don't animate again
     if (visibleButtons.length === 3) return;
 
+    let intervalId: NodeJS.Timeout | null = null;
+    
     const timer = setTimeout(() => {
       // Start appearing buttons one by one with 400ms delay between each
       const showButtons = () => {
@@ -75,14 +77,17 @@ export default function BottomNavigation({ isNavigationHubOpen = false, isOracle
 
       // Show first button immediately, then stagger the rest
       showButtons();
-      const interval = setInterval(() => {
+      intervalId = setInterval(() => {
         showButtons();
       }, 400);
-
-      return () => clearInterval(interval);
     }, 7000); // Wait for webm icons to finish appearing (~6.3s) + buffer
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, [visibleButtons.length]);
 
   // Calculate position based on animation state
