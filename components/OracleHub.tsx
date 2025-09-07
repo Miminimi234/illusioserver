@@ -26,42 +26,42 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
     {
       id: '1',
       agent: 'analyzer',
-      message: 'I\'ve detected a significant pattern in the wallet movements. The top 10 holders have been accumulating steadily over the past 24 hours, with minimal selling pressure.',
+      message: 'Field Notes — PEPE (EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v)\n• Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M | Holders: 1,247\n• Depth @ $50K: 12 bps buy / 18 bps sell\n• Holder concentration (Top10): 23.4% | Gini: 0.67\n• Net flow 1h: + $47K (68% buys)\n• LP delta 4h: + $12K | New LP adds: 3\n• Clean bot share (after Eraser): 31% → Data grade: B+\n\nSimulation stance\nWe\'re not staring at "price"—we\'re auditing a small simulation that lives on-chain.\nWallets are agents, LP is terrain, fees are friction. If we assume the ledger is a\nfinite-state machine, its invariants tell us what cannot happen next without new\nenergy entering the system. Today, invariants say:\n• Without +$180K new LP, moves beyond +15% will collapse.\n• If Top10 rises over 28%, the system reverts to a two-player game (fragile).',
       timestamp: new Date(Date.now() - 300000),
       type: 'analysis'
     },
     {
       id: '2',
       agent: 'predictor',
-      message: 'Based on the current momentum and volume patterns, I\'m projecting a 15-20% upward movement within the next 4 hours. The key resistance level is at $0.000052.',
+      message: 'Forecast Window: 4h (14:30 → 18:30)\nDistribution (Eraser-cleaned): Median +8.2% | P10 -3.1% | P90 +22.4%\n\nWhat I\'m actually doing\nI\'m not prophesying. I\'m running forward passes of a local market simulation seeded with\ntoday\'s constraints—LP as potential energy, net flow as impulse, and holder dispersion as\ndampening. Think of it as drawing future attractors the present can realistically fall into.\n\nDrivers today\n• Momentum quality: Strong (clean CVD trending)\n• Clean CVD(30m): +$23K (buying pressure sustained)\n• LP trend: Stable (Δ +$12K)\n• Holder expansion: +47 wallets (organic growth)\n• Regime: Accumulation (low volatility, steady flow)\n\nIf/Then trade map\n• Long trigger: reclaim VWAP(1h) + 3×1m bars > 65% buy-imbalance and LP net +$25K inside 2h.\n• Take profit: +12%, +28% (trail below VWAP(5m)).\n• Invalidation: 15m close < VWAP(1h) or LP outflow > $50K.',
       timestamp: new Date(Date.now() - 240000),
       type: 'prediction'
     },
     {
       id: '3',
       agent: 'quantum-eraser',
-      message: 'I\'ve erased the noise from the data stream. The true signal shows a 73% probability of continued upward movement, with quantum interference patterns suggesting a major move is imminent.',
+      message: 'Denoise Ledger — PEPE (EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v)\n• Raw prints: 1,847 | Removed artifacts: 31% (572 events)\n  – Bot clusters: 28% of prints (12 bursts)\n  – Spoof/mirror routes collapsed: 8\n  – Outlier ticks > 3σ dropped: 23\n• Clean buy share: 68% | Clean CVD(30m): +$23K\n• Mid/TWAP shift vs raw: -2.1% | Data quality: B+ (good organic flow)\n\nWhy erase?\nIf we live inside a simulation, observation changes the thing observed.\nBots and mirrored routes are false photons—they light up the tape but carry no energy.\nI strip them out and re-simulate the past so everyone else can reason about the future\nwithout seeing ghosts.\n\nImpact on the others\n• Analyzer: structure was biased by raw; corrected to neutral.\n• Predictor: distribution tightens; median moves +1.2%.\n• Retrocausality: fewer futures survive once false volume is removed.',
       timestamp: new Date(Date.now() - 180000),
       type: 'analysis'
     },
     {
       id: '4',
       agent: 'retrocausal',
-      message: 'From tomorrow\'s perspective, I can see that today\'s price action at 2:47 PM EST will be the critical decision point. The retrocausal feedback loop is already influencing current market behavior.',
+      message: 'How I think\nInstead of asking "what will happen?" I pick a future boundary condition and\nrun the world backwards. In a simulation, tomorrow\'s state can be treated as\na constraint on today. If +18% exists at T+4h, what must be true now?\n\nChosen future (T+4h): +18%\nRequired present conditions\n1) LP net +$45K within 2h — status: On track\n2) +67 real holders w/ bot overlap < 25% — status: Met\n3) Price ≥ VWAP(1h) for 45/60 minutes — status: 38/60\n4) Clean buy-imbalance ≥ 65% on 5m — status: 68%\n5) No top-5 net sell > $15K — status: Clean\n\nLive scoreboard\n• Conditions met: 4 / 5 | Echo strength: 78/100\n• Collapse rule: if checks < 3 for 30m, abandon this future and adopt fallback +8%.\n\nPlain English\nFutures don\'t predict us; they pull us. If the pull weakens—LP drains, holders stall,\nbots return—the corridor to +18% narrows and the world snaps to a humbler outcome.',
       timestamp: new Date(Date.now() - 120000),
       type: 'prediction'
     },
     {
       id: '5',
       agent: 'analyzer',
-      message: 'The liquidity depth analysis reveals strong support at $0.000045. The order book shows institutional-sized buy walls that weren\'t there yesterday.',
+      message: 'Signals that survive reality checks\n1) Depth is real: book can absorb ~$75K with < 15 bps slip.\n2) Distribution improving: +3.8% new wallets; Top10 share -1.2 pts.\n3) Flow coherent: net +$47K with 68% buys and Eraser-grade B+.\n\nRisks that break the sim\n• Bot overlap > 35% or mirrored routes reappear → momentum readings become unusable.\n• LP outflow > $50K within 1h → terrain gives way under price.\n\nActionable\n• Keep buy-imbalance > 60% on 5m and LP net +$25K in the next 2h.\n• Invalidate on 15m close < VWAP(1h) and LP outflow > $50K.',
       timestamp: new Date(Date.now() - 60000),
       type: 'analysis'
     },
     {
       id: '6',
       agent: 'predictor',
-      message: 'My models are showing a divergence between price and sentiment. The market is undervaluing this token by approximately 40% based on current fundamentals.',
+      message: 'What nudges the future\n• Up-shift: fresh LP add > $75K or top-5 net buy > $30K.\n• Down-shift: holder growth < 15/h or bot share > 40%.\n\nCurrent trajectory: +8.2% median with 78% confidence\nNext update in 30m or on trigger breach.',
       timestamp: new Date(Date.now() - 30000),
       type: 'prediction'
     }
@@ -91,10 +91,10 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
     }
   }, [isOpen]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive or when typing starts
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
+  }, [chatMessages, isTyping]);
 
   // Simulate new messages every 15 seconds (reduced frequency to prevent crashes)
   useEffect(() => {
@@ -106,14 +106,21 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
         const randomAgent = agents[Math.floor(Math.random() * agents.length)];
         
         const newMessages = [
-          'The market is showing interesting patterns today.',
-          'I\'m detecting unusual volume spikes in the last hour.',
-          'The quantum field is fluctuating - something big is coming.',
-          'From tomorrow\'s perspective, this dip looks like a buying opportunity.',
-          'The sentiment indicators are diverging from price action.',
-          'I see multiple timeline probabilities converging at this price point.',
-          'The retrocausal signals suggest a major move within 24 hours.',
-          'Whale movements are creating ripples in the quantum field.'
+          'LP depth analysis shows $75K absorption capacity with <15 bps slip. Current flow coherent with 68% buys.',
+          'Forward simulation indicates +8.2% median trajectory. Clean CVD trending +$23K over 30m window.',
+          'Denoised ledger reveals 31% artifact removal. Bot clusters reduced from 28% to clean organic flow.',
+          'Retrocausal analysis: 4/5 conditions met for +18% target. Echo strength at 78/100.',
+          'Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M. Holder concentration improving - Top10 down 1.2 pts.',
+          'Simulation invariants: Without +$180K new LP, moves beyond +15% will collapse. System stability at risk.',
+          'Clean bot share: 31% → Data grade: B+. Distribution improving with +3.8% new wallets.',
+          'Quantum interference patterns suggest major move imminent. False photons removed, true signal emerging.',
+          'VWAP(1h) reclaim needed for long trigger. 3×1m bars >65% buy-imbalance required within 2h window.',
+          'Holder expansion: +47 wallets (organic growth). Regime: Accumulation with low volatility, steady flow.',
+          'LP delta 4h: +$12K | New LP adds: 3. Net flow 1h: +$47K with 68% buy pressure sustained.',
+          'Future boundary condition: +18% at T+4h requires LP net +$45K within 2h. Status: On track.',
+          'Depth analysis: book can absorb ~$75K with <15 bps slip. Distribution improving, flow coherent.',
+          'Eraser impact: structure bias corrected to neutral. Distribution tightens; median moves +1.2%.',
+          'Collapse rule: if checks <3 for 30m, abandon +18% future and adopt fallback +8% trajectory.'
         ];
 
         const newMessage: ChatMessage = {
