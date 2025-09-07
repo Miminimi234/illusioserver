@@ -8,6 +8,15 @@ export default function LogoGeometry() {
   useEffect(() => {
     if (!hostRef.current) return;
 
+    // Define event handlers outside sketch to maintain references
+    const handleMouseEnter = () => {
+      // This will be set by the sketch
+    };
+
+    const handleMouseLeave = () => {
+      // This will be set by the sketch
+    };
+
     const sketch = (p: p5) => {
       let gfx: p5.Graphics;
       let cursorGfx: p5.Graphics; // Reuse cursor graphics buffer
@@ -17,12 +26,12 @@ export default function LogoGeometry() {
       let mouseInCanvas = false;
       const DENSITY = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 2);
 
-      // Add window-level mouse tracking
-      const handleMouseEnter = () => {
+      // Override the event handlers
+      handleMouseEnter = () => {
         mouseInCanvas = true;
       };
 
-      const handleMouseLeave = () => {
+      handleMouseLeave = () => {
         mouseInCanvas = false;
       };
 
