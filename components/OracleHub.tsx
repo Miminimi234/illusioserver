@@ -91,14 +91,9 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
     }
   }, [isOpen]);
 
-  // Auto-scroll to top (which is bottom in reversed layout) when new messages arrive
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (chatEndRef.current) {
-      const container = chatEndRef.current.parentElement?.parentElement;
-      if (container) {
-        container.scrollTop = 0; // Scroll to top since we're using flex-col-reverse
-      }
-    }
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
   // Simulate new messages every 15 seconds (reduced frequency to prevent crashes)
@@ -132,23 +127,38 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
         setIsTyping(true);
         setTimeout(() => {
           setChatMessages(prev => {
-            // Limit messages to prevent memory issues
-            const maxMessages = 50;
+            // Limit messages to prevent memory issues - Chrome has stricter limits
+            const maxMessages = 50; // Reduced for Chrome compatibility
             const newMessages = [...prev, newMessage];
             return newMessages.length > maxMessages ? newMessages.slice(-maxMessages) : newMessages;
           });
           setIsTyping(false);
-        }, 1000);
+        }, 3000); // Increased to 3 seconds to make typing more visible
       } catch (error) {
         console.error('Error adding new message:', error);
         setIsTyping(false);
       }
-    }, 15000); // Increased to 15 seconds to reduce load
+    }, 10000); // Every 10 seconds for active 24/7 chat
 
     return () => clearInterval(interval);
   }, [isOpen]);
 
   // Helper functions for agent styling
+  const getAgentColor = (agent: string) => {
+    switch (agent) {
+      case 'analyzer':
+        return '#4ECDC4'; // Teal
+      case 'predictor':
+        return '#45B7D1'; // Blue
+      case 'quantum-eraser':
+        return '#96CEB4'; // Green
+      case 'retrocausal':
+        return '#FF6B6B'; // Red
+      default:
+        return '#6C757D'; // Gray
+    }
+  };
+
   const getAgentInfo = (agent: string) => {
     switch (agent) {
       case 'analyzer':
@@ -249,7 +259,7 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
             {/* AI Agents Section */}
             <div className="flex-shrink-0">
               <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
-                AI Agents
+                Companions
               </h2>
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-white/5 border border-white/20 rounded p-2">
@@ -289,31 +299,50 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
             
             {/* Live Chat Archive */}
             <div className="flex-1 flex flex-col min-h-0">
-              <h2 className="text-xl font-bold text-white mb-2" style={{ fontFamily: 'VT323, monospace' }}>
-                Live Chat Archive
-              </h2>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-xl font-bold text-white" style={{ fontFamily: 'VT323, monospace' }}>
+                  Live Chat Archive
+                </h2>
+                <button className="text-white/60 hover:text-white transition-colors duration-200 text-sm px-3 py-1 border border-white/20 rounded hover:bg-white/5" style={{ fontFamily: 'VT323, monospace' }}>
+                  Archive
+                </button>
+              </div>
               
               {/* Chat Container */}
-              <div className="bg-black/50 border border-white/20 rounded p-2 overflow-y-auto flex-1 flex flex-col-reverse">
+              <div className="bg-black/50 border border-white/20 rounded p-2 overflow-y-auto flex-1">
                 <div className="space-y-2">
-                  {chatMessages.slice().reverse().map((message) => {
+                  {chatMessages.map((message) => {
                     const agentInfo = getAgentInfo(message.agent);
                     return (
                       <div key={message.id} className="flex items-end space-x-3 mb-3">
-                        {/* Avatar with GIF */}
-                        <div className="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden">
+                        {/* Avatar with GIF - using Scope component's working implementation */}
+                        <div className="flex-shrink-0 w-12 h-12 rounded-full overflow-hidden bg-transparent">
                           <img 
-                            src={agentInfo.gif} 
+                            key={`${message.agent}-${message.id}`}
+                            src={agentInfo.gif}
                             alt={agentInfo.name}
                             className="w-full h-full object-cover"
                             loading="lazy"
+                            decoding="async"
+                            style={{ 
+                              mixBlendMode: 'screen',
+                              filter: 'brightness(1.2) contrast(1.1)',
+                              background: 'transparent !important',
+                              backgroundColor: 'transparent !important',
+                              backgroundImage: 'none !important',
+                              backgroundClip: 'padding-box',
+                              WebkitBackgroundClip: 'padding-box',
+                              maxWidth: '48px',
+                              maxHeight: '48px',
+                              imageRendering: 'auto'
+                            }}
                             onError={(e) => {
-                              // Fallback to a colored circle if GIF fails to load
+                              // Fallback to colored circle if GIF fails
                               const target = e.target as HTMLImageElement;
                               target.style.display = 'none';
                               const parent = target.parentElement;
                               if (parent) {
-                                parent.innerHTML = `<div class="w-full h-full bg-white/20 rounded-full flex items-center justify-center text-white text-sm font-bold">${agentInfo.name.charAt(0)}</div>`;
+                                parent.innerHTML = `<div class="w-full h-full rounded-full flex items-center justify-center" style="background-color: ${getAgentColor(message.agent)}"><span class="text-white text-sm font-bold">${agentInfo.name.charAt(0)}</span></div>`;
                               }
                             }}
                           />
