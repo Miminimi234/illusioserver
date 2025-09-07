@@ -8,15 +8,6 @@ export default function LogoGeometry() {
   useEffect(() => {
     if (!hostRef.current) return;
 
-    // Define event handlers outside sketch to maintain references
-    const handleMouseEnter = () => {
-      // This will be set by the sketch
-    };
-
-    const handleMouseLeave = () => {
-      // This will be set by the sketch
-    };
-
     const sketch = (p: p5) => {
       let gfx: p5.Graphics;
       let cursorGfx: p5.Graphics; // Reuse cursor graphics buffer
@@ -26,12 +17,12 @@ export default function LogoGeometry() {
       let mouseInCanvas = false;
       const DENSITY = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 2);
 
-      // Override the event handlers
-      handleMouseEnter = () => {
+      // Define event handlers inside sketch
+      const handleMouseEnter = () => {
         mouseInCanvas = true;
       };
 
-      handleMouseLeave = () => {
+      const handleMouseLeave = () => {
         mouseInCanvas = false;
       };
 
@@ -248,11 +239,7 @@ export default function LogoGeometry() {
     const instance = new p5(sketch, hostRef.current);
     return () => {
       instance.remove();
-      // Remove window event listeners to prevent memory leaks
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('mouseenter', handleMouseEnter);
-        window.removeEventListener('mouseleave', handleMouseLeave);
-      }
+      // Note: Event listeners are automatically cleaned up when p5 instance is removed
     };
   }, []);
 
