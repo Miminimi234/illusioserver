@@ -14,11 +14,23 @@ interface ChatMessage {
   type: 'message' | 'analysis' | 'prediction';
 }
 
+interface ArchiveEntry {
+  id: string;
+  date: string;
+  time: string;
+  messages: ChatMessage[];
+  messageCount: number;
+}
+
 export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
   const [animateIn, setAnimateIn] = useState(isOpen);
   const [isVisible, setIsVisible] = useState(isOpen);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [isArchiveMode, setIsArchiveMode] = useState(false);
+  const [archives, setArchives] = useState<ArchiveEntry[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [messageCounter, setMessageCounter] = useState(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Dummy chat data with correct companions
@@ -26,42 +38,42 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
     {
       id: '1',
       agent: 'analyzer',
-      message: 'Field Notes — PEPE (EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v)\n• Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M | Holders: 1,247\n• Depth @ $50K: 12 bps buy / 18 bps sell\n• Holder concentration (Top10): 23.4% | Gini: 0.67\n• Net flow 1h: + $47K (68% buys)\n• LP delta 4h: + $12K | New LP adds: 3\n• Clean bot share (after Eraser): 31% → Data grade: B+\n\nSimulation stance\nWe\'re not staring at "price"—we\'re auditing a small simulation that lives on-chain.\nWallets are agents, LP is terrain, fees are friction. If we assume the ledger is a\nfinite-state machine, its invariants tell us what cannot happen next without new\nenergy entering the system. Today, invariants say:\n• Without +$180K new LP, moves beyond +15% will collapse.\n• If Top10 rises over 28%, the system reverts to a two-player game (fragile).',
+      message: 'Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M | Holders: 1,247. Depth analysis shows $75K absorption capacity.',
       timestamp: new Date(Date.now() - 300000),
       type: 'analysis'
     },
     {
       id: '2',
       agent: 'predictor',
-      message: 'Forecast Window: 4h (14:30 → 18:30)\nDistribution (Eraser-cleaned): Median +8.2% | P10 -3.1% | P90 +22.4%\n\nWhat I\'m actually doing\nI\'m not prophesying. I\'m running forward passes of a local market simulation seeded with\ntoday\'s constraints—LP as potential energy, net flow as impulse, and holder dispersion as\ndampening. Think of it as drawing future attractors the present can realistically fall into.\n\nDrivers today\n• Momentum quality: Strong (clean CVD trending)\n• Clean CVD(30m): +$23K (buying pressure sustained)\n• LP trend: Stable (Δ +$12K)\n• Holder expansion: +47 wallets (organic growth)\n• Regime: Accumulation (low volatility, steady flow)\n\nIf/Then trade map\n• Long trigger: reclaim VWAP(1h) + 3×1m bars > 65% buy-imbalance and LP net +$25K inside 2h.\n• Take profit: +12%, +28% (trail below VWAP(5m)).\n• Invalidation: 15m close < VWAP(1h) or LP outflow > $50K.',
+      message: 'Forecast Window: 4h. Distribution: Median +8.2% | P10 -3.1% | P90 +22.4%. Clean CVD trending +$23K over 30m.',
       timestamp: new Date(Date.now() - 240000),
       type: 'prediction'
     },
     {
       id: '3',
       agent: 'quantum-eraser',
-      message: 'Denoise Ledger — PEPE (EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v)\n• Raw prints: 1,847 | Removed artifacts: 31% (572 events)\n  – Bot clusters: 28% of prints (12 bursts)\n  – Spoof/mirror routes collapsed: 8\n  – Outlier ticks > 3σ dropped: 23\n• Clean buy share: 68% | Clean CVD(30m): +$23K\n• Mid/TWAP shift vs raw: -2.1% | Data quality: B+ (good organic flow)\n\nWhy erase?\nIf we live inside a simulation, observation changes the thing observed.\nBots and mirrored routes are false photons—they light up the tape but carry no energy.\nI strip them out and re-simulate the past so everyone else can reason about the future\nwithout seeing ghosts.\n\nImpact on the others\n• Analyzer: structure was biased by raw; corrected to neutral.\n• Predictor: distribution tightens; median moves +1.2%.\n• Retrocausality: fewer futures survive once false volume is removed.',
+      message: 'Denoised ledger: 1,847 raw prints, 31% artifacts removed. Bot clusters reduced from 28% to clean organic flow.',
       timestamp: new Date(Date.now() - 180000),
       type: 'analysis'
     },
     {
       id: '4',
       agent: 'retrocausal',
-      message: 'How I think\nInstead of asking "what will happen?" I pick a future boundary condition and\nrun the world backwards. In a simulation, tomorrow\'s state can be treated as\na constraint on today. If +18% exists at T+4h, what must be true now?\n\nChosen future (T+4h): +18%\nRequired present conditions\n1) LP net +$45K within 2h — status: On track\n2) +67 real holders w/ bot overlap < 25% — status: Met\n3) Price ≥ VWAP(1h) for 45/60 minutes — status: 38/60\n4) Clean buy-imbalance ≥ 65% on 5m — status: 68%\n5) No top-5 net sell > $15K — status: Clean\n\nLive scoreboard\n• Conditions met: 4 / 5 | Echo strength: 78/100\n• Collapse rule: if checks < 3 for 30m, abandon this future and adopt fallback +8%.\n\nPlain English\nFutures don\'t predict us; they pull us. If the pull weakens—LP drains, holders stall,\nbots return—the corridor to +18% narrows and the world snaps to a humbler outcome.',
+      message: 'Future boundary: +18% at T+4h. Conditions met: 4/5 | Echo strength: 78/100. LP net +$45K required within 2h.',
       timestamp: new Date(Date.now() - 120000),
       type: 'prediction'
     },
     {
       id: '5',
       agent: 'analyzer',
-      message: 'Signals that survive reality checks\n1) Depth is real: book can absorb ~$75K with < 15 bps slip.\n2) Distribution improving: +3.8% new wallets; Top10 share -1.2 pts.\n3) Flow coherent: net +$47K with 68% buys and Eraser-grade B+.\n\nRisks that break the sim\n• Bot overlap > 35% or mirrored routes reappear → momentum readings become unusable.\n• LP outflow > $50K within 1h → terrain gives way under price.\n\nActionable\n• Keep buy-imbalance > 60% on 5m and LP net +$25K in the next 2h.\n• Invalidate on 15m close < VWAP(1h) and LP outflow > $50K.',
+      message: 'Signals: Depth real, distribution improving +3.8% new wallets. Flow coherent: net +$47K with 68% buys.',
       timestamp: new Date(Date.now() - 60000),
       type: 'analysis'
     },
     {
       id: '6',
       agent: 'predictor',
-      message: 'What nudges the future\n• Up-shift: fresh LP add > $75K or top-5 net buy > $30K.\n• Down-shift: holder growth < 15/h or bot share > 40%.\n\nCurrent trajectory: +8.2% median with 78% confidence\nNext update in 30m or on trigger breach.',
+      message: 'Current trajectory: +8.2% median with 78% confidence. Up-shift: fresh LP >$75K. Down-shift: holder growth <15/h.',
       timestamp: new Date(Date.now() - 30000),
       type: 'prediction'
     }
@@ -88,8 +100,26 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
   useEffect(() => {
     if (isOpen && chatMessages.length === 0) {
       setChatMessages(dummyMessages);
+      setMessageCounter(dummyMessages.length);
     }
   }, [isOpen]);
+
+  // Auto-archive every 100 messages
+  useEffect(() => {
+    if (messageCounter > 0 && messageCounter % 100 === 0) {
+      const now = new Date();
+      const archiveEntry: ArchiveEntry = {
+        id: `archive-${now.getTime()}`,
+        date: now.toLocaleDateString(),
+        time: now.toLocaleTimeString(),
+        messages: [...chatMessages],
+        messageCount: chatMessages.length
+      };
+      
+      setArchives(prev => [archiveEntry, ...prev]);
+      console.log(`📦 Archived ${chatMessages.length} messages at ${archiveEntry.time}`);
+    }
+  }, [messageCounter, chatMessages]);
 
   // Auto-scroll to bottom when new messages arrive or when typing starts
   useEffect(() => {
@@ -106,21 +136,21 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
         const randomAgent = agents[Math.floor(Math.random() * agents.length)];
         
         const newMessages = [
-          'LP depth analysis shows $75K absorption capacity with <15 bps slip. Current flow coherent with 68% buys.',
-          'Forward simulation indicates +8.2% median trajectory. Clean CVD trending +$23K over 30m window.',
-          'Denoised ledger reveals 31% artifact removal. Bot clusters reduced from 28% to clean organic flow.',
+          'LP depth analysis shows $75K absorption capacity. Current flow coherent with 68% buys.',
+          'Forward simulation indicates +8.2% median trajectory. Clean CVD trending +$23K.',
+          'Denoised ledger reveals 31% artifact removal. Bot clusters reduced to clean flow.',
           'Retrocausal analysis: 4/5 conditions met for +18% target. Echo strength at 78/100.',
-          'Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M. Holder concentration improving - Top10 down 1.2 pts.',
-          'Simulation invariants: Without +$180K new LP, moves beyond +15% will collapse. System stability at risk.',
+          'Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M. Holder concentration improving.',
+          'Simulation invariants: Without +$180K new LP, moves beyond +15% will collapse.',
           'Clean bot share: 31% → Data grade: B+. Distribution improving with +3.8% new wallets.',
-          'Quantum interference patterns suggest major move imminent. False photons removed, true signal emerging.',
-          'VWAP(1h) reclaim needed for long trigger. 3×1m bars >65% buy-imbalance required within 2h window.',
-          'Holder expansion: +47 wallets (organic growth). Regime: Accumulation with low volatility, steady flow.',
-          'LP delta 4h: +$12K | New LP adds: 3. Net flow 1h: +$47K with 68% buy pressure sustained.',
-          'Future boundary condition: +18% at T+4h requires LP net +$45K within 2h. Status: On track.',
-          'Depth analysis: book can absorb ~$75K with <15 bps slip. Distribution improving, flow coherent.',
-          'Eraser impact: structure bias corrected to neutral. Distribution tightens; median moves +1.2%.',
-          'Collapse rule: if checks <3 for 30m, abandon +18% future and adopt fallback +8% trajectory.'
+          'Quantum interference patterns suggest major move imminent. True signal emerging.',
+          'VWAP(1h) reclaim needed for long trigger. 3×1m bars >65% buy-imbalance required.',
+          'Holder expansion: +47 wallets (organic growth). Regime: Accumulation with steady flow.',
+          'LP delta 4h: +$12K | New LP adds: 3. Net flow 1h: +$47K with 68% buy pressure.',
+          'Future boundary condition: +18% at T+4h requires LP net +$45K within 2h.',
+          'Depth analysis: book can absorb ~$75K with <15 bps slip. Distribution improving.',
+          'Eraser impact: structure bias corrected to neutral. Distribution tightens.',
+          'Collapse rule: if checks <3 for 30m, abandon +18% future and adopt fallback +8%.'
         ];
 
         const newMessage: ChatMessage = {
@@ -135,17 +165,18 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
         setTimeout(() => {
           setChatMessages(prev => {
             // Limit messages to prevent memory issues - Chrome has stricter limits
-            const maxMessages = 50; // Reduced for Chrome compatibility
+            const maxMessages = 10; // Severely reduced to prevent crashes
             const newMessages = [...prev, newMessage];
             return newMessages.length > maxMessages ? newMessages.slice(-maxMessages) : newMessages;
           });
+          setMessageCounter(prev => prev + 1);
           setIsTyping(false);
         }, 3000); // Increased to 3 seconds to make typing more visible
       } catch (error) {
         console.error('Error adding new message:', error);
         setIsTyping(false);
       }
-    }, 10000); // Every 10 seconds for active 24/7 chat
+    }, 20000); // Every 20 seconds to reduce memory pressure
 
     return () => clearInterval(interval);
   }, [isOpen]);
@@ -208,6 +239,32 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Archive functions
+  const toggleArchiveMode = () => {
+    setIsArchiveMode(!isArchiveMode);
+    setSearchQuery('');
+  };
+
+  const getFilteredArchives = () => {
+    if (!searchQuery) return archives;
+    
+    return archives.filter(archive => 
+      archive.messages.some(message => 
+        message.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        message.agent.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  };
+
+  const getCurrentMessages = () => {
+    if (isArchiveMode) {
+      const filteredArchives = getFilteredArchives();
+      // Flatten all messages from filtered archives
+      return filteredArchives.flatMap(archive => archive.messages);
+    }
+    return chatMessages;
   };
 
   // ESC key handler
@@ -308,17 +365,53 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
             <div className="flex-1 flex flex-col min-h-0">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-xl font-bold text-white" style={{ fontFamily: 'VT323, monospace' }}>
-                  Live Chat Archive
+                  {isArchiveMode ? 'Archive' : 'Live Chat Archive'}
                 </h2>
-                <button className="text-white/60 hover:text-white transition-colors duration-200 text-sm px-3 py-1 border border-white/20 rounded hover:bg-white/5" style={{ fontFamily: 'VT323, monospace' }}>
-                  Archive
+                <button 
+                  onClick={toggleArchiveMode}
+                  className={`transition-colors duration-200 text-sm px-3 py-1 border rounded ${
+                    isArchiveMode 
+                      ? 'text-white bg-white/10 border-white/40' 
+                      : 'text-white/60 hover:text-white border-white/20 hover:bg-white/5'
+                  }`} 
+                  style={{ fontFamily: 'VT323, monospace' }}
+                >
+                  {isArchiveMode ? 'Live Chat' : 'Archive'}
                 </button>
               </div>
+
+              {/* Search bar - only show in archive mode */}
+              {isArchiveMode && (
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    placeholder="Search archives..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-3 py-2 bg-black/50 border border-white/20 rounded text-white placeholder-white/40 focus:outline-none focus:border-white/40"
+                    style={{ fontFamily: 'VT323, monospace' }}
+                  />
+                </div>
+              )}
+
+              {/* Archive info - only show in archive mode */}
+              {isArchiveMode && (
+                <div className="mb-2 text-white/60 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
+                  {archives.length > 0 ? (
+                    <>
+                      {getFilteredArchives().length} archive{getFilteredArchives().length !== 1 ? 's' : ''} found
+                      {searchQuery && ` for "${searchQuery}"`}
+                    </>
+                  ) : (
+                    'No archives yet'
+                  )}
+                </div>
+              )}
               
               {/* Chat Container */}
               <div className="bg-black/50 border border-white/20 rounded p-2 overflow-y-auto flex-1">
                 <div className="space-y-2">
-                  {chatMessages.map((message) => {
+                  {getCurrentMessages().map((message) => {
                     const agentInfo = getAgentInfo(message.agent);
                     return (
                       <div key={message.id} className="flex items-end space-x-3 mb-3">
@@ -344,13 +437,9 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
                               imageRendering: 'auto'
                             }}
                             onError={(e) => {
-                              // Fallback to colored circle if GIF fails
+                              // Simple fallback - just hide the image
                               const target = e.target as HTMLImageElement;
                               target.style.display = 'none';
-                              const parent = target.parentElement;
-                              if (parent) {
-                                parent.innerHTML = `<div class="w-full h-full rounded-full flex items-center justify-center" style="background-color: ${getAgentColor(message.agent)}"><span class="text-white text-sm font-bold">${agentInfo.name.charAt(0)}</span></div>`;
-                              }
                             }}
                           />
                         </div>
@@ -375,8 +464,8 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
                     );
                   })}
                   
-                  {/* Typing Indicator - appears at bottom */}
-                  {isTyping && (
+                  {/* Typing Indicator - appears at bottom, only in live mode */}
+                  {isTyping && !isArchiveMode && (
                     <div className="flex items-end space-x-3 mb-3">
                       <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                         <div className="flex space-x-1">

@@ -3,12 +3,12 @@ import './globals.css'
 export const metadata = {
   title: 'Quantum Geometry',
   description: 'Retrocausal trading interface',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+  },
 }
 
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-}
 
 export default function RootLayout({
   children,
@@ -18,7 +18,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         {/* Prevent flash on mobile pages */}
         <style dangerouslySetInnerHTML={{
           __html: `
