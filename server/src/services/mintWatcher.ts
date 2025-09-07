@@ -222,6 +222,10 @@ export class MintWatcherService {
             'POOL', // Pool tokens
             'METEORA', // Meteora DBC tokens
             'DBC', // Dynamic Bonding Curve tokens
+            'DYNAMIC', // Dynamic tokens
+            'ATA', // Associated Token Account tokens
+            'TOKENACCOUNT', // Token Account tokens
+            'ATOKEN', // AToken tokens
         ];
         
         // Check if mint contains any of these patterns

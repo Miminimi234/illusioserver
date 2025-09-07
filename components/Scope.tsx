@@ -1604,7 +1604,8 @@ export const Scope = ({
         'orbit', 'earth', 'earthorbit', 'highearthorbit', 'orbitpig', 'pigorbit',
         'vault', 'test', 'demo', 'lend', 'borrow',
         'raydium cpmm', 'cpmm', 'creator pool', 'creator', 'pool',
-        'meteora', 'meteora dbc', 'dbc', 'dynamic bonding curve'
+        'meteora', 'meteora dbc', 'dbc', 'dynamic bonding curve', 'meteora dynamic',
+        'associated token', 'token account', 'ata', 'atoken'
       ];
       
       return unwantedPatterns.some(pattern => 

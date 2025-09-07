@@ -49,6 +49,13 @@ const isUnwantedToken = (name?: string, symbol?: string): boolean => {
     'meteora dbc',
     'dbc',
     'dynamic bonding curve',
+    'meteora dynamic',
+    
+    // Associated Token Account patterns
+    'associated token',
+    'token account',
+    'ata',
+    'atoken',
     
     // Other unwanted patterns
     'vault',
