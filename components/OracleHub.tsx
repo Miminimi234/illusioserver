@@ -126,60 +126,249 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isTyping]);
 
-  // Simulate new messages every 15 seconds (reduced frequency to prevent crashes)
+  // Advanced conversational AI system for Oracle agents
   useEffect(() => {
     if (!isOpen) return;
 
     const interval = setInterval(() => {
       try {
-        const agents: ('analyzer' | 'predictor' | 'quantum-eraser' | 'retrocausal')[] = ['analyzer', 'predictor', 'quantum-eraser', 'retrocausal'];
-        const randomAgent = agents[Math.floor(Math.random() * agents.length)];
+        // Get the last few messages for context
+        const recentMessages = chatMessages.slice(-5);
+        const lastMessage = recentMessages[recentMessages.length - 1];
         
-        const newMessages = [
-          'LP depth analysis shows $75K absorption capacity. Current flow coherent with 68% buys.',
-          'Forward simulation indicates +8.2% median trajectory. Clean CVD trending +$23K.',
-          'Denoised ledger reveals 31% artifact removal. Bot clusters reduced to clean flow.',
-          'Retrocausal analysis: 4/5 conditions met for +18% target. Echo strength at 78/100.',
-          'Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M. Holder concentration improving.',
-          'Simulation invariants: Without +$180K new LP, moves beyond +15% will collapse.',
-          'Clean bot share: 31% → Data grade: B+. Distribution improving with +3.8% new wallets.',
-          'Quantum interference patterns suggest major move imminent. True signal emerging.',
-          'VWAP(1h) reclaim needed for long trigger. 3×1m bars >65% buy-imbalance required.',
-          'Holder expansion: +47 wallets (organic growth). Regime: Accumulation with steady flow.',
-          'LP delta 4h: +$12K | New LP adds: 3. Net flow 1h: +$47K with 68% buy pressure.',
-          'Future boundary condition: +18% at T+4h requires LP net +$45K within 2h.',
-          'Depth analysis: book can absorb ~$75K with <15 bps slip. Distribution improving.',
-          'Eraser impact: structure bias corrected to neutral. Distribution tightens.',
-          'Collapse rule: if checks <3 for 30m, abandon +18% future and adopt fallback +8%.'
-        ];
-
-        const newMessage: ChatMessage = {
-          id: Date.now().toString(),
-          agent: randomAgent,
-          message: newMessages[Math.floor(Math.random() * newMessages.length)],
-          timestamp: new Date(),
-          type: 'message'
-        };
-
+        // Determine which agent should respond based on conversation flow
+        const nextAgent = determineNextAgent(recentMessages, lastMessage);
+        
+        // Generate contextual response
+        const newMessage = generateContextualResponse(nextAgent, recentMessages);
+        
         setIsTyping(true);
         setTimeout(() => {
           setChatMessages(prev => {
-            // Limit messages to prevent memory issues - Chrome has stricter limits
-            const maxMessages = 10; // Severely reduced to prevent crashes
+            const maxMessages = 100; // Increased to 100 messages
             const newMessages = [...prev, newMessage];
             return newMessages.length > maxMessages ? newMessages.slice(-maxMessages) : newMessages;
           });
           setMessageCounter(prev => prev + 1);
           setIsTyping(false);
-        }, 3000); // Increased to 3 seconds to make typing more visible
+        }, 2000 + Math.random() * 2000); // Variable typing time for realism
       } catch (error) {
         console.error('Error adding new message:', error);
         setIsTyping(false);
       }
-    }, 20000); // Every 20 seconds to reduce memory pressure
+    }, 15000); // Every 15 seconds for more dynamic conversation
 
     return () => clearInterval(interval);
-  }, [isOpen]);
+  }, [isOpen, chatMessages]);
+
+  // AI Conversation Logic Functions
+  const determineNextAgent = (recentMessages: ChatMessage[], lastMessage: ChatMessage | undefined): string => {
+    if (!lastMessage) return 'analyzer'; // Start with analyzer
+    
+    const lastAgent = lastMessage.agent;
+    const messageText = lastMessage.message.toLowerCase();
+    
+    // Agent response patterns based on keywords and context
+    if (messageText.includes('prediction') || messageText.includes('forecast') || messageText.includes('trajectory')) {
+      return lastAgent === 'predictor' ? 'analyzer' : 'predictor';
+    }
+    
+    if (messageText.includes('bot') || messageText.includes('clean') || messageText.includes('artifact') || messageText.includes('noise')) {
+      return lastAgent === 'quantum-eraser' ? 'retrocausal' : 'quantum-eraser';
+    }
+    
+    if (messageText.includes('future') || messageText.includes('boundary') || messageText.includes('echo') || messageText.includes('retrocausal')) {
+      return lastAgent === 'retrocausal' ? 'analyzer' : 'retrocausal';
+    }
+    
+    if (messageText.includes('market cap') || messageText.includes('liquidity') || messageText.includes('volume') || messageText.includes('holders')) {
+      return lastAgent === 'analyzer' ? 'predictor' : 'analyzer';
+    }
+    
+    // Disagreement triggers - agents challenge each other
+    if (messageText.includes('confidence') && Math.random() < 0.3) {
+      return lastAgent === 'predictor' ? 'quantum-eraser' : 'predictor';
+    }
+    
+    if (messageText.includes('clean') && Math.random() < 0.4) {
+      return lastAgent === 'quantum-eraser' ? 'analyzer' : 'quantum-eraser';
+    }
+    
+    // Default: rotate to next agent
+    const agents = ['analyzer', 'predictor', 'quantum-eraser', 'retrocausal'];
+    const currentIndex = agents.indexOf(lastAgent);
+    return agents[(currentIndex + 1) % agents.length];
+  };
+
+  const generateContextualResponse = (agent: string, recentMessages: ChatMessage[]): ChatMessage => {
+    const lastMessage = recentMessages[recentMessages.length - 1];
+    const secondLastMessage = recentMessages[recentMessages.length - 2];
+    
+    // Agent-specific response patterns
+    switch (agent) {
+      case 'analyzer':
+        return generateAnalyzerResponse(lastMessage, secondLastMessage);
+      case 'predictor':
+        return generatePredictorResponse(lastMessage, secondLastMessage);
+      case 'quantum-eraser':
+        return generateQuantumEraserResponse(lastMessage, secondLastMessage);
+      case 'retrocausal':
+        return generateRetrocausalResponse(lastMessage, secondLastMessage);
+      default:
+        return generateAnalyzerResponse(lastMessage, secondLastMessage);
+    }
+  };
+
+  const generateAnalyzerResponse = (lastMessage: ChatMessage | undefined, secondLastMessage: ChatMessage | undefined): ChatMessage => {
+    const responses = [
+      // Market data analysis
+      'Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M | Holders: 1,247. Depth analysis shows $75K absorption capacity.',
+      'Signals: Depth real, distribution improving +3.8% new wallets. Flow coherent: net +$47K with 68% buys.',
+      'LP delta 4h: +$12K | New LP adds: 3. Net flow 1h: +$47K with 68% buy pressure.',
+      'Holder expansion: +47 wallets (organic growth). Regime: Accumulation with steady flow.',
+      'Depth analysis: book can absorb ~$75K with <15 bps slip. Distribution improving.',
+      
+      // Responses to other agents
+      ...(lastMessage?.agent === 'predictor' ? [
+        'I see your prediction, but the current LP depth suggests we need +$180K new liquidity for that +18% target.',
+        'Your forecast looks optimistic. My analysis shows holder growth is only +15/h, below the +20/h threshold.',
+        'The market structure supports your +8.2% median, but I\'m concerned about the $75K absorption limit.'
+      ] : []),
+      
+      ...(lastMessage?.agent === 'quantum-eraser' ? [
+        'Good work on the cleanup. With 31% artifacts removed, my holder analysis is now more reliable.',
+        'The denoised data confirms my depth analysis. Clean flow shows $75K absorption capacity.',
+        'Your bot removal helps, but I still see some suspicious wallet patterns in the holder data.'
+      ] : []),
+      
+      ...(lastMessage?.agent === 'retrocausal' ? [
+        'Your future boundary analysis aligns with my current market cap projections.',
+        'The +18% target requires more LP than my current analysis suggests is available.',
+        'Your echo strength of 78/100 correlates with my holder concentration metrics.'
+      ] : [])
+    ];
+    
+    return {
+      id: Date.now().toString(),
+      agent: 'analyzer',
+      message: responses[Math.floor(Math.random() * responses.length)],
+      timestamp: new Date(),
+      type: 'analysis'
+    };
+  };
+
+  const generatePredictorResponse = (lastMessage: ChatMessage | undefined, secondLastMessage: ChatMessage | undefined): ChatMessage => {
+    const responses = [
+      // Predictions
+      'Forecast Window: 4h. Distribution: Median +8.2% | P10 -3.1% | P90 +22.4%. Clean CVD trending +$23K over 30m.',
+      'Current trajectory: +8.2% median with 78% confidence. Up-shift: fresh LP >$75K. Down-shift: holder growth <15/h.',
+      'Forward simulation indicates +8.2% median trajectory. Clean CVD trending +$23K.',
+      'VWAP(1h) reclaim needed for long trigger. 3×1m bars >65% buy-imbalance required.',
+      
+      // Responses to other agents
+      ...(lastMessage?.agent === 'analyzer' ? [
+        'Your market cap analysis supports my +8.2% median forecast, but I\'m more bullish on the +18% target.',
+        'I disagree with your absorption capacity. My models show we can handle +$120K, not just $75K.',
+        'Your holder data is solid, but my prediction models suggest a higher probability of +15% moves.'
+      ] : []),
+      
+      ...(lastMessage?.agent === 'quantum-eraser' ? [
+        'With your cleanup complete, my confidence in the +8.2% prediction increases to 85%.',
+        'The denoised data improves my forecast accuracy. I now see +12% as more likely.',
+        'Your bot removal helps, but I still predict volatility due to remaining market structure issues.'
+      ] : []),
+      
+      ...(lastMessage?.agent === 'retrocausal' ? [
+        'Your future boundary analysis confirms my +18% target prediction.',
+        'I agree with your echo strength assessment. It supports my confidence in the upward trajectory.',
+        'Your retrocausal analysis validates my prediction models. The +18% target is achievable.'
+      ] : [])
+    ];
+    
+    return {
+      id: Date.now().toString(),
+      agent: 'predictor',
+      message: responses[Math.floor(Math.random() * responses.length)],
+      timestamp: new Date(),
+      type: 'prediction'
+    };
+  };
+
+  const generateQuantumEraserResponse = (lastMessage: ChatMessage | undefined, secondLastMessage: ChatMessage | undefined): ChatMessage => {
+    const responses = [
+      // Data cleaning
+      'Denoised ledger: 1,847 raw prints, 31% artifacts removed. Bot clusters reduced from 28% to clean organic flow.',
+      'Denoised ledger reveals 31% artifact removal. Bot clusters reduced to clean flow.',
+      'Clean bot share: 31% → Data grade: B+. Distribution improving with +3.8% new wallets.',
+      'Eraser impact: structure bias corrected to neutral. Distribution tightens.',
+      'Quantum interference patterns suggest major move imminent. True signal emerging.',
+      
+      // Responses to other agents
+      ...(lastMessage?.agent === 'analyzer' ? [
+        'Your market analysis is compromised by bot activity. Let me clean the data first.',
+        'I see artifacts in your holder data. My cleanup will improve your analysis accuracy.',
+        'Your depth analysis needs verification. I\'m detecting suspicious patterns in the flow data.'
+      ] : []),
+      
+      ...(lastMessage?.agent === 'predictor' ? [
+        'Your predictions are based on noisy data. My cleanup will improve your forecast accuracy.',
+        'I disagree with your confidence level. The underlying data has too many artifacts.',
+        'Your +8.2% prediction is premature. Let me clean the ledger first for better accuracy.'
+      ] : []),
+      
+      ...(lastMessage?.agent === 'retrocausal' ? [
+        'Your future analysis is interesting, but the current data needs cleaning first.',
+        'The retrocausal patterns you\'re seeing might be artifacts. Let me verify the signal.',
+        'Your echo strength calculation could be affected by bot noise. I\'ll clean the data.'
+      ] : [])
+    ];
+    
+    return {
+      id: Date.now().toString(),
+      agent: 'quantum-eraser',
+      message: responses[Math.floor(Math.random() * responses.length)],
+      timestamp: new Date(),
+      type: 'analysis'
+    };
+  };
+
+  const generateRetrocausalResponse = (lastMessage: ChatMessage | undefined, secondLastMessage: ChatMessage | undefined): ChatMessage => {
+    const responses = [
+      // Retrocausal analysis
+      'Future boundary: +18% at T+4h. Conditions met: 4/5 | Echo strength: 78/100. LP net +$45K required within 2h.',
+      'Retrocausal analysis: 4/5 conditions met for +18% target. Echo strength at 78/100.',
+      'Future boundary condition: +18% at T+4h requires LP net +$45K within 2h.',
+      'Collapse rule: if checks <3 for 30m, abandon +18% future and adopt fallback +8%.',
+      'Simulation invariants: Without +$180K new LP, moves beyond +15% will collapse.',
+      
+      // Responses to other agents
+      ...(lastMessage?.agent === 'analyzer' ? [
+        'Your current analysis aligns with my future boundary conditions. The +18% target is achievable.',
+        'I see your market cap projections. My retrocausal analysis suggests they\'ll reach +$2.5M by T+4h.',
+        'Your holder data supports my echo strength calculations. The future trajectory is confirmed.'
+      ] : []),
+      
+      ...(lastMessage?.agent === 'predictor' ? [
+        'Your +8.2% prediction is conservative. My retrocausal analysis shows +18% is more likely.',
+        'I agree with your forecast direction, but my future boundary analysis suggests higher targets.',
+        'Your confidence level matches my echo strength. The +18% target is within reach.'
+      ] : []),
+      
+      ...(lastMessage?.agent === 'quantum-eraser' ? [
+        'Your data cleanup improves my retrocausal signal clarity. Echo strength now at 85/100.',
+        'The denoised data confirms my future boundary analysis. The +18% target is more certain.',
+        'Your cleanup work enhances my retrocausal predictions. The future trajectory is clearer.'
+      ] : [])
+    ];
+    
+    return {
+      id: Date.now().toString(),
+      agent: 'retrocausal',
+      message: responses[Math.floor(Math.random() * responses.length)],
+      timestamp: new Date(),
+      type: 'prediction'
+    };
+  };
 
   // Helper functions for agent styling
   const getAgentColor = (agent: string) => {

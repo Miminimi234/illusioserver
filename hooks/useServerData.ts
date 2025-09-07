@@ -139,14 +139,25 @@ export const useServerData = (isOpen: boolean) => {
   // Fetch tokens from server
   const fetchTokens = useCallback(async () => {
     try {
+      console.log("🔍 Fetching tokens from:", `${SERVER_BASE_URL}/api/tokens?limit=100`);
       setConnectionStatus("Fetching tokens...");
-      const response = await fetch(`${SERVER_BASE_URL}/api/tokens/fresh?limit=100`);
+      
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${SERVER_BASE_URL}/api/tokens?limit=100`, {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error(`Server responded with ${response.status}`);
       }
       
       const data = await response.json();
+      console.log("📊 Received data:", { itemsCount: data?.items?.length, total: data?.total, isArray: Array.isArray(data) });
       
       // Handle both old and new API response formats
       const total = data?.total ?? data?.items?.length ?? (Array.isArray(data) ? data.length : 0);
@@ -187,10 +198,17 @@ export const useServerData = (isOpen: boolean) => {
       };
       setStats(newStats);
       
+      console.log("✅ fetchTokens completed successfully");
+      
     } catch (error) {
-      console.error("Failed to fetch tokens from server:", error);
-      setConnectionStatus("Failed to connect to server");
+      console.error("❌ Failed to fetch tokens from server:", error);
+      if (error.name === 'AbortError') {
+        setConnectionStatus("Request timeout - using WebSocket data only");
+      } else {
+        setConnectionStatus("Failed to connect to server - using WebSocket data only");
+      }
     } finally {
+      console.log("🏁 fetchTokens completed, setting isLoading to false");
       setIsLoading(false);
     }
   }, []);
@@ -376,19 +394,31 @@ export const useServerData = (isOpen: boolean) => {
 
   // Initial fetch and periodic updates (reduced frequency since we have WebSocket)
   useEffect(() => {
+    console.log("🚀 useServerData useEffect triggered:", { isOpen, live });
     if (isOpen) {
+      console.log("📡 Calling fetchTokens...");
       fetchTokens();
       
       // Set up periodic refresh when live mode is on (less frequent since WebSocket handles real-time)
       if (live) {
         const interval = setInterval(() => {
+          console.log("🔄 Periodic refresh calling fetchTokens...");
           fetchTokens();
         }, 30000); // Reduced frequency: refresh every 30 seconds for fallback
         
         return () => clearInterval(interval);
       }
     }
-  }, [isOpen, live]);
+  }, [isOpen, live, fetchTokens]);
+
+  // Fallback: If we have tokens from WebSocket but still loading, set loading to false
+  useEffect(() => {
+    if (isLoading && tokens.length > 0) {
+      console.log("🔄 Fallback: Setting isLoading to false because we have WebSocket tokens");
+      setIsLoading(false);
+      setConnectionStatus(wsConnected ? "Connected via WebSocket (Live)" : "Connected via WebSocket");
+    }
+  }, [isLoading, tokens.length, wsConnected]);
 
   return {
     tokens,
