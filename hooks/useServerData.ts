@@ -170,13 +170,13 @@ export const useServerData = (isOpen: boolean) => {
         const existingMints = new Set(prev.map(t => t.mint));
         const newTokens = transformedTokens.filter((t: any) => !existingMints.has(t.mint));
         
-        // If there are new tokens from server, add them to the beginning
-        if (newTokens.length > 0) {
-          console.log(`📥 Added ${newTokens.length} new tokens from server refresh`);
-          const combined = [...newTokens, ...prev];
-          // Limit to 200 tokens to prevent memory issues
-          return combined.slice(0, 200);
-        }
+          // If there are new tokens from server, add them to the beginning
+          if (newTokens.length > 0) {
+            console.log(`📥 Added ${newTokens.length} new tokens from server refresh`);
+            const combined = [...newTokens, ...prev];
+            // NO LIMIT - keep all tokens to prevent fresh mints from disappearing
+            return combined;
+          }
         
         // If no new tokens, just update existing ones with fresh data
         const updatedTokens = prev.map(existingToken => {
@@ -202,7 +202,7 @@ export const useServerData = (isOpen: boolean) => {
       
     } catch (error) {
       console.error("❌ Failed to fetch tokens from server:", error);
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         setConnectionStatus("Request timeout - using WebSocket data only");
       } else {
         setConnectionStatus("Failed to connect to server - using WebSocket data only");
@@ -346,8 +346,8 @@ export const useServerData = (isOpen: boolean) => {
             }
             console.log('🔥 NEW TOKEN RECEIVED VIA WEBSOCKET:', newToken.name || newToken.symbol || newToken.mint);
             const combined = [newToken, ...prev];
-            // Limit to 200 tokens to prevent memory issues
-            return combined.slice(0, 200);
+            // NO LIMIT - keep all tokens to prevent fresh mints from disappearing
+            return combined;
           });
           setLastUpdate(new Date());
           setNewTokenMint(newToken.mint);

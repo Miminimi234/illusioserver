@@ -58,49 +58,18 @@ export class TokenStatusUpdaterService {
 
     private async updateTokenStatuses(): Promise<void> {
         try {
-            const now = new Date();
-
-            // Get all fresh tokens with their latest market cap data
-            const freshTokens = await tokenRepository.getAllTokens();
-            const freshTokensOnly = freshTokens.filter(token => token.status === 'fresh');
+            // DISABLED: Stop moving fresh mints to active status
+            // Fresh mints should stay fresh and visible in the fresh mints column
+            logger.info('Token status updater running but NOT moving fresh mints to active status');
             
-            for (const token of freshTokensOnly) {
-                const tokenAge = now.getTime() - new Date(token.created_at).getTime();
-                const ageInMinutes = tokenAge / (1000 * 60);
-
-                let newStatus: 'fresh' | 'active' | 'curve' = token.status;
-                let shouldUpdate = false;
-
-                // Move tokens based on age and activity
-                if (ageInMinutes > 30) {
-                    // Tokens older than 30 minutes become 'active' if they have liquidity
-                    if (token.latest_marketcap?.liquidity && token.latest_marketcap.liquidity > 0) {
-                        newStatus = 'active';
-                        shouldUpdate = true;
-                    }
-                } else if (ageInMinutes > 5) {
-                    // Tokens older than 5 minutes but less than 30 minutes
-                    // Check if they have liquidity to move to 'active'
-                    if (token.latest_marketcap?.liquidity && token.latest_marketcap.liquidity > 1000) { // Minimum liquidity threshold
-                        newStatus = 'active';
-                        shouldUpdate = true;
-                    }
-                }
-
-                // Update token status if needed
-                if (shouldUpdate && newStatus !== token.status) {
-                    await tokenRepository.updateTokenStatus(token.mint, newStatus);
-                    logger.info(`Updated token ${token.mint} status from ${token.status} to ${newStatus}`);
-                    
-                    // Broadcast status update via WebSocket
-                    const ws = getWsService();
-                    if (ws) {
-                        ws.broadcastTokenUpdate({
-                            ...token,
-                            status: newStatus
-                        });
-                    }
-                }
+            // Only handle curve tokens if needed, but leave fresh mints alone
+            const curveTokens = await tokenRepository.getAllTokens();
+            const curveTokensOnly = curveTokens.filter(token => token.status === 'curve');
+            
+            // Only process curve tokens, leave fresh mints untouched
+            for (const token of curveTokensOnly) {
+                // Add any curve-specific logic here if needed
+                // But DO NOT touch fresh mints
             }
 
         } catch (error) {

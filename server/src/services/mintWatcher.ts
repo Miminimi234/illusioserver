@@ -204,6 +204,8 @@ export class MintWatcherService {
         const jupiterPatterns = [
             'JUP', // Jupiter token
             'JUPITER', // Jupiter variations
+            'JUPITERLEND', // Jupiter Lend
+            'JUPITERBORROW', // Jupiter Borrow
         ];
         
         const sugarPatterns = [
@@ -211,10 +213,22 @@ export class MintWatcherService {
             'SUGARGLIDER', // Sugar glider variations
         ];
         
+        const otherUnwantedPatterns = [
+            'LEND', // Lending tokens
+            'BORROW', // Borrowing tokens
+            'VAULT', // Vault tokens
+            'CPMM', // Raydium CPMM tokens
+            'CREATOR', // Creator pool tokens
+            'POOL', // Pool tokens
+            'METEORA', // Meteora DBC tokens
+            'DBC', // Dynamic Bonding Curve tokens
+        ];
+        
         // Check if mint contains any of these patterns
         const upperMint = mint.toUpperCase();
         return jupiterPatterns.some(pattern => upperMint.includes(pattern)) ||
-               sugarPatterns.some(pattern => upperMint.includes(pattern));
+               sugarPatterns.some(pattern => upperMint.includes(pattern)) ||
+               otherUnwantedPatterns.some(pattern => upperMint.includes(pattern));
     }
 
 

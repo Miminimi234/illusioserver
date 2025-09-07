@@ -19,6 +19,8 @@ const isUnwantedToken = (name?: string, symbol?: string): boolean => {
     'jupiter vault',
     'jv', // jupiter vault tokens
     'jupiter',
+    'jupiter lend',
+    'jupiter borrow',
     
     // Sugar patterns
     'sugar',
@@ -35,10 +37,25 @@ const isUnwantedToken = (name?: string, symbol?: string): boolean => {
     'orbitpig',
     'pigorbit',
     
+    // Raydium CPMM patterns
+    'raydium cpmm',
+    'cpmm',
+    'creator pool',
+    'creator',
+    'pool',
+    
+    // Meteora DBC patterns
+    'meteora',
+    'meteora dbc',
+    'dbc',
+    'dynamic bonding curve',
+    
     // Other unwanted patterns
     'vault',
     'test',
-    'demo'
+    'demo',
+    'lend',
+    'borrow'
   ];
   
   return unwantedPatterns.some(pattern => 

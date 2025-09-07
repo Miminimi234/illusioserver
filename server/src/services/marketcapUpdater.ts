@@ -231,11 +231,10 @@ export class MarketcapUpdaterService {
                     }
                 }
                 
-                // Update token status if it has valid liquidity and price
-                if (marketData.liquidity > 1000 && marketData.price_usd > 0) {
-                    await tokenRepository.updateTokenStatus(contractAddress, 'active');
-                    logger.info(`Token ${contractAddress} marked as active (liquidity: $${marketData.liquidity.toLocaleString()})`);
-                }
+                // DISABLED: Do not move fresh mints to active status
+                // Fresh mints should stay fresh and visible in the fresh mints column
+                // Only update market data, do not change status
+                logger.debug(`Token ${contractAddress} market data updated but status unchanged (liquidity: $${marketData.liquidity.toLocaleString()})`);
                 
                 // Check for AMM migration (token moving from curve to AMM)
                 await this.checkAMMMigration(contractAddress, tokenId);

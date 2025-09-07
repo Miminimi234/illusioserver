@@ -1598,11 +1598,13 @@ export const Scope = ({
       const symbol = (token.symbol || '').toLowerCase();
       
       const unwantedPatterns = [
-        'jupiter vault', 'jv', 'jupiter',
+        'jupiter vault', 'jv', 'jupiter', 'jupiter lend', 'jupiter borrow',
         'sugar', 'sugarglider',
         '.sol',
         'orbit', 'earth', 'earthorbit', 'highearthorbit', 'orbitpig', 'pigorbit',
-        'vault', 'test', 'demo'
+        'vault', 'test', 'demo', 'lend', 'borrow',
+        'raydium cpmm', 'cpmm', 'creator pool', 'creator', 'pool',
+        'meteora', 'meteora dbc', 'dbc', 'dynamic bonding curve'
       ];
       
       return unwantedPatterns.some(pattern => 
@@ -1610,8 +1612,8 @@ export const Scope = ({
       );
     };
 
-    // Use transformed property names from useServerData and limit to 40 tokens each
-    const newPairs = tokensToFilter.filter(t => t && t.status === 'fresh' && !isUnwantedToken(t)).slice(0, 40); // Show fresh tokens (the actual fresh mints)
+    // Use transformed property names from useServerData - LIMIT to 100 fresh tokens
+    const newPairs = tokensToFilter.filter(t => t && t.status === 'fresh' && !isUnwantedToken(t)).slice(0, 100); // Show exactly 100 fresh tokens (the actual fresh mints)
     const filled = tokensToFilter.filter(t => t && t.status === 'active' && !t.isOnCurve && !isUnwantedToken(t)).slice(0, 30); // Show active tokens
     // EDGE: No tokens on edge - temporarily removed
     const onEdge: any[] = [];
