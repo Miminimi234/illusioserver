@@ -1,4 +1,4 @@
-import { Globe, Send, Gamepad2, Flame, BarChart3, Landmark, ExternalLink, X, MessageCircle } from "lucide-react";
+import { Globe, Send, BarChart3, Landmark, ExternalLink, X, MessageCircle } from "lucide-react";
 
 type Props = { 
   links?: {
@@ -59,11 +59,11 @@ export default function SocialBadges({ links, website, twitter, telegram, source
   const getSourceIcon = (source: string | undefined, mint: string) => {
     // Check if it's a pump.fun token (mint ends with 'pump' or source is pump.fun)
     if (source === 'pump.fun' || mint.endsWith('pump')) {
-      return <Flame size={14} className="text-orange-400" />;
+      return <img src="/PF.png" alt="Pump.fun" className="w-3.5 h-3.5" />;
     }
     // Check if it's a bonk.fun token
     if (source === 'bonk.fun' || mint.endsWith('bonk')) {
-      return <Gamepad2 size={14} className="text-yellow-400" />;
+      return <img src="/BONK.png" alt="Bonk.fun" className="w-3.5 h-3.5" />;
     }
     return <ExternalLink size={14} className="text-white/80" />;
   };

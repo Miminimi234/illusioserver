@@ -54,7 +54,7 @@ async function safeFetchJson(uri: string): Promise<any | null> {
   if (!normalized) return null;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000); // Reduced timeout from 10s to 5s for speed
+  const timeout = setTimeout(() => controller.abort(), 10000); // Increased timeout to 10s to avoid premature failures
 
   try {
     const res = await fetch(normalized, { 

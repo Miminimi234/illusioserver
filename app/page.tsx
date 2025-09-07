@@ -49,7 +49,7 @@ export default function Page() {
     filterByStatus,
     refresh,
     newTokenMint,
-  } = useServerData(false); // DISABLED - no backend server running
+  } = useServerData(isScopeOpen); // Enable when Scope is open
 
 
 

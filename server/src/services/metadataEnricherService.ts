@@ -63,11 +63,11 @@ export class MetadataEnricherService {
 
     logger.info("Starting Metadata Enricher Service...");
     
-    // Start cron job to enrich tokens every 1 second for ultra-fast fresh mint detection
-    this.cronJob = cron.schedule("*/1 * * * * *", async () => {
+    // Start cron job to enrich tokens every 5 seconds to avoid rate limits
+    this.cronJob = cron.schedule("*/5 * * * * *", async () => {
       try {
-        await this.enrichTokens(100); // Process 100 tokens at a time for faster processing
-        await this.enrichSocialLinks(30); // Process 30 tokens for social links
+        await this.enrichTokens(10); // Process only 10 tokens at a time to avoid rate limits
+        await this.enrichSocialLinks(5); // Process 5 tokens for social links
       } catch (error) {
         logger.error("Error in metadata enrichment cron job:", error);
       }
@@ -105,17 +105,15 @@ export class MetadataEnricherService {
     logger.info(`🚀 ULTRA-FAST enriching metadata for ${mints.length} tokens`);
     
     // Process in smaller batches to avoid rate limits
-    const batchSize = 3; // Reduced to avoid 429 errors
+    const batchSize = 1; // Further reduced to avoid 429 errors
     for (let i = 0; i < mints.length; i += batchSize) {
       const batch = mints.slice(i, i + batchSize);
       
-      // Process batch in parallel for maximum speed
-      const promises = batch.map(mint => this.enrichToken(mint));
-      await Promise.allSettled(promises);
-      
-      // Longer delay between batches to avoid rate limits
-      if (i + batchSize < mints.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Increased to 1 second
+      // Process batch sequentially to avoid rate limits
+      for (const mint of batch) {
+        await this.enrichToken(mint);
+        // Add delay between each token to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay between tokens
       }
     }
   }
@@ -265,7 +263,7 @@ export class MetadataEnricherService {
   private async extractSocialLinks(metadataUri: string): Promise<{ website?: string; twitter?: string; telegram?: string; source?: string }> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // Reduced timeout from 10s to 5s
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased timeout to 10s
       
       const response = await fetch(metadataUri, {
         headers: {
@@ -314,7 +312,7 @@ export class MetadataEnricherService {
     }
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // Reduced timeout from 10s to 5s
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased timeout to 10s
       
       const resp = await fetch(`https://mainnet.helius-rpc.com/?api-key=${apiKey}`, {
         method: "POST",
