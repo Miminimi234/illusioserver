@@ -345,7 +345,7 @@ img[src*=".gif"] {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -60%);
-    color: #00ffff;
+    color: #ffffff;
     font-family: 'VT323', monospace;
     font-size: 24px;
     z-index: 1000000;

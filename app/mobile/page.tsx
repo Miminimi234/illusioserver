@@ -62,7 +62,7 @@ export default function MobilePage() {
         }}
       >
         <div>
-          <div style={{ fontSize: '24px', marginBottom: '10px', color: '#00ffff' }}>FUTURE</div>
+          <div style={{ fontSize: '24px', marginBottom: '10px', color: '#ffffff' }}>FUTURE</div>
           <div>FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.</div>
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function MobilePage() {
             </div>
             <h2 className="text-xl font-semibold text-white">Mobile Version</h2>
           </div>
-          <p className="text-cyan-400 text-lg font-medium mb-4">
+          <p className="text-white text-lg font-medium mb-4">
             Under Construction
           </p>
           
@@ -171,13 +171,13 @@ export default function MobilePage() {
               href="https://twitter.com/yourhandle" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+              className="text-white hover:text-gray-300 transition-colors duration-200"
             >
               Follow
             </a>
             <a 
               href="mailto:contact@yourdomain.com" 
-              className="text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+              className="text-white hover:text-gray-300 transition-colors duration-200"
             >
               Contact
             </a>
