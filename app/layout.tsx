@@ -40,7 +40,7 @@ export default function RootLayout({
         {/* Immediate script to prevent flash */}
         <script dangerouslySetInnerHTML={{
           __html: `
-            // Set transparent background to allow geometry to show
+            // Set background immediately to prevent flash
             if (typeof document !== 'undefined') {
               document.documentElement.style.backgroundColor = 'transparent';
               document.body.style.backgroundColor = 'transparent';
@@ -48,6 +48,8 @@ export default function RootLayout({
               if (app) {
                 app.style.backgroundColor = 'transparent';
               }
+              
+              // Mobile detection removed - let the mobile page handle its own content
             }
           `
         }} />
