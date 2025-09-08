@@ -19,6 +19,16 @@ export default function MobilePage() {
       // Set a custom mobile zoom level to start even smaller
       sessionStorage.setItem('mobileZoomStart', '0.1');
     }
+
+    // Force hide cursor on mobile
+    document.body.style.cursor = 'none';
+    document.documentElement.style.cursor = 'none';
+    
+    // Cleanup function to restore cursor when component unmounts
+    return () => {
+      document.body.style.cursor = 'auto';
+      document.documentElement.style.cursor = 'auto';
+    };
   }, []);
 
   // Staggered appearance of buttons after zoom effect (wait 4 seconds for zoom to complete)
@@ -59,7 +69,8 @@ export default function MobilePage() {
       overflow: 'hidden',
       touchAction: 'none',
       userSelect: 'none',
-      pointerEvents: 'none'
+      pointerEvents: 'none',
+      cursor: 'none'
     }}>
       {/* EXACT same background components as main page */}
       <RetroGeometry key="mobile-geometry" isSlow={false} isOracleOpen={false} isScopeOpen={false} />

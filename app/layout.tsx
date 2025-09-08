@@ -33,6 +33,21 @@ export default function RootLayout({
               body, #app {
                 background-color: transparent !important;
                 color: #ffffff !important;
+                overflow: hidden !important;
+                position: fixed !important;
+                width: 100% !important;
+                height: 100% !important;
+                touch-action: none !important;
+                user-select: none !important;
+                cursor: none !important;
+              }
+              html {
+                overflow: hidden !important;
+                height: 100% !important;
+                cursor: none !important;
+              }
+              * {
+                cursor: none !important;
               }
             }
           `
