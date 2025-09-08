@@ -53,11 +53,11 @@ export default function MobileNotSupported() {
 
         {/* Main Message */}
         <h1 className="text-3xl font-bold text-white mb-4">
-          Desktop Only
+          Desktop Experience Required
         </h1>
         
         <p className="text-gray-300 text-lg mb-6 leading-relaxed">
-          FUTURE is currently optimized for desktop experience only.
+          FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.
         </p>
 
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-8">
@@ -70,7 +70,7 @@ export default function MobileNotSupported() {
             <h2 className="text-xl font-semibold text-white">Mobile Version</h2>
           </div>
           <p className="text-cyan-400 text-lg font-medium">
-            Coming Soon
+            Under Construction
           </p>
         </div>
 
@@ -105,7 +105,7 @@ export default function MobileNotSupported() {
         {/* Call to action */}
         <div className="text-center">
           <p className="text-gray-400 text-sm mb-4">
-            Please visit us on a desktop or laptop for the full experience
+            Please visit us on a desktop or laptop for the full experience. Mobile version coming soon!
           </p>
           <div className="flex justify-center space-x-4">
             <a 

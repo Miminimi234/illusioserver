@@ -1,18 +1,7 @@
 import { tokenRepository } from '../db/repository';
 import { logger } from '../utils/logger';
 import * as cron from 'node-cron';
-// Import wsService dynamically to avoid circular dependency
-let wsService: any = null;
-const getWsService = () => {
-    if (!wsService) {
-        try {
-            wsService = require('../app').wsService;
-        } catch (error) {
-            console.warn('WebSocket service not available:', error);
-        }
-    }
-    return wsService;
-};
+// WebSocket service integration removed to avoid circular dependency
 
 export class TokenStatusUpdaterService {
     private cronJob?: cron.ScheduledTask;
@@ -67,7 +56,8 @@ export class TokenStatusUpdaterService {
             const curveTokensOnly = curveTokens.filter(token => token.status === 'curve');
             
             // Only process curve tokens, leave fresh mints untouched
-            for (const token of curveTokensOnly) {
+            if (curveTokensOnly.length > 0) {
+                logger.info(`Processing ${curveTokensOnly.length} curve tokens`);
                 // Add any curve-specific logic here if needed
                 // But DO NOT touch fresh mints
             }
