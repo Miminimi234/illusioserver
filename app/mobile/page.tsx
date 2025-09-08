@@ -91,11 +91,11 @@ export default function MobilePage() {
 
         {/* Main Message */}
         <h1 className="text-3xl font-bold text-white mb-4" style={{ color: '#ffffff' }}>
-          FUTURE
+          Desktop Experience Required
         </h1>
         
         <p className="text-gray-300 text-lg mb-6 leading-relaxed" style={{ color: '#d1d5db' }}>
-          Mobile version coming soon
+          FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.
         </p>
 
         {/* Features Card */}
@@ -106,8 +106,11 @@ export default function MobilePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-white">What's Coming</h2>
+            <h2 className="text-xl font-semibold text-white">Mobile Version</h2>
           </div>
+          <p className="text-cyan-400 text-lg font-medium mb-4">
+            Under Construction
+          </p>
           
           <div className="space-y-3 text-left">
             <div className="flex items-center text-gray-300">
