@@ -21,17 +21,17 @@ export default function RootLayout({
         {/* Prevent flash on mobile pages */}
         <style dangerouslySetInnerHTML={{
           __html: `
-            /* Prevent flash on mobile pages */
+            /* Allow geometry background to show */
             body {
-              background-color: #000000 !important;
+              background-color: transparent !important;
             }
             #app {
-              background-color: #000000 !important;
+              background-color: transparent !important;
             }
-            /* Ensure mobile page is immediately black */
+            /* Mobile styles */
             @media (max-width: 768px) {
               body, #app {
-                background-color: #000000 !important;
+                background-color: transparent !important;
                 color: #ffffff !important;
               }
             }
@@ -40,16 +40,14 @@ export default function RootLayout({
         {/* Immediate script to prevent flash */}
         <script dangerouslySetInnerHTML={{
           __html: `
-            // Set background immediately to prevent flash
+            // Set transparent background to allow geometry to show
             if (typeof document !== 'undefined') {
-              document.documentElement.style.backgroundColor = '#000000';
-              document.body.style.backgroundColor = '#000000';
+              document.documentElement.style.backgroundColor = 'transparent';
+              document.body.style.backgroundColor = 'transparent';
               const app = document.getElementById('app');
               if (app) {
-                app.style.backgroundColor = '#000000';
+                app.style.backgroundColor = 'transparent';
               }
-              
-              // Mobile detection removed - let the mobile page handle its own content
             }
           `
         }} />
