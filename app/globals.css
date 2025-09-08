@@ -316,41 +316,9 @@ img[src*=".gif"] {
     color: #ffffff !important;
   }
   
-  /* Ensure immediate black background on mobile */
-  body::before {
-    content: 'FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.';
-    white-space: pre-line;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #000000;
-    z-index: 999999;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    font-family: 'VT323', monospace;
-    font-size: 18px;
-    text-align: center;
-    padding: 20px;
-  }
+  /* Remove the blocking pseudo-element to show geometry background */
   
-  /* Style the FUTURE text in the pseudo-element */
-  body::after {
-    content: 'FUTURE';
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -60%);
-    color: #ffffff;
-    font-family: 'VT323', monospace;
-    font-size: 24px;
-    z-index: 1000000;
-    pointer-events: none;
-  }
+  /* Remove the duplicate FUTURE pseudo-element */
 }
 
 @media (prefers-color-scheme: dark) {

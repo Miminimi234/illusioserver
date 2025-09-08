@@ -62,7 +62,6 @@ export default function MobilePage() {
         }}
       >
         <div>
-          <div style={{ fontSize: '24px', marginBottom: '10px', color: '#ffffff' }}>FUTURE</div>
           <div>FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.</div>
         </div>
       </div>
@@ -99,9 +98,6 @@ export default function MobilePage() {
         </div>
 
         {/* Main Message */}
-        <h1 className="text-3xl font-bold text-white mb-4" style={{ color: '#ffffff' }}>
-          FUTURE
-        </h1>
         
         <p className="text-gray-300 text-lg mb-6 leading-relaxed" style={{ color: '#d1d5db' }}>
           FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.
