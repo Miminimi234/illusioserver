@@ -125,8 +125,8 @@ export default function RetroGeometry({ isSlow = false, isOracleOpen = false, is
           previousScopeStateRef.current = isScopeOpen;
         }
 
-        // Fill the entire screen with black background
-        p.background(0);
+        // Fill the entire screen with transparent background
+        p.clear();
         gfx.clear();
         gfx.push();
         // Move geometry to center of left half when Oracle hub is open with smooth transition
