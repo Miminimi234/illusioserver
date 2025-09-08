@@ -20,12 +20,25 @@ export default function MobilePage() {
       sessionStorage.setItem('mobileZoomStart', '0.1');
     }
 
-    // Force hide cursor on mobile
-    document.body.style.cursor = 'none';
-    document.documentElement.style.cursor = 'none';
+    // Force hide cursor on mobile - AGGRESSIVE APPROACH
+    const hideCursor = () => {
+      document.body.style.cursor = 'none';
+      document.documentElement.style.cursor = 'none';
+      // Override any canvas cursor settings
+      const canvases = document.querySelectorAll('canvas');
+      canvases.forEach(canvas => {
+        canvas.style.cursor = 'none';
+      });
+    };
+    
+    hideCursor();
+    
+    // Continuously hide cursor to override RetroGeometry
+    const cursorInterval = setInterval(hideCursor, 100);
     
     // Cleanup function to restore cursor when component unmounts
     return () => {
+      clearInterval(cursorInterval);
       document.body.style.cursor = 'auto';
       document.documentElement.style.cursor = 'auto';
     };
@@ -76,13 +89,14 @@ export default function MobilePage() {
       <RetroGeometry key="mobile-geometry" isSlow={false} isOracleOpen={false} isScopeOpen={false} />
       <BackgroundVideo key="mobile-video" isOracleOpen={false} />
       
-      {/* Content overlay */}
-      <div className="absolute inset-0 flex items-center justify-center p-6" style={{ 
+      {/* Content overlay - PERFECTLY CENTERED */}
+      <div className="absolute inset-0 flex items-center justify-center" style={{ 
         zIndex: 100,
         pointerEvents: 'none',
-        userSelect: 'none'
+        userSelect: 'none',
+        cursor: 'none'
       }}>
-        <div className="text-center max-w-sm mx-auto">
+        <div className="text-center max-w-sm mx-auto px-6">
           {/* Main message */}
           <h1 className="text-2xl font-bold text-white mb-4 font-mono">
             FUTURE
@@ -97,7 +111,7 @@ export default function MobilePage() {
       {/* Social Buttons - Animate in after zoom effect */}
       <div 
         className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 flex items-center space-x-6"
-        style={{ pointerEvents: 'auto' }}
+        style={{ pointerEvents: 'auto', cursor: 'none' }}
       >
         {/* X (Twitter) Button */}
         <button
