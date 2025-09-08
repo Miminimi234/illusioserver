@@ -1355,6 +1355,9 @@ export const Scope = ({
   const handleCompanionDetach = () => {
     setAttachedCompanion(null);
     setDraggedAgent(null); // Clear drag state to make companion visible again
+    setMessages([]); // Clear chat messages when companion is detached
+    setInputMessage(''); // Clear input field
+    setCurrentConversationId(null); // Clear current conversation ID
   };
   
   // Token filtering state
@@ -2024,7 +2027,9 @@ export const Scope = ({
                     // Handle companion attachment
                     handleCompanionAttached(companionName, token);
                     
-                    // Simulate companion analysis
+                    // Reset chat state for new agent-token combination
+                    setMessages([]);
+                    setInputMessage('');
                     
                     // Create new conversation for token analysis
                     const newConversation = {
@@ -2034,6 +2039,7 @@ export const Scope = ({
                       timestamp: new Date()
                     };
                     setConversationHistory(prev => [newConversation, ...prev.slice(0, 19)]);
+                    setCurrentConversationId(newConversation.id);
                     
                     // Simulate companion analyzing the token
                     setTimeout(() => {
@@ -2053,20 +2059,18 @@ export const Scope = ({
                           content: `${companionName}: Analyzed ${token.name || token.symbol || 'this token'}. MC: ${token.marketcap ? `$${token.marketcap.toLocaleString()}` : 'N/A'}, Price: ${token.price_usd ? `$${token.price_usd.toFixed(8)}` : 'N/A'}. ${token.is_on_curve ? 'On bonding curve - interesting dynamics!' : 'Standard market behavior.'}`,
                           timestamp: new Date()
                         };
-                        setMessages(prev => [analysisMessage, ...prev]);
+                        setMessages([analysisMessage]);
                         
                         // Update conversation history
-                        if (currentConversationId) {
-                          setConversationHistory(prev => {
-                            const updated = [...prev];
-                            const currentConvIndex = updated.findIndex(conv => conv.id === currentConversationId);
-                            
-                            if (currentConvIndex !== -1) {
-                              updated[currentConvIndex].messages = [analysisMessage];
-                            }
-                            return updated;
-                          });
-                        }
+                        setConversationHistory(prev => {
+                          const updated = [...prev];
+                          const currentConvIndex = updated.findIndex(conv => conv.id === newConversation.id);
+                          
+                          if (currentConvIndex !== -1) {
+                            updated[currentConvIndex].messages = [analysisMessage];
+                          }
+                          return updated;
+                        });
                       }, analysisTime);
                     }, 500);
                   }}
