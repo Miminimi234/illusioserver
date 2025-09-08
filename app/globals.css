@@ -81,18 +81,13 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  background: radial-gradient(circle at center bottom, #000000, #111111);
+  background: transparent;
   font-family: 'VT323', monospace;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background: transparent;
   font-family: 'VT323', monospace;
 }
 
