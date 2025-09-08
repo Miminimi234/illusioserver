@@ -10,6 +10,13 @@ export default function MobilePage() {
   useEffect(() => {
     document.title = 'FUTURE - Mobile Coming Soon';
     console.log('Mobile page loaded');
+    
+    // Force zoom out effect on mobile by clearing the session storage
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('geometryHasZoomed');
+      // Set a custom mobile zoom level to start even smaller
+      sessionStorage.setItem('mobileZoomStart', '0.1');
+    }
   }, []);
 
   return (
@@ -25,8 +32,8 @@ export default function MobilePage() {
       pointerEvents: 'none'
     }}>
       {/* EXACT same background components as main page */}
-      <RetroGeometry isSlow={false} isOracleOpen={false} isScopeOpen={false} />
-      <BackgroundVideo isOracleOpen={false} />
+      <RetroGeometry key="mobile-geometry" isSlow={false} isOracleOpen={false} isScopeOpen={false} />
+      <BackgroundVideo key="mobile-video" isOracleOpen={false} />
       
       {/* Content overlay */}
       <div className="absolute inset-0 flex items-center justify-center p-6" style={{ 

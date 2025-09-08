@@ -68,7 +68,15 @@ export default function RetroGeometry({ isSlow = false, isOracleOpen = false, is
       let mouseInCanvas = false;
       let canvasReady = false;
       let isInitialScopeOpen = scopeOpenRef.current; // Track if Scope was open on initial render
-      let zoomLevel = hasZoomedRef.current ? 1 : (isInitialScopeOpen ? 1 : 0); // Start at full size if Scope is open on initial render or already zoomed
+      // Check for mobile zoom start value
+      let mobileZoomStart = 0;
+      if (typeof window !== 'undefined') {
+        const mobileZoom = sessionStorage.getItem('mobileZoomStart');
+        if (mobileZoom) {
+          mobileZoomStart = parseFloat(mobileZoom);
+        }
+      }
+      let zoomLevel = hasZoomedRef.current ? 1 : (isInitialScopeOpen ? 1 : mobileZoomStart); // Start at mobile zoom level if set
       let currentGeometryX = p.width * 0.75; // Start at right side (default position)
       let currentOuterX = p.width * 0.75; // Start at right side (default position)
       let previousOracleState = false; // Track previous Oracle state
