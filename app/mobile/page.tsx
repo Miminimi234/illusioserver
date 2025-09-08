@@ -53,8 +53,8 @@ export default function MobilePage() {
         }}
       >
         <div>
-          <div style={{ fontSize: '24px', marginBottom: '10px', color: '#00ffff' }}>FUTURE</div>
-          <div>Desktop version available now</div>
+          <div style={{ fontSize: '24px', marginBottom: '10px', color: '#00ffff' }}>Desktop Experience Required</div>
+          <div>FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.</div>
         </div>
       </div>
       
