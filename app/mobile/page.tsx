@@ -1,5 +1,9 @@
 "use client";
 import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import RetroGeometry to avoid SSR issues
+const RetroGeometry = dynamic(() => import("@/components/RetroGeometry"), { ssr: false });
 
 export default function MobilePage() {
   console.log('Mobile page rendering...');
@@ -32,6 +36,11 @@ export default function MobilePage() {
   
   return (
     <>
+      {/* Geometry background */}
+      <div className="fixed inset-0 z-0">
+        <RetroGeometry isSlow={false} isOracleOpen={false} isScopeOpen={false} />
+      </div>
+      
       {/* Immediate black background with text to prevent any flash */}
       <div 
         style={{ 
@@ -40,7 +49,7 @@ export default function MobilePage() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: '#000000',
+          backgroundColor: 'transparent',
           zIndex: 10000,
           display: 'flex',
           alignItems: 'center',
@@ -59,9 +68,9 @@ export default function MobilePage() {
       </div>
       
       <div 
-        className="min-h-screen bg-black flex items-center justify-center p-6" 
+        className="min-h-screen flex items-center justify-center p-6" 
         style={{ 
-          backgroundColor: '#000000', 
+          backgroundColor: 'transparent', 
           minHeight: '100vh',
           position: 'fixed',
           top: 0,
@@ -74,7 +83,7 @@ export default function MobilePage() {
           justifyContent: 'center'
         }}
       >
-      <div className="max-w-md mx-auto text-center" style={{ backgroundColor: 'transparent' }}>
+      <div className="max-w-md mx-auto text-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)', padding: '2rem', borderRadius: '1rem', backdropFilter: 'blur(10px)' }}>
         {/* Debug indicator */}
         <div className="mb-4 p-2 bg-red-500 text-white text-xs">
           MOBILE PAGE LOADED - FIXED POSITION
