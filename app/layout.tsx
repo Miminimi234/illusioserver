@@ -52,7 +52,7 @@ export default function RootLayout({
               // Add immediate text for mobile users
               if (window.innerWidth <= 768) {
                 const textDiv = document.createElement('div');
-                textDiv.innerHTML = '<div style="color: #00ffff; font-size: 24px; margin-bottom: 10px; font-family: VT323, monospace;">Desktop Experience Required</div><div style="color: #ffffff; font-size: 18px; font-family: VT323, monospace;">FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.</div>';
+                textDiv.innerHTML = '<div style="color: #00ffff; font-size: 24px; margin-bottom: 10px; font-family: VT323, monospace;">FUTURE</div><div style="color: #ffffff; font-size: 18px; font-family: VT323, monospace;">FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.</div>';
                 textDiv.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #000000; z-index: 999999; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px;';
                 document.body.appendChild(textDiv);
               }

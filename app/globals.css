@@ -318,7 +318,7 @@ img[src*=".gif"] {
   
   /* Ensure immediate black background on mobile */
   body::before {
-    content: 'Desktop Experience Required\AFUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.';
+    content: 'FUTURE is currently only available on desktop. Our mobile version is under construction and will be released soon.';
     white-space: pre-line;
     position: fixed;
     top: 0;
@@ -340,7 +340,7 @@ img[src*=".gif"] {
   
   /* Style the FUTURE text in the pseudo-element */
   body::after {
-    content: 'Desktop Experience Required';
+    content: 'FUTURE';
     position: fixed;
     top: 50%;
     left: 50%;
