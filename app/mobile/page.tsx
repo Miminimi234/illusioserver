@@ -11,14 +11,12 @@ export default function MobilePage() {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden">
-      {/* Geometry background */}
-      <div className="absolute inset-0 z-0">
-        <RetroGeometry isSlow={false} isOracleOpen={false} isScopeOpen={false} />
-      </div>
+    <div className="fixed inset-0 overflow-hidden">
+      {/* Geometry background - same as main app */}
+      <RetroGeometry isSlow={false} isOracleOpen={false} isScopeOpen={false} />
       
       {/* Content overlay */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-6">
+      <div className="absolute inset-0 z-10 flex items-center justify-center p-6">
         <div className="text-center max-w-sm mx-auto">
           {/* Main message */}
           <h1 className="text-2xl font-bold text-white mb-4 font-mono">

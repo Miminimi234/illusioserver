@@ -309,16 +309,12 @@ img[src*=".gif"] {
 /* Mobile gating CSS fallback */
 /* Mobile gate removed - app now works on all screen sizes */
 
-/* Prevent flash on mobile pages - CRITICAL */
+/* Mobile styles - allow geometry background to show */
 @media (max-width: 768px) {
   html, body, #app {
-    background-color: #000000 !important;
+    background-color: transparent !important;
     color: #ffffff !important;
   }
-  
-  /* Remove the blocking pseudo-element to show geometry background */
-  
-  /* Remove the duplicate FUTURE pseudo-element */
 }
 
 @media (prefers-color-scheme: dark) {
