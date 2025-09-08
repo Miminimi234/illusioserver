@@ -12,13 +12,12 @@ export default function MobilePage() {
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-visible">
-      {/* EXACT same background as main page */}
+    <div className="fixed inset-0 overflow-visible" style={{ cursor: 'none' }}>
+      {/* EXACT same background as main page - NO VIDEO */}
       <RetroGeometry isSlow={false} isOracleOpen={false} isScopeOpen={false} />
-      <BackgroundVideo isOracleOpen={false} />
       
       {/* Content overlay */}
-      <div className="absolute inset-0 flex items-center justify-center p-6" style={{ zIndex: 100 }}>
+      <div className="absolute inset-0 flex items-center justify-center p-6" style={{ zIndex: 100, cursor: 'none' }}>
         <div className="text-center max-w-sm mx-auto">
           {/* Main message */}
           <h1 className="text-2xl font-bold text-white mb-4 font-mono">
