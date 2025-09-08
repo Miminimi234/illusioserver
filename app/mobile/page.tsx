@@ -2,8 +2,8 @@
 import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
-// Dynamically import RetroGeometry to avoid SSR issues
-const RetroGeometry = dynamic(() => import("@/components/RetroGeometry"), { ssr: false });
+// Dynamically import LogoGeometry for mobile - simpler geometry
+const LogoGeometry = dynamic(() => import("@/components/LogoGeometry"), { ssr: false });
 
 export default function MobilePage() {
   useEffect(() => {
@@ -12,8 +12,24 @@ export default function MobilePage() {
 
   return (
     <div className="fixed inset-0 overflow-hidden">
-      {/* Geometry background - same as main app */}
-      <RetroGeometry isSlow={false} isOracleOpen={false} isScopeOpen={false} />
+      {/* Geometry background - multiple LogoGeometry components for full coverage */}
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 left-1/4">
+          <LogoGeometry />
+        </div>
+        <div className="absolute top-1/4 right-1/4">
+          <LogoGeometry />
+        </div>
+        <div className="absolute bottom-1/4 left-1/4">
+          <LogoGeometry />
+        </div>
+        <div className="absolute bottom-1/4 right-1/4">
+          <LogoGeometry />
+        </div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <LogoGeometry />
+        </div>
+      </div>
       
       {/* Content overlay */}
       <div className="absolute inset-0 flex items-center justify-center p-6" style={{ zIndex: 100 }}>
@@ -23,30 +39,9 @@ export default function MobilePage() {
             FUTURE
           </h1>
           
-          <p className="text-gray-300 text-base mb-8 leading-relaxed">
+          <p className="text-gray-300 text-base leading-relaxed">
             Mobile version under construction. Please visit us on desktop for the full experience.
           </p>
-
-          {/* Desktop button */}
-          <button 
-            onClick={() => {
-              const url = window.location.origin;
-              navigator.clipboard.writeText(url).then(() => {
-                alert('Link copied! Open on desktop to access FUTURE.');
-              }).catch(() => {
-                const textArea = document.createElement('textarea');
-                textArea.value = url;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert('Link copied! Open on desktop to access FUTURE.');
-              });
-            }}
-            className="w-full bg-white text-black font-semibold py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-          >
-            Open on Desktop
-          </button>
         </div>
       </div>
     </div>
