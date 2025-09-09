@@ -1,312 +1,79 @@
-# 🚀 FUTURE - Quantum Geometry Trading Platform
+# ILLUSIO
 
-A cutting-edge, real-time cryptocurrency trading and analysis platform built with Next.js, featuring AI companions, live market data, and an immersive user interface.
+![ILLUSIO Banner](./public/banner.jpg)
 
-![FUTURE Platform](https://img.shields.io/badge/Platform-FUTURE-blue?style=for-the-badge&logo=next.js)
-![Next.js](https://img.shields.io/badge/Next.js-14.2.32-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0-38B2AC?style=for-the-badge&logo=tailwind-css)
+A market analysis framework that cuts through the noise to reveal the signal. Built for traders who want clarity over certainty.
 
-## ✨ Features
+## What is ILLUSIO?
 
-### 🎯 **Core Trading Features**
-- **Real-time Token Data**: Live market data for Solana tokens with instant updates
-- **Multi-Column Layout**: Organized view with New Pairs, Filled, Curve, and Edge tokens
-- **Advanced Filtering**: Smart token filtering and search functionality
-- **Watchlist Management**: Star tokens and manage your favorites
-- **Token Insights**: Detailed analysis and market information for each token
+ILLUSIO exists because markets behave like a simulation that keeps claiming to be reality. Prices flicker, narratives multiply, and most of what you see is noise laid over a smaller signal. Our job is to build an instrument that lets you see the signal early enough to matter.
 
-### 🤖 **AI Companion System**
-- **Interactive Companions**: Drag-and-drop AI agents to analyze specific tokens
-- **Single Companion Mode**: One companion at a time for focused analysis
-- **Real-time Chat**: Communicate with AI companions about token performance
-- **Companion Management**: Easy attachment/detachment with visual feedback
-- **Persistent Conversations**: Save and manage chat history
+## Core Components
 
-### 🎨 **Immersive UI/UX**
-- **Quantum Geometry**: Futuristic design with animated geometric elements
-- **Background Videos**: Dynamic video backgrounds for enhanced atmosphere
-- **Smooth Animations**: Framer Motion powered transitions and effects
-- **Responsive Design**: Optimized for all screen sizes
-- **Dark Theme**: Professional dark interface with neon accents
+**The Analyzer** - Measures what's actually there. Wallets that enter and leave. Liquidity that holds or slips. Order flow that speeds up or stalls. Takes the blur apart and gives it structure you can inspect.
 
-### 🔍 **Advanced Search & Discovery**
-- **Token Search**: Search by name, symbol, or contract address
-- **Dropdown Results**: Real-time search suggestions with token details
-- **Smart Filtering**: Advanced filtering options for token discovery
-- **Live Updates**: Real-time search results as you type
+**The Predictor** - Fits trajectories from what has been observed and shows its uncertainty out loud. You get a direction, a speed, and a range rather than a slogan. If the world changes, the fit changes with it.
 
-## 🛠️ Technology Stack
+**The Quantum Eraser** - Removes what should never have counted in the first place. Spoofed orders, wash trades, synthetic depth, and other tricks are filtered out so the remaining history is something you can trust.
 
-### **Frontend**
-- **Next.js 14.2.32** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first CSS framework
-- **Framer Motion** - Animation library
-- **React Hooks** - State management and side effects
+**The Retrocausality Lab** - Runs many possible futures and looks for the footprints they would leave in the present. When those footprints begin to appear in live data, confidence rises. When they fail to appear, confidence falls.
 
-### **Backend Integration**
-- **Custom API** - Token data and market information
-- **WebSocket Support** - Real-time data streaming
-- **Image Proxy** - Optimized image loading and caching
-- **Database Integration** - Token metadata and user preferences
+## Technology Stack
 
-### **Development Tools**
-- **ESLint** - Code linting and quality
-- **PostCSS** - CSS processing
-- **TypeScript Compiler** - Type checking and compilation
+- **Next.js 14** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **AI Integration** - Powered by advanced models
+- **Real-time Data** - Live market feeds
+- **Solana Integration** - Blockchain data
 
-## 🚀 Quick Start
+## Quick Start
 
-### Prerequisites
-- Node.js 18+ 
-- npm, yarn, pnpm, or bun
-- Git
-
-### Installation
-
-1. **Clone the repository**
+1. **Clone and install**
    ```bash
    git clone https://github.com/greaterdan/FUTURE.git
    cd FUTURE
-   ```
-
-2. **Install dependencies**
-   ```bash
    npm install
-   # or
-   yarn install
-   # or
-   pnpm install
    ```
 
-3. **Start the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   ```
-
-4. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000) (or the port shown in terminal)
-
-## 📁 Project Structure
-
-```
-FUTURE/
-├── app/                    # Next.js App Router
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Home page
-├── components/            # React components
-│   ├── Scope.tsx          # Main trading interface
-│   ├── TokenSearch.tsx    # Search functionality
-│   ├── BackgroundVideo.tsx # Video backgrounds
-│   ├── BirthdayCursor.tsx # Custom cursor effects
-│   └── ...               # Other UI components
-├── hooks/                 # Custom React hooks
-│   ├── useServerData.ts   # Server data management
-│   └── useWebSocket.ts    # WebSocket integration
-├── public/               # Static assets
-│   ├── videos/           # Background videos
-│   ├── zodiac/           # Zodiac-themed assets
-│   └── WIZZARD/          # Companion videos
-├── server/               # Backend server
-│   ├── src/              # Server source code
-│   ├── dist/             # Compiled server code
-│   └── package.json      # Server dependencies
-└── utils/                # Utility functions
-```
-
-## 🎮 How to Use
-
-### **Trading Interface**
-1. **View Tokens**: Browse tokens in organized columns (New Pairs, Filled, Curve, Edge)
-2. **Search Tokens**: Use the search bar to find specific tokens
-3. **Star Tokens**: Click the star icon to add tokens to your watchlist
-4. **Focus Token**: Click on any token to view detailed insights
-
-### **AI Companion System**
-1. **Select Companion**: Choose an AI companion from the companions column
-2. **Drag & Drop**: Drag the companion to any token card
-3. **Start Chat**: The companion will analyze the token and be ready to chat
-4. **Remove Companion**: Click the X button to detach and return to available companions
-
-### **Search & Discovery**
-1. **Type to Search**: Start typing in the search bar
-2. **View Results**: See dropdown suggestions with token details
-3. **Select Token**: Click on any result to focus on that token
-4. **Clear Search**: Click outside or clear to return to full view
-
-## 🔧 Configuration
-
-### **Environment Variables**
-**🔑 IMPORTANT**: You need to set up API keys to use all features!
-
-1. **Copy the environment template:**
+2. **Set up environment**
    ```bash
    cp env-template.txt .env.local
+   # Edit .env.local with your API keys
    ```
 
-2. **Edit `.env.local` with your actual API keys** (see [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md) for detailed instructions)
+3. **Start the server**
+   ```bash
+   cd server
+   npm install
+   npm start
+   ```
 
-**Required API Keys:**
-- **XAI API Key** - For AI chat functionality (Grok AI)
-- **Helius API Key** - For Solana blockchain data
+4. **Run the application**
+   ```bash
+   npm run dev
+   ```
 
-**Optional API Keys:**
-- **Birdeye API Key** - For enhanced market data
-- **Jupiter API Key** - For DEX aggregator features
+## How It Works
 
-See [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md) for complete setup instructions and where to get API keys.
+ILLUSIO treats every token as an experiment. We measure, we clean, we simulate, we compare, and then we act when the picture is good enough and still early.
 
-### **Server Setup**
-The project includes a backend server in the `server/` directory:
+The Retrocausality Lab shows live transactions as pulses through a simple diagram of the experiment. You can see which branch a trade reinforces, which detector lights up, and how those paths update the forecast in real time.
 
-```bash
-cd server
-npm install
-npm run dev
-```
+## Framework Philosophy
 
-## 🎨 Customization
+ILLUSIO is not about worshiping charts or chasing stories. It is about building better instruments and using them with discipline. Certainty is not available. Clarity is.
 
-### **Themes & Styling**
-- Modify `app/globals.css` for global styles
-- Update `tailwind.config.ts` for theme customization
-- Customize component styles in individual component files
+We measure, we clean, we simulate, we compare, and then we act when the picture is good enough and still early. That is the point of the project and the promise we intend to keep.
 
-### **Adding New Companions**
-1. Add companion videos to `public/WIZZARD/`
-2. Update the `agents` array in `components/Scope.tsx`
-3. Ensure video files are in both `.mov` and `.webm` formats
+## Contributing
 
-### **Token Data Sources**
-- Configure API endpoints in `hooks/useServerData.ts`
-- Update server routes in `server/src/api/`
-- Modify data transformation logic as needed
+This is a framework designed to work for any markets. Contributions that improve the signal-to-noise ratio are welcome.
 
-## 🚀 Deployment
+## License
 
-### **Vercel (Recommended)**
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Deploy with zero configuration
-
-### **Docker**
-```bash
-# Build the application
-docker build -t future-app .
-
-# Run the container
-docker run -p 3000:3000 future-app
-```
-
-### **Manual Deployment**
-```bash
-# Build for production
-npm run build
-
-# Start production server
-npm start
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Commit your changes**: `git commit -m 'Add amazing feature'`
-4. **Push to the branch**: `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
-
-### **Development Guidelines**
-- Follow TypeScript best practices
-- Use meaningful commit messages
-- Test your changes thoroughly
-- Update documentation as needed
-
-## 📊 Performance
-
-- **Lighthouse Score**: 95+ across all metrics
-- **Bundle Size**: Optimized with Next.js automatic code splitting
-- **Loading Speed**: Sub-second initial load times
-- **Real-time Updates**: Efficient WebSocket implementation
-
-## 🔒 Security
-
-- **Type Safety**: Full TypeScript implementation
-- **Input Validation**: Sanitized user inputs
-- **CORS Configuration**: Proper cross-origin resource sharing
-- **Environment Variables**: Secure configuration management
-
-## 📈 Roadmap
-
-### **Upcoming Features**
-- [ ] Advanced charting and technical analysis
-- [ ] Portfolio tracking and management
-- [ ] Social trading features
-- [ ] Mobile app development
-- [ ] Advanced AI companion capabilities
-- [ ] Multi-chain support (Ethereum, BSC, etc.)
-
-### **Planned Improvements**
-- [ ] Enhanced search algorithms
-- [ ] Real-time notifications
-- [ ] Advanced filtering options
-- [ ] Performance optimizations
-- [ ] Accessibility improvements
-
-## 🐛 Troubleshooting
-
-### **Common Issues**
-
-**Port already in use**
-```bash
-# Kill process on port 3000
-lsof -ti:3000 | xargs kill -9
-```
-
-**Build errors**
-```bash
-# Clear Next.js cache
-rm -rf .next
-npm run build
-```
-
-**TypeScript errors**
-```bash
-# Check TypeScript configuration
-npx tsc --noEmit
-```
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/greaterdan/FUTURE/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/greaterdan/FUTURE/discussions)
-- **Email**: [Contact Developer](mailto:your-email@example.com)
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Next.js Team** - For the amazing framework
-- **Vercel** - For deployment platform
-- **Tailwind CSS** - For the utility-first CSS framework
-- **Framer Motion** - For smooth animations
-- **Solana Community** - For blockchain integration
+MIT License - see LICENSE file for details.
 
 ---
 
-<div align="center">
-
-**Built with ❤️ by [Your Name](https://github.com/greaterdan)**
-
-[⭐ Star this repo](https://github.com/greaterdan/FUTURE) | [🐛 Report Bug](https://github.com/greaterdan/FUTURE/issues) | [💡 Request Feature](https://github.com/greaterdan/FUTURE/issues)
-
-</div>
+**Built for traders who demand clarity over certainty.**
