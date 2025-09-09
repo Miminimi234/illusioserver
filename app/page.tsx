@@ -12,7 +12,6 @@ const LeftTypewriter = dynamic(() => import("@/components/LeftTypewriter"), { ss
 const RadialVideoButtons = dynamic(() => import("@/components/RadialVideoButtons"), { ssr: false });
 const BottomNavigation = dynamic(() => import("@/components/BottomNavigation"), { ssr: false });
 const BirthdayEntry = dynamic(() => import("@/components/BirthdayEntry"), { ssr: false });
-const ZodiacDisplay = dynamic(() => import("@/components/ZodiacDisplay"), { ssr: false });
 const Scope = dynamic(() => import("@/components/Scope"), { ssr: false });
 const NavigationHub = dynamic(() => import("@/components/NavigationHub"), { ssr: false });
 const OracleHub = dynamic(() => import("@/components/OracleHub"), { ssr: false });
@@ -142,11 +141,14 @@ export default function Page() {
     // Save to localStorage
     localStorage.setItem('userBirthday', birthday.toISOString());
     localStorage.setItem('zodiacSign', sign);
+    
+    // Don't automatically proceed - let the user click the button in BirthdayEntry
   };
 
-  const handleZodiacComplete = () => {
+  const handleProceedToMainPage = () => {
     setShowMainPage(true);
   };
+
 
   // Functions to save UI states to localStorage
   const saveScopeState = (isOpen: boolean) => {
@@ -178,13 +180,10 @@ export default function Page() {
 
   // Show birthday entry first (only if no saved data)
   if (!userBirthday) {
-    return <BirthdayEntry onBirthdaySubmit={handleBirthdaySubmit} />;
+    return <BirthdayEntry onBirthdaySubmit={handleBirthdaySubmit} onProceedToMainPage={handleProceedToMainPage} />;
   }
 
-  // Show zodiac display
-  if (zodiacSign && !showMainPage) {
-    return <ZodiacDisplay zodiacSign={zodiacSign} onComplete={handleZodiacComplete} />;
-  }
+  // No longer need separate zodiac display - it's now integrated into BirthdayEntry
 
   // Show main page
   return (

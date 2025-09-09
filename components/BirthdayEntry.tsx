@@ -4,9 +4,10 @@ import BirthdayCursor from "./BirthdayCursor";
 
 interface BirthdayEntryProps {
   onBirthdaySubmit: (birthday: Date) => void;
+  onProceedToMainPage: () => void;
 }
 
-export default function BirthdayEntry({ onBirthdaySubmit }: BirthdayEntryProps) {
+export default function BirthdayEntry({ onBirthdaySubmit, onProceedToMainPage }: BirthdayEntryProps) {
   const [day, setDay] = useState("");
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
@@ -15,6 +16,7 @@ export default function BirthdayEntry({ onBirthdaySubmit }: BirthdayEntryProps) 
   const yearInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showZodiac, setShowZodiac] = useState(false);
+  const [showZodiacVideo, setShowZodiacVideo] = useState(false);
   const [titleText, setTitleText] = useState("");
   const [titleIndex, setTitleIndex] = useState(0);
   const [showInputs, setShowInputs] = useState(false);
@@ -25,8 +27,8 @@ export default function BirthdayEntry({ onBirthdaySubmit }: BirthdayEntryProps) 
   const handleSubmit = () => {
     if (day && month && year) {
       setIsSubmitted(true);
-      const birthday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      onBirthdaySubmit(birthday);
+      // Don't call onBirthdaySubmit here - just show the zodiac display
+      // The user will click the button to proceed to main page
     }
   };
 
@@ -83,14 +85,51 @@ export default function BirthdayEntry({ onBirthdaySubmit }: BirthdayEntryProps) 
     return "pisces";
   };
 
+  const getZodiacVideo = (sign: string): string => {
+    // Map zodiac signs to .webm files (all converted for web compatibility)
+    const zodiacVideos: { [key: string]: string } = {
+      aries: "/zodiac/aries.webm",
+      taurus: "/zodiac/taurus.webm",
+      gemini: "/zodiac/gemini.webm",
+      cancer: "/zodiac/cancer.webm",
+      leo: "/zodiac/leo.webm",
+      virgo: "/zodiac/virgo.webm",
+      libra: "/zodiac/libra.webm",
+      scorpio: "/zodiac/scorpio.webm",
+      sagittarius: "/zodiac/sagittarius.webm",
+      capricorn: "/zodiac/capricorn.webm",  
+      aquarius: "/zodiac/aquarius.webm",
+      pisces: "/zodiac/pisces.webm"
+    };
+    
+    return zodiacVideos[sign] || "/zodiac/aries.webm";
+  };
+
   useEffect(() => {
     if (isSubmitted) {
       const timer = setTimeout(() => {
         setShowZodiac(true);
-      }, 500);
-      return () => clearTimeout(timer);
+      }, 200);
+      
+      // Show zodiac video quickly after
+      const videoTimer = setTimeout(() => {
+        setShowZodiacVideo(true);
+      }, 600);
+      
+      // Auto-redirect to main page after 2.5 seconds
+      const redirectTimer = setTimeout(() => {
+        const birthday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        onBirthdaySubmit(birthday);
+        onProceedToMainPage();
+      }, 2500);
+      
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(videoTimer);
+        clearTimeout(redirectTimer);
+      };
     }
-  }, [isSubmitted]);
+  }, [isSubmitted, day, month, year, onBirthdaySubmit, onProceedToMainPage]);
 
   // Typewriter effect for title
   useEffect(() => {
@@ -162,30 +201,13 @@ export default function BirthdayEntry({ onBirthdaySubmit }: BirthdayEntryProps) 
     }
   }, [day, month, year, isSubmitted]);
 
-  if (showZodiac && day && month && year) {
-    const birthday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    const zodiacSign = getZodiacSign(birthday);
-    
-    return (
-      <div className="fixed inset-0 bg-black flex flex-col justify-center items-center z-[100]">
-        <div className="text-center space-y-8 transition-opacity duration-1000">
-          <h1 className="text-4xl font-bold text-white mb-8" style={{ fontFamily: 'VT323, monospace' }}>
-            Your Zodiac Sign
-          </h1>
-          <p className="text-6xl font-bold capitalize text-white" style={{ fontFamily: 'VT323, monospace' }}>
-            {zodiacSign}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 bg-black flex flex-col justify-center items-center z-[100]">
       <BirthdayCursor />
       <div className="text-center space-y-8">
         <h1 className="text-4xl font-bold text-white mb-8 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" style={{ fontFamily: 'VT323, monospace' }}>
-          {showZodiac ? 'Your Zodiac Sign' : titleText}
+          {!showZodiac && titleText}
           {!showZodiac && (
             <span className="animate-pulse">|</span>
           )}
@@ -231,9 +253,32 @@ export default function BirthdayEntry({ onBirthdaySubmit }: BirthdayEntryProps) 
             />
           </div>
         ) : (
-          <p className="text-6xl font-bold capitalize text-white" style={{ fontFamily: 'VT323, monospace' }}>
-            {day && month && year ? getZodiacSign(new Date(parseInt(year), parseInt(month) - 1, parseInt(day))) : ''}
-          </p>
+          <div className="space-y-8">
+            {/* Zodiac Video */}
+            {day && month && year && (
+              <div className={`w-96 h-96 mx-auto transition-all duration-300 ${
+                showZodiacVideo ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              }`}>
+                <video
+                  src={getZodiacVideo(getZodiacSign(new Date(parseInt(year), parseInt(month) - 1, parseInt(day))))}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  className="w-full h-full object-cover rounded-lg"
+                  onError={(e) => console.error(`Zodiac video failed to load: ${getZodiacSign(new Date(parseInt(year), parseInt(month) - 1, parseInt(day)))}`, e)}
+                />
+              </div>
+            )}
+            
+            {/* Welcome Message */}
+            <p className={`text-xl text-white/80 transition-all duration-300 ${
+              showZodiacVideo ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+            }`} style={{ fontFamily: 'VT323, monospace' }}>
+              Welcome {day && month && year ? getZodiacSign(new Date(parseInt(year), parseInt(month) - 1, parseInt(day))).charAt(0).toUpperCase() + getZodiacSign(new Date(parseInt(year), parseInt(month) - 1, parseInt(day))).slice(1) : ''}
+            </p>
+          </div>
         )}
       </div>
 

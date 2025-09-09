@@ -209,16 +209,8 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
               </div>
             </div>
         
-            {/* Right side - Legend Button, Help Button and Close Button (Rounded like SCOPE) */}
+            {/* Right side - Help Button and Close Button (Rounded like SCOPE) */}
             <div className="flex justify-end items-center space-x-3">
-              {/* Legend Button - Rounded like SCOPE */}
-              <button
-                onClick={() => setShowLegend(!showLegend)}
-                className="px-3 py-2 bg-black/20 hover:bg-black/40 border border-gray-700 rounded-full text-white/70 hover:text-white text-sm transition-all duration-200 shadow-md shadow-black/30"
-              >
-                Legend
-              </button>
-              
               {/* Help Button - Rounded like SCOPE */}
               <button
                 onClick={() => setShowHelp(true)}
@@ -325,8 +317,18 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
               isSearching={isAnalyzing}
             />
             
+            {/* Legend Button - Bottom Right Corner */}
+            <div className="absolute bottom-4 right-4 z-20">
+              <button
+                onClick={() => setShowLegend(!showLegend)}
+                className="px-3 py-2 bg-black/80 hover:bg-black/90 border border-white/30 rounded-full text-white/70 hover:text-white text-sm transition-all duration-200 shadow-lg"
+              >
+                Legend
+              </button>
+            </div>
+            
             {/* Zoom Controls - Bottom Left Corner */}
-            <div className="absolute bottom-4 left-4 flex flex-row space-x-2 z-10">
+            <div className="absolute bottom-4 left-4 flex flex-row space-x-2 z-20">
               <button
                 onClick={handleZoomIn}
                 className="w-8 h-8 bg-black/80 hover:bg-black/90 border border-white/30 rounded-full flex items-center justify-center text-white hover:text-blue-300 transition-all duration-200 shadow-lg"
@@ -349,7 +351,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
             
             {/* Legend Overlay */}
             {showLegend && (
-              <div className="absolute top-4 right-4 bg-black/95 border border-white/30 rounded-lg p-5 text-white text-sm max-w-sm shadow-xl">
+              <div className="absolute bottom-12 right-4 bg-black/95 border border-white/30 rounded-lg p-5 text-white text-sm max-w-sm shadow-xl z-20">
                 <h4 className="font-bold mb-4 text-blue-300 text-base">QUANTUM FIELD LEGEND</h4>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
