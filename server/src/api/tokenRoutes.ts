@@ -108,14 +108,169 @@ router.get('/search', async (req: Request, res: Response) => {
             });
         }
         
-        const tokens = await tokenRepository.searchTokens(query.trim(), limit);
+        const trimmedQuery = query.trim();
         
-        logger.info(`Token search completed. Query: "${query}", Results: ${tokens.length}`);
+        // First, search in local database
+        const localTokens = await tokenRepository.searchTokens(trimmedQuery, limit);
+        
+        // If we found tokens in local database, return them
+        if (localTokens.length > 0) {
+            logger.info(`Token search completed. Query: "${trimmedQuery}", Results: ${localTokens.length}`);
+            return res.json({
+                query: trimmedQuery,
+                total: localTokens.length,
+                items: localTokens
+            });
+        }
+        
+        // If no local results and query looks like a Solana address (32-44 chars, base58)
+        if (trimmedQuery.length >= 32 && trimmedQuery.length <= 44 && /^[1-9A-HJ-NP-Za-km-z]+$/.test(trimmedQuery)) {
+            logger.info(`No local results for "${trimmedQuery}", checking if it's a valid Solana token...`);
+            
+            try {
+                // Check if this is a valid token mint on Solana
+                const heliusApiKey = process.env.HELIUS_API_KEY;
+                const heliusRpcUrl = process.env.HELIUS_RPC_URL;
+                
+                if (heliusApiKey && heliusRpcUrl) {
+                    // Get token account info to verify it's a valid token
+                    const response = await fetch(heliusRpcUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            id: 1,
+                            method: 'getAccountInfo',
+                            params: [
+                                trimmedQuery,
+                                {
+                                    encoding: 'jsonParsed'
+                                }
+                            ]
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const data: any = await response.json();
+                        const accountInfo = data.result?.value;
+                        
+                        if (accountInfo && accountInfo.data) {
+                            // Check if it's an SPL token mint
+                            if (accountInfo.data.program === 'spl-token') {
+                                const tokenData = accountInfo.data.parsed?.info;
+                                
+                                if (tokenData) {
+                                    try {
+                                        // Add token to database so it can be enriched
+                                        const newToken = await tokenRepository.createToken(
+                                            trimmedQuery,
+                                            tokenData.decimals || 9,
+                                            tokenData.supply || '0',
+                                            new Date(),
+                                            tokenData.name || 'Unknown Token',
+                                            tokenData.symbol || 'UNKNOWN',
+                                            undefined, // metadataUri - will be enriched
+                                            undefined, // imageUrl - will be enriched
+                                            undefined, // bondingCurveAddress
+                                            false,     // isOnCurve
+                                            'active'   // status
+                                        );
+                                        
+                                        logger.info(`Added Solana token to database: ${newToken.name} (${newToken.symbol})`);
+                                        
+                                        // Return the token from database (it will be enriched by background processes)
+                                        return res.json({
+                                            query: trimmedQuery,
+                                            total: 1,
+                                            items: [newToken]
+                                        });
+                                        
+                                    } catch (dbError) {
+                                        logger.error('Error adding token to database:', dbError);
+                                        
+                                        // Fallback to basic token object
+                                        const token = {
+                                            id: 0, // Temporary ID
+                                            name: tokenData.name || 'Unknown Token',
+                                            symbol: tokenData.symbol || 'UNKNOWN',
+                                            mint: trimmedQuery,
+                                            creator: tokenData.mintAuthority || null,
+                                            source: 'solana-rpc',
+                                            blocktime: null,
+                                            decimals: tokenData.decimals || 9,
+                                            supply: tokenData.supply || '0',
+                                            status: 'active' as const,
+                                            created_at: new Date(),
+                                            updated_at: new Date(),
+                                            display_name: tokenData.name || tokenData.symbol || 'Unknown Token',
+                                            price_usd: null,
+                                            marketcap: null,
+                                            volume_24h: null,
+                                            liquidity: null,
+                                            image_url: null,
+                                            metadata_uri: null
+                                        };
+                                        
+                                        logger.info(`Found valid Solana token: ${token.name} (${token.symbol})`);
+                                        
+                                        return res.json({
+                                            query: trimmedQuery,
+                                            total: 1,
+                                            items: [token]
+                                        });
+                                    }
+                                }
+                            }
+                            
+                            // If it's not an SPL token but looks like a valid Solana address, 
+                            // create a basic token object anyway (might be a custom token or wrapped token)
+                            if (accountInfo.data.program === 'system' || accountInfo.data.program === 'native') {
+                                const token = {
+                                    id: 0, // Temporary ID
+                                    name: 'Unknown Token',
+                                    symbol: 'UNKNOWN',
+                                    mint: trimmedQuery,
+                                    creator: null,
+                                    source: 'solana-rpc',
+                                    blocktime: null,
+                                    decimals: 9,
+                                    supply: '0',
+                                    status: 'active' as const,
+                                    created_at: new Date(),
+                                    updated_at: new Date(),
+                                    display_name: 'Unknown Token',
+                                    price_usd: null,
+                                    marketcap: null,
+                                    volume_24h: null,
+                                    liquidity: null,
+                                    image_url: null,
+                                    metadata_uri: null
+                                };
+                                
+                                logger.info(`Found Solana account (non-SPL): ${trimmedQuery}`);
+                                
+                                return res.json({
+                                    query: trimmedQuery,
+                                    total: 1,
+                                    items: [token]
+                                });
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                logger.error('Error checking Solana token:', error);
+            }
+        }
+        
+        logger.info(`Token search completed. Query: "${trimmedQuery}", Results: 0`);
         
         return res.json({
-            query: query.trim(),
-            total: tokens.length,
-            items: tokens
+            query: trimmedQuery,
+            total: 0,
+            items: []
         });
         
     } catch (error) {
