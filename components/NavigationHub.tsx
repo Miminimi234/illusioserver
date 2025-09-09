@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import QuantumEraserSketch from "./QuantumEraserSketch";
+import PureVisualRetrocausality, { PureVisualRetrocausalityRef } from "./PureVisualRetrocausality";
 import SolanaTransactions from "./SolanaTransactions";
 import TokenSpecificTransactions from "./TokenSpecificTransactions";
 
@@ -19,6 +19,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
   const [showHelp, setShowHelp] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [predictionData, setPredictionData] = useState({
     confidence: 0.75,
     expectedRange: { min: 5, max: 15 },
@@ -28,6 +29,21 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
   
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const visualRef = useRef<PureVisualRetrocausalityRef>(null);
+
+  // Handle transaction updates from TokenSpecificTransactions
+  const handleTransactionsUpdate = useCallback((newTransactions: any[]) => {
+    setTransactions(newTransactions);
+  }, []);
+
+  // Zoom control handlers
+  const handleZoomIn = useCallback(() => {
+    visualRef.current?.zoomIn();
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    visualRef.current?.zoomOut();
+  }, []);
 
   // ESC key handler
   useEffect(() => {
@@ -225,20 +241,20 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-white tracking-wider">MARKET INSIGHTS</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                  <div className="text-xs text-green-300/80 mb-1">Market Cap</div>
+                <div className="bg-transparent border border-white/10 rounded-lg p-3">
+                  <div className="text-xs text-white/60 mb-1">Market Cap</div>
                   <div className="text-lg font-bold text-green-300">$2.4M</div>
                 </div>
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                  <div className="text-xs text-blue-300/80 mb-1">Liquidity</div>
+                <div className="bg-transparent border border-white/10 rounded-lg p-3">
+                  <div className="text-xs text-white/60 mb-1">Liquidity</div>
                   <div className="text-lg font-bold text-blue-300">$180K</div>
                 </div>
-                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
-                  <div className="text-xs text-purple-300/80 mb-1">24h Volume</div>
+                <div className="bg-transparent border border-white/10 rounded-lg p-3">
+                  <div className="text-xs text-white/60 mb-1">24h Volume</div>
                   <div className="text-lg font-bold text-purple-300">$45K</div>
                 </div>
-                <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3">
-                  <div className="text-xs text-orange-300/80 mb-1">Holders</div>
+                <div className="bg-transparent border border-white/10 rounded-lg p-3">
+                  <div className="text-xs text-white/60 mb-1">Holders</div>
                   <div className="text-lg font-bold text-orange-300">128</div>
                 </div>
               </div>
@@ -248,20 +264,20 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-white tracking-wider">QUANTUM FORECAST</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-3">
-                  <div className="text-xs text-cyan-300/80 mb-1">10m Prediction</div>
+                <div className="bg-transparent border border-white/10 rounded-lg p-3">
+                  <div className="text-xs text-white/60 mb-1">10m Prediction</div>
                   <div className="text-lg font-bold text-cyan-300">+2.3%</div>
                 </div>
-                <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-3">
-                  <div className="text-xs text-cyan-300/80 mb-1">1h Prediction</div>
+                <div className="bg-transparent border border-white/10 rounded-lg p-3">
+                  <div className="text-xs text-white/60 mb-1">1h Prediction</div>
                   <div className="text-lg font-bold text-cyan-300">+5.7%</div>
                 </div>
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
-                  <div className="text-xs text-yellow-300/80 mb-1">Expected Range</div>
+                <div className="bg-transparent border border-white/10 rounded-lg p-3">
+                  <div className="text-xs text-white/60 mb-1">Expected Range</div>
                   <div className="text-lg font-bold text-yellow-300">±8%</div>
                 </div>
-                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                  <div className="text-xs text-green-300/80 mb-1">Up Probability</div>
+                <div className="bg-transparent border border-white/10 rounded-lg p-3">
+                  <div className="text-xs text-white/60 mb-1">Up Probability</div>
                   <div className="text-lg font-bold text-green-300">60%</div>
                 </div>
               </div>
@@ -273,10 +289,35 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
         <div className="flex flex-col lg:flex-row h-[calc(100vh-200px)]">
           {/* Left: Quantum Field (58% on desktop, 65% on tablet, full width on mobile) */}
           <div className="w-full lg:w-[58%] xl:w-[58%] 2xl:w-[58%] md:w-[65%] h-1/2 lg:h-full relative">
-            <QuantumEraserSketch 
+            <PureVisualRetrocausality 
+              ref={visualRef}
               onNodeHover={setHoveredNode}
               predictionData={predictionData}
+              transactions={transactions}
+              isSearching={isAnalyzing}
             />
+            
+            {/* Zoom Controls - Bottom Left Corner */}
+            <div className="absolute bottom-4 left-4 flex flex-row space-x-2 z-10">
+              <button
+                onClick={handleZoomIn}
+                className="w-8 h-8 bg-black/80 hover:bg-black/90 border border-white/30 rounded-full flex items-center justify-center text-white hover:text-blue-300 transition-all duration-200 shadow-lg"
+                title="Zoom In"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </button>
+              <button
+                onClick={handleZoomOut}
+                className="w-8 h-8 bg-black/80 hover:bg-black/90 border border-white/30 rounded-full flex items-center justify-center text-white hover:text-blue-300 transition-all duration-200 shadow-lg"
+                title="Zoom Out"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" />
+                </svg>
+              </button>
+            </div>
             
             {/* Legend Overlay */}
             {showLegend && (
@@ -361,7 +402,8 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
               {activeTab === 'trades' && (
                 <TokenSpecificTransactions 
                   searchQuery={searchQuery} 
-                  isSearching={isAnalyzing} 
+                  isSearching={isAnalyzing}
+                  onTransactionsUpdate={handleTransactionsUpdate}
                 />
               )}
               {activeTab === 'holders' && (

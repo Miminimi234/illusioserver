@@ -40,9 +40,10 @@ interface Transaction {
 interface TokenSpecificTransactionsProps {
   searchQuery: string;
   isSearching: boolean;
+  onTransactionsUpdate?: (transactions: Transaction[]) => void;
 }
 
-export default function TokenSpecificTransactions({ searchQuery, isSearching }: TokenSpecificTransactionsProps) {
+export default function TokenSpecificTransactions({ searchQuery, isSearching, onTransactionsUpdate }: TokenSpecificTransactionsProps) {
   const [tokenData, setTokenData] = useState<TokenData | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
@@ -165,6 +166,13 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching }: 
       clearInterval(interval);
     };
   }, [searchQuery]);
+
+  // Notify parent component when transactions are updated
+  useEffect(() => {
+    if (onTransactionsUpdate && transactions.length > 0) {
+      onTransactionsUpdate(transactions);
+    }
+  }, [transactions, onTransactionsUpdate]);
 
   if (isSearching || loading) {
     return (
