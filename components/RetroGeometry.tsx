@@ -1,4 +1,4 @@
-L "use client";
+"use client";
 import { useEffect, useRef } from "react";
 import p5 from "p5";
 

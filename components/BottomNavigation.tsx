@@ -127,7 +127,7 @@ export default function BottomNavigation({ isNavigationHubOpen = false, isOracle
 
       {/* GitHub Button */}
       <button
-        onClick={() => window.open('https://github.com', '_blank')}
+        onClick={() => window.open('https://github.com/IllusioAI/Illusio', '_blank')}
         className="w-12 h-12 flex items-center justify-center hover:scale-125 hover:drop-shadow-lg transition-all duration-300"
         style={{
           opacity: visibleButtons.includes(1) ? 1 : 0,
