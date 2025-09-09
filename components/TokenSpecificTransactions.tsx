@@ -19,7 +19,7 @@ interface TokenData {
   display_name?: string;
   price_usd?: number | null;
   marketcap?: number | null;
-  volume_24h?: number | null;
+  volume_24h?: number | null;   
   liquidity?: number | null;
   image_url?: string | null;
   metadata_uri?: string | null;
@@ -131,6 +131,40 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching }: 
 
     return () => clearInterval(interval);
   }, [tokenData?.mint]);
+
+  // Auto-refresh token data every 30 seconds to get updated metadata
+  useEffect(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) return;
+
+    const refreshTokenData = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.items && Array.isArray(data.items) && data.items.length > 0) {
+            const token = data.items[0];
+            if (token && token.mint) {
+              setTokenData(token);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error refreshing token data:', err);
+      }
+    };
+
+    // Initial refresh after 10 seconds
+    const initialTimeout = setTimeout(refreshTokenData, 10000);
+
+    // Then refresh every 30 seconds
+    const interval = setInterval(refreshTokenData, 30000);
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
+  }, [searchQuery]);
 
   if (isSearching || loading) {
     return (
