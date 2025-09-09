@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import QuantumEraserSketch from "./QuantumEraserSketch";
 import SolanaTransactions from "./SolanaTransactions";
+import TokenSpecificTransactions from "./TokenSpecificTransactions";
 
 interface NavigationHubProps {
   isOpen: boolean;
@@ -357,23 +358,43 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
 
             {/* Tab Content */}
             <div className="flex-1 overflow-auto">
-              {activeTab === 'trades' && <SolanaTransactions />}
+              {activeTab === 'trades' && (
+                <TokenSpecificTransactions 
+                  searchQuery={searchQuery} 
+                  isSearching={isAnalyzing} 
+                />
+              )}
               {activeTab === 'holders' && (
                 <div className="p-6 text-center text-white/60">
                   <div className="text-4xl mb-2">👥</div>
                   <div>Holders data coming soon</div>
+                  {searchQuery && (
+                    <div className="mt-4 text-sm text-white/40">
+                      Token-specific holder data will be available for: <span className="text-blue-300 font-mono">{searchQuery}</span>
+                    </div>
+                  )}
                 </div>
               )}
               {activeTab === 'liquidity' && (
                 <div className="p-6 text-center text-white/60">
                   <div className="text-4xl mb-2">💧</div>
                   <div>Liquidity data coming soon</div>
+                  {searchQuery && (
+                    <div className="mt-4 text-sm text-white/40">
+                      Token-specific liquidity data will be available for: <span className="text-blue-300 font-mono">{searchQuery}</span>
+                    </div>
+                  )}
                 </div>
               )}
               {activeTab === 'events' && (
                 <div className="p-6 text-center text-white/60">
                   <div className="text-4xl mb-2">📊</div>
                   <div>Events data coming soon</div>
+                  {searchQuery && (
+                    <div className="mt-4 text-sm text-white/40">
+                      Token-specific events will be available for: <span className="text-blue-300 font-mono">{searchQuery}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
