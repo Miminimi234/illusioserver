@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import p5 from "p5";
 
 interface CornerLogoProps {
@@ -9,6 +9,7 @@ interface CornerLogoProps {
 
 export default function CornerLogo({ size = 64, isVisible = true }: CornerLogoProps) {
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const [isGlitching, setIsGlitching] = useState(false);
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -165,13 +166,54 @@ export default function CornerLogo({ size = 64, isVisible = true }: CornerLogoPr
     return () => instance.remove();
   }, [size]);
 
+  // Glitch effect timer - triggers every 10 seconds
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const glitchInterval = setInterval(() => {
+      setIsGlitching(true);
+      
+      // Glitch duration - random between 200-500ms
+      const glitchDuration = 200 + Math.random() * 300;
+      
+      setTimeout(() => {
+        setIsGlitching(false);
+      }, glitchDuration);
+    }, 10000); // Every 10 seconds
+
+    return () => clearInterval(glitchInterval);
+  }, [isVisible]);
+
   return (
     <div
-      ref={hostRef}
-      className={`corner-logo fixed top-6 left-6 z-[40] pointer-events-none transition-opacity duration-300 ease-in-out ${
+      className={`fixed top-6 left-6 z-[40] pointer-events-none transition-opacity duration-300 ease-in-out flex items-center gap-3 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
-      style={{ width: size, height: size }}
-    />
+    >
+      <div
+        ref={hostRef}
+        className="corner-logo"
+        style={{ width: size, height: size }}
+      />
+      <span 
+        className={`text-white text-2xl font-bold tracking-wider transition-all duration-75 ${
+          isGlitching ? 'illusio-glitch-effect' : ''
+        }`}
+        style={{ 
+          fontFamily: 'VT323, monospace',
+          textShadow: isGlitching 
+            ? '2px 0 0 #ff0000, -2px 0 0 #00ffff, 0 2px 0 #00ff00, 0 -2px 0 #ffff00'
+            : '0 0 10px rgba(255, 255, 255, 0.5)',
+          filter: isGlitching 
+            ? 'hue-rotate(90deg) saturate(2) contrast(1.5)'
+            : 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.3))',
+          transform: isGlitching 
+            ? `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`
+            : 'translate(0, 0)'
+        }}
+      >
+        ILLUSIO
+      </span>
+    </div>
   );
 }

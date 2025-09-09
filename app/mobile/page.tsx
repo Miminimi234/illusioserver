@@ -8,9 +8,10 @@ const BackgroundVideo = dynamic(() => import("@/components/BackgroundVideo"), { 
 
 export default function MobilePage() {
   const [visibleButtons, setVisibleButtons] = useState<number[]>([]);
+  const [isGlitching, setIsGlitching] = useState(false);
 
   useEffect(() => {
-    document.title = 'FUTURE - Mobile Coming Soon';
+    document.title = 'Illusio - Mobile Coming Soon';
     console.log('Mobile page loaded');
     
     // Force zoom out effect on mobile by clearing the session storage
@@ -72,6 +73,22 @@ export default function MobilePage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // Glitch effect timer - triggers every 10 seconds (same as main page)
+  useEffect(() => {
+    const glitchInterval = setInterval(() => {
+      setIsGlitching(true);
+      
+      // Glitch duration - random between 200-500ms
+      const glitchDuration = 200 + Math.random() * 300;
+      
+      setTimeout(() => {
+        setIsGlitching(false);
+      }, glitchDuration);
+    }, 10000); // Every 10 seconds
+
+    return () => clearInterval(glitchInterval);
+  }, []);
+
   return (
     <main className="fixed inset-0 overflow-hidden" style={{ 
       position: 'fixed',
@@ -98,8 +115,24 @@ export default function MobilePage() {
       }}>
         <div className="text-center max-w-sm mx-auto px-6">
           {/* Main message */}
-          <h1 className="text-2xl font-bold text-white mb-4 font-mono">
-            FUTURE
+          <h1 
+            className={`text-2xl font-bold text-white mb-4 font-mono transition-all duration-75 ${
+              isGlitching ? 'illusio-glitch-effect' : ''
+            }`}
+            style={{ 
+              fontFamily: 'VT323, monospace',
+              textShadow: isGlitching 
+                ? '2px 0 0 #ff0000, -2px 0 0 #00ffff, 0 2px 0 #00ff00, 0 -2px 0 #ffff00'
+                : '0 0 10px rgba(255, 255, 255, 0.5)',
+              filter: isGlitching 
+                ? 'hue-rotate(90deg) saturate(2) contrast(1.5)'
+                : 'drop-shadow(0 0 5px rgba(255, 255, 255, 0.3))',
+              transform: isGlitching 
+                ? `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)`
+                : 'translate(0, 0)'
+            }}
+          >
+            ILLUSIO
           </h1>
           
           <p className="text-gray-300 text-base leading-relaxed">
@@ -115,7 +148,7 @@ export default function MobilePage() {
       >
         {/* X (Twitter) Button */}
         <button
-          onClick={() => window.open('https://x.com', '_blank')}
+          onClick={() => window.open('https://x.com/IllusioAI', '_blank')}
           className="w-12 h-12 flex items-center justify-center hover:scale-125 hover:drop-shadow-lg transition-all duration-300"
           style={{
             opacity: visibleButtons.includes(0) ? 1 : 0,
