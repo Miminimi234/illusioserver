@@ -81,7 +81,8 @@
 
 ### Production
 - Set environment variables in your hosting platform
-- For Vercel: Use the Environment Variables section in your project settings
+- For Vercel: Use the Environment Variables section in your project settingspm 
+
 - For other platforms: Follow their environment variable setup guide
 
 ## Example `.env.local` file
