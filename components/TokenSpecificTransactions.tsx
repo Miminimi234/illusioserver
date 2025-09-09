@@ -199,7 +199,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
 
   if (!searchQuery.trim()) {
     return (
-      <div className="text-white p-6" style={{ fontFamily: 'VT323, monospace' }}>
+      <div className="text-white p-6 bg-black h-full flex items-center justify-center" style={{ fontFamily: 'VT323, monospace' }}>
         <div className="text-center">
           <div className="text-4xl mb-4">🔍</div>
           <h2 className="text-xl font-bold mb-2">Solana Token Trades through Quantum Eraser</h2>
@@ -218,7 +218,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
 
   if (!tokenData) {
     return (
-      <div className="text-white p-6" style={{ fontFamily: 'VT323, monospace' }}>
+      <div className="text-white p-6 bg-black h-full flex items-center justify-center" style={{ fontFamily: 'VT323, monospace' }}>
         <div className="text-center">
           <div className="text-4xl mb-4">❌</div>
           <h2 className="text-xl font-bold mb-2">Token Not Found</h2>
@@ -236,17 +236,17 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
   }
 
   return (
-    <div className="text-white" style={{ fontFamily: 'VT323, monospace' }}>
-      <div className="p-4 border-b border-white/10">
+    <div className="text-white h-full bg-black" style={{ fontFamily: 'VT323, monospace' }}>
+      <div className="p-4 border-b border-white/10 bg-black">
         <h2 className="text-xl font-bold mb-2">Solana Token Trades through Quantum Eraser</h2>
         <div className="text-white/70 text-sm">
           Showing data for: <span className="text-blue-300 font-mono">{searchQuery}</span>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-4 bg-black" style={{ height: 'calc(100% - 80px)' }}>
         {/* Token Header Card */}
-        <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
+        <div className="p-4 bg-black border border-white/10 rounded-lg">
           <div className="flex items-center space-x-4 mb-4">
             {/* Token Image */}
             <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-800 flex-shrink-0">
@@ -295,25 +295,25 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
 
           {/* Token Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white/5 rounded p-3">
+            <div className="bg-black border border-white/10 rounded p-3">
               <div className="text-white/60 text-xs mb-1">Supply</div>
               <div className="text-white font-bold">
                 {tokenData.supply ? (typeof tokenData.supply === 'string' ? tokenData.supply : tokenData.supply.toLocaleString()) : 'N/A'}
               </div>
             </div>
-            <div className="bg-white/5 rounded p-3">
+            <div className="bg-black border border-white/10 rounded p-3">
               <div className="text-white/60 text-xs mb-1">Decimals</div>
               <div className="text-white font-bold">
                 {tokenData.decimals || 'N/A'}
               </div>
             </div>
-            <div className="bg-white/5 rounded p-3">
+            <div className="bg-black border border-white/10 rounded p-3">
               <div className="text-white/60 text-xs mb-1">Price</div>
               <div className="text-white font-bold">
                 {tokenData.price_usd && typeof tokenData.price_usd === 'number' ? `$${tokenData.price_usd.toFixed(6)}` : 'N/A'}
               </div>
             </div>
-            <div className="bg-white/5 rounded p-3">
+            <div className="bg-black border border-white/10 rounded p-3">
               <div className="text-white/60 text-xs mb-1">Market Cap</div>
               <div className="text-white font-bold">
                 {tokenData.marketcap ? `$${(Number(tokenData.marketcap) / 1000000).toFixed(2)}M` : 'N/A'}
@@ -323,8 +323,8 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
         </div>
 
         {/* Live Transaction Data */}
-        <div className="p-4 bg-white/5 border border-white/10 rounded-lg">
-          <div className="flex items-center justify-between mb-3">
+        <div className="bg-black border border-white/10 rounded-lg" style={{ height: 'calc(100% - 200px)' }}>
+          <div className="flex items-center justify-between mb-3 p-4 border-b border-white/10">
             <div className="flex items-center space-x-2">
               <h4 className="text-lg font-bold text-blue-300">Live Transactions</h4>
               {tokenData?.mint && (
@@ -350,18 +350,21 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
           </div>
           
           {transactionsLoading ? (
-            <div className="text-center py-8">
+            <div className="text-center py-8 flex items-center justify-center" style={{ height: 'calc(100% - 60px)' }}>
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-4"></div>
               <div className="text-white/70">Fetching live transaction data...</div>
             </div>
           ) : transactions.length > 0 ? (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-3 overflow-y-auto p-4 scrollbar-hide" style={{ height: 'calc(100% - 60px)' }}>
               {transactions.map((tx, index) => (
                 <div 
                   key={tx.signature} 
-                  className="p-3 bg-white/5 border border-white/10 rounded-lg transition-all duration-300 hover:bg-white/10"
+                  className="p-3 bg-black border border-white/10 rounded-lg transition-all duration-300 hover:bg-white/5 cursor-pointer"
                   style={{
                     animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`
+                  }}
+                  onClick={() => {
+                    window.open(`https://solscan.io/tx/${tx.signature}`, '_blank');
                   }}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -379,8 +382,13 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
                         {new Date(tx.timestamp * 1000).toLocaleTimeString()}
                       </span>
                     </div>
-                    <div className="text-white/60 text-xs font-mono">
-                      {tx.signature.slice(0, 8)}...{tx.signature.slice(-8)}
+                    <div className="flex items-center space-x-2">
+                      <div className="text-white/60 text-xs font-mono">
+                        {tx.signature.slice(0, 8)}...{tx.signature.slice(-8)}
+                      </div>
+                      <svg className="w-3 h-3 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
                     </div>
                   </div>
                   
@@ -408,7 +416,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
+            <div className="text-center py-8 flex items-center justify-center" style={{ height: 'calc(100% - 60px)' }}>
               <div className="text-4xl mb-4">📊</div>
               <div className="text-white/70 mb-2">No recent transactions found</div>
               <div className="text-white/50 text-sm">

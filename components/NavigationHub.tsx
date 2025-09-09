@@ -128,26 +128,44 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
             onClick={onClose}
           />
           
           {/* Navigation Hub */}
           <motion.div 
             className="fixed inset-0 z-[50] overflow-visible flex flex-col cursor-default"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
+            initial={{ 
+              opacity: 0, 
+              scale: 0.95,
+              y: 20
+            }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              y: 0
+            }}
+            exit={{ 
+              opacity: 0, 
+              scale: 0.95,
+              y: 20
+            }}
             transition={{ 
-              duration: 0.4, 
-              ease: [0.25, 0.46, 0.45, 0.94]
+              duration: 0.5, 
+              ease: [0.25, 0.46, 0.45, 0.94],
+              delay: 0.1
             }}
             style={{
-              background: 'radial-gradient(circle at center bottom, #000000, #111111)',
+              background: '#000000',
             }}
           >
         {/* Header - Matching SCOPE UI Design */}
-        <div className="bg-black/80 border-b border-neutral-800/60 p-4 flex-shrink-0">
+        <motion.div 
+          className="bg-black border-b border-white/10 p-4 flex-shrink-0"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
           <div className="grid grid-cols-3 items-center">
             {/* Left side - RETROCAUSALITY LAB title */}
             <div className="flex items-center">
@@ -232,10 +250,15 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Metrics Bands */}
-        <div className="px-4 lg:px-6 py-4 border-b border-white/10 bg-black/20">
+        <motion.div 
+          className="px-4 lg:px-6 py-4 border-b border-white/10 bg-black"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Insights */}
             <div className="space-y-3">
@@ -283,10 +306,15 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Main Content */}
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-200px)]">
+        <motion.div 
+          className="flex flex-col lg:flex-row h-[calc(100vh-200px)]"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           {/* Left: Quantum Field (58% on desktop, 65% on tablet, full width on mobile) */}
           <div className="w-full lg:w-[58%] xl:w-[58%] 2xl:w-[58%] md:w-[65%] h-1/2 lg:h-full relative">
             <PureVisualRetrocausality 
@@ -398,7 +426,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
             </div>
 
             {/* Tab Content */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-hidden">
               {activeTab === 'trades' && (
                 <TokenSpecificTransactions 
                   searchQuery={searchQuery} 
@@ -441,7 +469,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Help Modal */}
         {showHelp && (
