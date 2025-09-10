@@ -50,43 +50,21 @@ export default function BottomNavigation({ isNavigationHubOpen = false, isOracle
     };
   }, [targetPosition]);
 
-  // Staggered appearance after webm icons (which finish at ~6.3s) - ONLY ON FIRST VISIT
+  // Smooth appearance at the same time as webm icons (after geometry zoom)
   useEffect(() => {
     // If buttons have already appeared, don't animate again
     if (visibleButtons.length === 3) return;
-
-    let intervalId: NodeJS.Timeout | null = null;
     
     const timer = setTimeout(() => {
-      // Start appearing buttons one by one with 600ms delay between each
-      const showButtons = () => {
-        setVisibleButtons(prev => {
-          if (prev.length < 3) {
-            const newButtons = [...prev, prev.length];
-            // Mark as appeared when all buttons are shown
-            if (newButtons.length === 3) {
-              if (typeof window !== 'undefined') {
-                sessionStorage.setItem('bottomNavButtonsHaveAppeared', 'true');
-              }
-            }
-            return newButtons;
-          }
-          return prev;
-        });
-      };
-
-      // Show first button immediately, then stagger the rest
-      showButtons();
-      intervalId = setInterval(() => {
-        showButtons();
-      }, 600);
-    }, 6500); // Wait for webm icons to finish appearing (~6.3s) + buffer
+      // Show all buttons at once with smooth fade-in (same timing as webm icons)
+      setVisibleButtons([0, 1, 2]);
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('bottomNavButtonsHaveAppeared', 'true');
+      }
+    }, 3500); // Same timing as webm icons - after geometry zoom completes
 
     return () => {
       clearTimeout(timer);
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
     };
   }, [visibleButtons.length]);
 
