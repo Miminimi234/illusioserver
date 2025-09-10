@@ -8,19 +8,21 @@ interface ManifestoProps {
 }
 
 export default function Manifesto({ isOpen, onClose }: ManifestoProps) {
-  const manifestoText = `Illusio exists because markets behave like a simulation that keeps claiming to be reality. Prices flicker, narratives multiply, and most of what you see is noise laid over a smaller signal. Our job is to build an instrument that lets you see the signal early enough to matter.
+  const manifestoText = `ILLUSIO exists because markets behave like a simulation claiming to be reality. Prices flicker, narratives multiply, and most of what you see is noise laid over a smaller signal. Our job is to build an instrument that lets you see the signal early enough to matter.
 
-We start by treating every token as an experiment. First we measure what is actually there. Wallets that enter and leave. Liquidity that holds or slips. Order flow that speeds up or stalls. We look for the rare events that quietly bend the curve. This is the work of the Analyzer. It takes the blur apart and gives it structure you can inspect.
+WE START by treating every token as an experiment.
 
-Next we ask where the path is heading. The Predictor does not promise miracles. It fits a trajectory from what has been observed and shows its uncertainty out loud. You get a direction, a speed, and a range rather than a slogan. If the world changes, the fit changes with it.
+First, we measure what is actually there. Wallets that enter and leave. Liquidity that holds or slips. Order flow that speeds up or stalls. We look for the rare events that quietly bend the curve. This is the work of THE ANALYZER. It takes the blur apart and gives it structure you can inspect.
 
-Then we repair the record. The Quantum Eraser removes what should never have counted in the first place. Spoofed orders, wash trades, synthetic depth, and other tricks are filtered out so the remaining history is something you can trust. Good inputs make better forecasts. There is no mystery there.
+Next, we ask where the path is heading. THE PREDICTOR does not promise miracles. It fits a trajectory from what has been observed and shows its uncertainty out loud. You get a direction, a speed, and a range rather than a slogan. If the world changes, the fit changes with it.
 
-Finally we let tomorrow talk to today. The retrocausality engine runs many possible futures and looks for the footprints they would leave in the present. When those footprints begin to appear in live data, confidence rises. When they fail to appear, confidence falls. You watch cause and effect meet in the middle rather than guessing from one side.
+Then, we repair the record. THE QUANTUM ERASER removes what should never have counted in the first place. Spoofed orders, wash trades, synthetic depth, and other tricks are filtered out so the remaining history is something you can trust. Good inputs make better forecasts. There is no mystery there.
 
-All of this is visible. The Retrocausality Lab shows live transactions as pulses through a simple diagram of the experiment. You can see which branch a trade reinforces, which detector lights up, and how those paths update the forecast in real time. The result is not a prophecy. It is a decision aid that is honest about what is known, what is changing, and what remains uncertain.
+Finally, we let tomorrow talk to today. The retrocausality engine runs many possible futures and looks for the footprints they would leave in the present. When those footprints begin to appear in live data, confidence rises. When they fail to appear, confidence falls. You watch cause and effect meet in the middle rather than guessing from one side.
 
-Illusio is not about worshiping charts or chasing stories. It is about building better instruments and using them with discipline. Certainty is not available. Clarity is. We measure, we clean, we simulate, we compare, and then we act when the picture is good enough and still early. That is the point of the project and the promise we intend to keep.`;
+ALL OF THIS IS VISIBLE. The Retrocausality Lab shows live transactions as pulses through a simple diagram of the experiment. You can see which branch a trade reinforces, which detector lights up, and how those paths update the forecast in real time. The result is not a prophecy. It is a decision aid that is honest about what is known, what is changing, and what remains uncertain.
+
+ILLUSIO is not about worshiping charts or chasing stories. It is about building better instruments and using them with discipline. Certainty is not available. Clarity is. We measure, we clean, we simulate, we compare, and then we act when the picture is good enough and still early. That is the point of the project and the promise we intend to keep.`;
 
   return (
     <AnimatePresence mode="wait">
@@ -60,12 +62,25 @@ Illusio is not about worshiping charts or chasing stories. It is about building 
                 </button>
               </div>
               
-              <div className="text-lg space-y-4">
-                {manifestoText.split('\n\n').map((paragraph, index) => (
-                  <p key={index} className="indent-4">
-                    {paragraph}
-                  </p>
-                ))}
+              <div className="text-lg space-y-6">
+                {manifestoText.split('\n\n').map((paragraph, index) => {
+                  const isHeader = paragraph.startsWith('WE START') || paragraph.startsWith('ALL OF THIS') || paragraph.startsWith('ILLUSIO');
+                  const isAgentSection = paragraph.includes('THE ANALYZER') || paragraph.includes('THE PREDICTOR') || paragraph.includes('THE QUANTUM ERASER');
+                  
+                  return (
+                    <div key={index} className={isHeader ? 'border-l-4 border-white/40 pl-6' : ''}>
+                      {isHeader ? (
+                        <h2 className="text-xl font-bold text-white mb-3 tracking-wider">
+                          {paragraph}
+                        </h2>
+                      ) : (
+                        <p className={`leading-relaxed ${isAgentSection ? 'ml-4 border-l border-white/10 pl-4' : ''}`}>
+                          {paragraph}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </motion.div>

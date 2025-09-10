@@ -4,13 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import PureVisualRetrocausality, { PureVisualRetrocausalityRef } from "./PureVisualRetrocausality";
 import SolanaTransactions from "./SolanaTransactions";
 import TokenSpecificTransactions from "./TokenSpecificTransactions";
+import TokenHolders from "./TokenHolders";
 
 interface NavigationHubProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-type TabType = 'trades' | 'holders' | 'liquidity' | 'events';
+type TabType = 'trades' | 'holders';
 
 export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,6 +21,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
   const [showLegend, setShowLegend] = useState(false);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [holders, setHolders] = useState<any[]>([]);
   const [predictionData, setPredictionData] = useState({
     confidence: 0.75,
     expectedRange: { min: 5, max: 15 },
@@ -34,6 +36,11 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
   // Handle transaction updates from TokenSpecificTransactions
   const handleTransactionsUpdate = useCallback((newTransactions: any[]) => {
     setTransactions(newTransactions);
+  }, []);
+
+  // Handle holders updates from TokenHolders
+  const handleHoldersUpdate = useCallback((newHolders: any[]) => {
+    setHolders(newHolders);
   }, []);
 
   // Zoom control handlers
@@ -112,10 +119,8 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
   };
 
   const tabs = [
-    { id: 'trades' as TabType, label: 'Trades', count: 42 },
-    { id: 'holders' as TabType, label: 'Holders', count: 128 },
-    { id: 'liquidity' as TabType, label: 'Liquidity', count: 8 },
-    { id: 'events' as TabType, label: 'Events', count: 15 }
+    { id: 'trades' as TabType, label: 'Trades', count: transactions.length },
+    { id: 'holders' as TabType, label: 'Holders', count: holders.length }
   ];
 
   return (
@@ -270,7 +275,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
                 </div>
                 <div className="bg-transparent border border-white/10 rounded-lg p-3">
                   <div className="text-xs text-white/60 mb-1">Holders</div>
-                  <div className="text-lg font-bold text-orange-300">128</div>
+                  <div className="text-lg font-bold text-orange-300">{holders.length}</div>
                 </div>
               </div>
             </div>
@@ -437,37 +442,11 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
                 />
               )}
               {activeTab === 'holders' && (
-                <div className="p-6 text-center text-white/60">
-                  <div className="text-4xl mb-2">👥</div>
-                  <div>Holders data coming soon</div>
-                  {searchQuery && (
-                    <div className="mt-4 text-sm text-white/40">
-                      Token-specific holder data will be available for: <span className="text-blue-300 font-mono">{searchQuery}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-              {activeTab === 'liquidity' && (
-                <div className="p-6 text-center text-white/60">
-                  <div className="text-4xl mb-2">💧</div>
-                  <div>Liquidity data coming soon</div>
-                  {searchQuery && (
-                    <div className="mt-4 text-sm text-white/40">
-                      Token-specific liquidity data will be available for: <span className="text-blue-300 font-mono">{searchQuery}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-              {activeTab === 'events' && (
-                <div className="p-6 text-center text-white/60">
-                  <div className="text-4xl mb-2">📊</div>
-                  <div>Events data coming soon</div>
-                  {searchQuery && (
-                    <div className="mt-4 text-sm text-white/40">
-                      Token-specific events will be available for: <span className="text-blue-300 font-mono">{searchQuery}</span>
-                    </div>
-                  )}
-                </div>
+                <TokenHolders 
+                  searchQuery={searchQuery} 
+                  isSearching={isAnalyzing}
+                  onHoldersUpdate={handleHoldersUpdate}
+                />
               )}
             </div>
           </div>
