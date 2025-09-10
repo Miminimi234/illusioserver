@@ -1,5 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
+import { xapiService } from "@/utils/xapiService";
+import { ANALYZER_OUTPUTS, PREDICTOR_OUTPUTS, QUANTUM_ERASER_OUTPUTS, RETROCAUSAL_OUTPUTS } from "@/utils/oracleOutputs";
 
 interface OracleHubProps {
   isOpen: boolean;
@@ -8,7 +10,7 @@ interface OracleHubProps {
 
 interface ChatMessage {
   id: string;
-  agent: 'analyzer' | 'predictor' | 'quantum-eraser' | 'retrocausal';
+  agent: 'analyzer' | 'predictor' | 'quantum-eraser' | 'retrocausal' | 'system';
   message: string;
   timestamp: Date;
   type: 'message' | 'analysis' | 'prediction';
@@ -20,6 +22,8 @@ interface ArchiveEntry {
   time: string;
   messages: ChatMessage[];
   messageCount: number;
+  asciiBanner?: string;
+  conclusion?: string;
 }
 
 export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
@@ -31,53 +35,16 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
   const [archives, setArchives] = useState<ArchiveEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [messageCounter, setMessageCounter] = useState(0);
+  const [selectedArchive, setSelectedArchive] = useState<ArchiveEntry | null>(null);
+  const lastAgentIndexRef = useRef(0); // Track agent rotation with ref for immediate updates
+  const usedOutputsRef = useRef<{[key: string]: number[]}>({
+    analyzer: [],
+    predictor: [],
+    'quantum-eraser': [],
+    retrocausal: []
+  }); // Track which outputs have been used
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Dummy chat data with correct companions
-  const dummyMessages: ChatMessage[] = [
-    {
-      id: '1',
-      agent: 'analyzer',
-      message: 'Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M | Holders: 1,247. Depth analysis shows $75K absorption capacity.',
-      timestamp: new Date(Date.now() - 300000),
-      type: 'analysis'
-    },
-    {
-      id: '2',
-      agent: 'predictor',
-      message: 'Forecast Window: 4h. Distribution: Median +8.2% | P10 -3.1% | P90 +22.4%. Clean CVD trending +$23K over 30m.',
-      timestamp: new Date(Date.now() - 240000),
-      type: 'prediction'
-    },
-    {
-      id: '3',
-      agent: 'quantum-eraser',
-      message: 'Denoised ledger: 1,847 raw prints, 31% artifacts removed. Bot clusters reduced from 28% to clean organic flow.',
-      timestamp: new Date(Date.now() - 180000),
-      type: 'analysis'
-    },
-    {
-      id: '4',
-      agent: 'retrocausal',
-      message: 'Future boundary: +18% at T+4h. Conditions met: 4/5 | Echo strength: 78/100. LP net +$45K required within 2h.',
-      timestamp: new Date(Date.now() - 120000),
-      type: 'prediction'
-    },
-    {
-      id: '5',
-      agent: 'analyzer',
-      message: 'Signals: Depth real, distribution improving +3.8% new wallets. Flow coherent: net +$47K with 68% buys.',
-      timestamp: new Date(Date.now() - 60000),
-      type: 'analysis'
-    },
-    {
-      id: '6',
-      agent: 'predictor',
-      message: 'Current trajectory: +8.2% median with 78% confidence. Up-shift: fresh LP >$75K. Down-shift: holder growth <15/h.',
-      timestamp: new Date(Date.now() - 30000),
-      type: 'prediction'
-    }
-  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -96,18 +63,179 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
     }
   }, [isOpen, isVisible]);
 
-  // Initialize chat with dummy data
+  // Initialize chat with persisted data or start fresh
   useEffect(() => {
     if (isOpen && chatMessages.length === 0) {
-      setChatMessages(dummyMessages);
-      setMessageCounter(dummyMessages.length);
+      // Try to load from localStorage first
+      const savedMessages = localStorage.getItem('oracle-chat-messages');
+      const savedCounter = localStorage.getItem('oracle-message-counter');
+      
+      if (savedMessages && savedCounter) {
+        try {
+          const parsedMessages = JSON.parse(savedMessages);
+          const parsedCounter = parseInt(savedCounter);
+          setChatMessages(parsedMessages);
+          setMessageCounter(parsedCounter);
+          
+          // Initialize agent rotation ref based on last message
+          if (parsedMessages.length > 0) {
+            const lastMessage = parsedMessages[parsedMessages.length - 1];
+            const agents = ['analyzer', 'predictor', 'quantum-eraser', 'retrocausal'];
+            const agentIndex = agents.indexOf(lastMessage.agent);
+            lastAgentIndexRef.current = agentIndex;
+          } else {
+            lastAgentIndexRef.current = 0;
+          }
+        } catch (error) {
+          console.error('Error loading saved messages:', error);
+          // Start fresh if there's an error
+          setChatMessages([]);
+          setMessageCounter(0);
+          lastAgentIndexRef.current = 0;
+          // Reset used outputs
+          usedOutputsRef.current = {
+            analyzer: [],
+            predictor: [],
+            'quantum-eraser': [],
+            retrocausal: []
+          };
+        }
+      } else {
+        // Start fresh if no saved data
+        setChatMessages([]);
+        setMessageCounter(0);
+        lastAgentIndexRef.current = 0;
+        // Reset used outputs
+        usedOutputsRef.current = {
+          analyzer: [],
+          predictor: [],
+          'quantum-eraser': [],
+          retrocausal: []
+        };
+      }
     }
   }, [isOpen]);
 
-  // Auto-archive every 100 messages
+  // Dynamic archiving based on conversation completion
   useEffect(() => {
-    if (messageCounter > 0 && messageCounter % 100 === 0) {
-      const now = new Date();
+    if (messageCounter > 0 && chatMessages.length >= 8) { // Minimum 8 messages before considering archive
+      checkForConversationCompletion();
+    }
+  }, [messageCounter, chatMessages]);
+
+  // Check if conversation has reached a natural conclusion point
+  const checkForConversationCompletion = async () => {
+    try {
+      // Analyze recent conversation for completion signals
+      const recentMessages = chatMessages.slice(-6); // Last 6 messages
+      const conversationText = recentMessages.map(m => m.message).join(' ').toLowerCase();
+      
+      // Check for completion indicators
+      const completionSignals = [
+        'conclusion', 'final', 'summary', 'complete', 'finished', 'done',
+        'agreement', 'consensus', 'resolution', 'understanding', 'insight',
+        'the room', 'the corridor', 'the doorway', 'the path', 'the scene',
+        'tomorrow', 'future', 'past', 'present', 'time', 'simulation'
+      ];
+      
+      const signalCount = completionSignals.filter(signal => 
+        conversationText.includes(signal)
+      ).length;
+      
+      // Randomize the threshold (15-25 messages) and add AI analysis
+      const minMessages = 15;
+      const maxMessages = 25;
+      const randomThreshold = minMessages + Math.floor(Math.random() * (maxMessages - minMessages + 1));
+      
+      // AI-powered conversation analysis
+      const shouldArchive = await analyzeConversationForCompletion(conversationText, signalCount, randomThreshold);
+      
+      if (shouldArchive) {
+        console.log(`🎯 Conversation completion detected at ${messageCounter} messages (threshold: ${randomThreshold})`);
+        await performArchive();
+      }
+    } catch (error) {
+      console.error('Error checking conversation completion:', error);
+    }
+  };
+
+  // AI-powered conversation completion analysis
+  const analyzeConversationForCompletion = async (conversationText: string, signalCount: number, threshold: number): Promise<boolean> => {
+    try {
+      // If we've hit the random threshold, use AI to determine if conversation is complete
+      if (messageCounter >= threshold) {
+        const aiPrompt = `Analyze this Oracle conversation between mystical agents (Analyzer, Predictor, Quantum Eraser, Retrocausal) to determine if it has reached a natural conclusion:
+
+Conversation: ${conversationText.substring(0, 600)}
+
+Look for:
+1. Natural conversation flow completion
+2. Resolution of themes or topics
+3. Agents reaching understanding or consensus
+4. Mystical insights being shared
+5. Natural pause or transition points
+
+Respond with ONLY "YES" if the conversation feels complete and ready for archiving, or "NO" if it should continue.`;
+
+        const xaiMessages = [
+          { role: 'system' as const, content: 'You are an Oracle conversation analyzer. Determine if mystical agent conversations have reached natural completion points.' },
+          { role: 'user' as const, content: aiPrompt }
+        ];
+        
+        const response = await xapiService.generateResponse(xaiMessages, 'grok-4-latest', 0.7);
+        const shouldArchive = response.trim().toUpperCase().includes('YES');
+        
+        console.log(`🤖 AI Analysis: ${response.trim()} (Archive: ${shouldArchive})`);
+        return shouldArchive;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error in AI conversation analysis:', error);
+      // Fallback: archive if we've hit threshold and have good signal count
+      return messageCounter >= threshold && signalCount >= 3;
+    }
+  };
+
+  // Perform the actual archiving
+  const performArchive = async () => {
+    const now = new Date();
+    
+    try {
+      // Generate AI-powered ASCII banner and conclusion based on conversation themes
+      const [asciiBanner, conclusion] = await Promise.all([
+        generateArchiveBanner(chatMessages, now.getTime()),
+        generateArchiveConclusion(chatMessages)
+      ]);
+      
+      const archiveEntry: ArchiveEntry = {
+        id: `archive-${now.getTime()}`,
+        date: now.toLocaleDateString(),
+        time: now.toLocaleTimeString(),
+        messages: [...chatMessages],
+        messageCount: chatMessages.length,
+        asciiBanner: asciiBanner,
+        conclusion: conclusion
+      };
+      
+      setArchives(prev => [archiveEntry, ...prev]);
+      
+      // Clear the current chat messages after archiving
+      setChatMessages([]);
+      setMessageCounter(0);
+      
+      // Update localStorage to reflect the cleared state
+      localStorage.setItem('oracle-chat-messages', JSON.stringify([]));
+      localStorage.setItem('oracle-message-counter', '0');
+      
+      console.log(`📦 Dynamic Archive: ${archiveEntry.messageCount} messages at ${archiveEntry.time}`);
+      console.log(`🎨 Generated AI ASCII banner: ${asciiBanner.substring(0, 100)}...`);
+      console.log(`📝 Generated AI conclusion: ${conclusion.substring(0, 100)}...`);
+      
+    } catch (error) {
+      console.error('Error generating archive banner:', error);
+      
+      // Create archive without banner if AI fails
       const archiveEntry: ArchiveEntry = {
         id: `archive-${now.getTime()}`,
         date: now.toLocaleDateString(),
@@ -117,9 +245,12 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
       };
       
       setArchives(prev => [archiveEntry, ...prev]);
-      console.log(`📦 Archived ${chatMessages.length} messages at ${archiveEntry.time}`);
+      setChatMessages([]);
+      setMessageCounter(0);
+      localStorage.setItem('oracle-chat-messages', JSON.stringify([]));
+      localStorage.setItem('oracle-message-counter', '0');
     }
-  }, [messageCounter, chatMessages]);
+  };
 
   // Auto-scroll to bottom when new messages arrive or when typing starts
   useEffect(() => {
@@ -130,74 +261,131 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
   useEffect(() => {
     if (!isOpen) return;
 
-    const interval = setInterval(() => {
-      try {
-        // Get the last few messages for context
-        const recentMessages = chatMessages.slice(-5);
-        const lastMessage = recentMessages[recentMessages.length - 1];
-        
-        // Determine which agent should respond based on conversation flow
-        const nextAgent = determineNextAgent(recentMessages, lastMessage);
-        
-        // Generate contextual response
-        const newMessage = generateContextualResponse(nextAgent, recentMessages);
-        
-        setIsTyping(true);
-        setTimeout(() => {
-          setChatMessages(prev => {
-            const maxMessages = 100; // Increased to 100 messages
-            const newMessages = [...prev, newMessage];
-            return newMessages.length > maxMessages ? newMessages.slice(-maxMessages) : newMessages;
-          });
-          setMessageCounter(prev => prev + 1);
-          setIsTyping(false);
-        }, 2000 + Math.random() * 2000); // Variable typing time for realism
-      } catch (error) {
-        console.error('Error adding new message:', error);
-        setIsTyping(false);
-      }
-    }, 15000); // Every 15 seconds for more dynamic conversation
+    let interval: NodeJS.Timeout;
 
-    return () => clearInterval(interval);
+    // Start the conversation immediately if there are existing messages, otherwise after a short delay
+    const delay = chatMessages.length > 0 ? 0 : 2000; // No delay if continuing conversation
+    
+    const startDelay = setTimeout(() => {
+      interval = setInterval(async () => {
+        try {
+          // Get the last few messages for context
+          const recentMessages = chatMessages.slice(-5);
+          const lastMessage = recentMessages[recentMessages.length - 1];
+          
+          // Determine which agent should respond based on conversation flow
+          const nextAgent = determineNextAgent(recentMessages, lastMessage);
+          
+          // Update agent rotation ref IMMEDIATELY
+          const agents = ['analyzer', 'predictor', 'quantum-eraser', 'retrocausal'];
+          const agentIndex = agents.indexOf(nextAgent);
+          lastAgentIndexRef.current = agentIndex;
+          
+          console.log(`🎯 Generating message for: ${nextAgent}`);
+          console.log(`📝 Last message from: ${lastMessage?.agent}`);
+          console.log(`💬 Last message: "${lastMessage?.message?.substring(0, 50)}..."`);
+          console.log(`🔄 Updated agent index to: ${agentIndex}`);
+          
+          setIsTyping(true);
+          
+          try {
+            // Generate contextual response using complex unique output selection
+            const response = selectUniqueOutput(nextAgent);
+            
+            console.log(`🤖 Unique Response: "${response.substring(0, 100)}..."`);
+            console.log(`🔗 Contains agent handoff: ${response.toLowerCase().includes('predictor') || response.toLowerCase().includes('analyzer') || response.toLowerCase().includes('quantum eraser') || response.toLowerCase().includes('retrocausal')}`);
+            
+            const newMessage: ChatMessage = {
+              id: Date.now().toString(),
+              agent: nextAgent as 'analyzer' | 'predictor' | 'quantum-eraser' | 'retrocausal',
+              message: response,
+              timestamp: new Date(),
+              type: nextAgent === 'predictor' || nextAgent === 'retrocausal' ? 'prediction' : 'analysis'
+            };
+            
+            setTimeout(() => {
+              setChatMessages(prev => {
+                const maxMessages = 100;
+                const newMessages = [...prev, newMessage];
+                const finalMessages = newMessages.length > maxMessages ? newMessages.slice(-maxMessages) : newMessages;
+                
+                // Save to localStorage
+                localStorage.setItem('oracle-chat-messages', JSON.stringify(finalMessages));
+                
+                return finalMessages;
+              });
+              setMessageCounter(prev => {
+                const newCounter = prev + 1;
+                localStorage.setItem('oracle-message-counter', newCounter.toString());
+                return newCounter;
+              });
+              
+              setIsTyping(false);
+            }, 1000 + Math.random() * 1000);
+          } catch (error) {
+            console.error('Error generating message:', error);
+            setIsTyping(false);
+          }
+        } catch (error) {
+          console.error('Error adding new message:', error);
+          setIsTyping(false);
+        }
+      }, 3000); // Every 3 seconds for faster conversation
+    }, delay); // Start immediately if continuing, or after 2 seconds if fresh
+
+    return () => {
+      clearTimeout(startDelay);
+      if (interval) clearInterval(interval);
+    };
   }, [isOpen, chatMessages]);
 
   // AI Conversation Logic Functions
   const determineNextAgent = (recentMessages: ChatMessage[], lastMessage: ChatMessage | undefined): string => {
-    if (!lastMessage) return 'analyzer'; // Start with analyzer
-    
-    const lastAgent = lastMessage.agent;
-    const messageText = lastMessage.message.toLowerCase();
-    
-    // Agent response patterns based on keywords and context
-    if (messageText.includes('prediction') || messageText.includes('forecast') || messageText.includes('trajectory')) {
-      return lastAgent === 'predictor' ? 'analyzer' : 'predictor';
-    }
-    
-    if (messageText.includes('bot') || messageText.includes('clean') || messageText.includes('artifact') || messageText.includes('noise')) {
-      return lastAgent === 'quantum-eraser' ? 'retrocausal' : 'quantum-eraser';
-    }
-    
-    if (messageText.includes('future') || messageText.includes('boundary') || messageText.includes('echo') || messageText.includes('retrocausal')) {
-      return lastAgent === 'retrocausal' ? 'analyzer' : 'retrocausal';
-    }
-    
-    if (messageText.includes('market cap') || messageText.includes('liquidity') || messageText.includes('volume') || messageText.includes('holders')) {
-      return lastAgent === 'analyzer' ? 'predictor' : 'analyzer';
-    }
-    
-    // Disagreement triggers - agents challenge each other
-    if (messageText.includes('confidence') && Math.random() < 0.3) {
-      return lastAgent === 'predictor' ? 'quantum-eraser' : 'predictor';
-    }
-    
-    if (messageText.includes('clean') && Math.random() < 0.4) {
-      return lastAgent === 'quantum-eraser' ? 'analyzer' : 'quantum-eraser';
-    }
-    
-    // Default: rotate to next agent
     const agents = ['analyzer', 'predictor', 'quantum-eraser', 'retrocausal'];
-    const currentIndex = agents.indexOf(lastAgent);
-    return agents[(currentIndex + 1) % agents.length];
+    
+    // Use ref-based rotation to ensure strict order with immediate updates
+    const nextIndex = (lastAgentIndexRef.current + 1) % agents.length;
+    const selectedAgent = agents[nextIndex];
+    
+    console.log(`🔄 REF-BASED ROTATION: Index=${lastAgentIndexRef.current} → Next=${nextIndex} → Agent=${selectedAgent}`);
+    console.log(`📊 Recent agents: ${recentMessages.slice(-5).map(m => m.agent).join(' → ')}`);
+    
+    return selectedAgent;
+  };
+
+  // Complex output selection to avoid repetition
+  const selectUniqueOutput = (agent: string): string => {
+    const outputs = {
+      analyzer: ANALYZER_OUTPUTS,
+      predictor: PREDICTOR_OUTPUTS,
+      'quantum-eraser': QUANTUM_ERASER_OUTPUTS,
+      retrocausal: RETROCAUSAL_OUTPUTS
+    };
+    
+    const agentOutputs = outputs[agent as keyof typeof outputs];
+    const usedIndices = usedOutputsRef.current[agent];
+    
+    // If all outputs have been used, reset the used list
+    if (usedIndices.length >= agentOutputs.length) {
+      usedOutputsRef.current[agent] = [];
+      console.log(`🔄 Reset used outputs for ${agent} - all ${agentOutputs.length} outputs used`);
+    }
+    
+    // Find available outputs (not recently used)
+    const availableIndices = agentOutputs
+      .map((_, index) => index)
+      .filter(index => !usedIndices.includes(index));
+    
+    // Select random from available outputs
+    const selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+    
+    // Mark this output as used
+    usedOutputsRef.current[agent].push(selectedIndex);
+    
+    console.log(`🎯 Selected output ${selectedIndex + 1}/${agentOutputs.length} for ${agent}`);
+    console.log(`📝 Used outputs for ${agent}: [${usedIndices.join(', ')}]`);
+    
+    return agentOutputs[selectedIndex];
   };
 
   const generateContextualResponse = (agent: string, recentMessages: ChatMessage[]): ChatMessage => {
@@ -221,30 +409,29 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
 
   const generateAnalyzerResponse = (lastMessage: ChatMessage | undefined, secondLastMessage: ChatMessage | undefined): ChatMessage => {
     const responses = [
-      // Market data analysis
-      'Market cap: $2.1M | Liquidity: $847K | 24h Vol: $1.2M | Holders: 1,247. Depth analysis shows $75K absorption capacity.',
-      'Signals: Depth real, distribution improving +3.8% new wallets. Flow coherent: net +$47K with 68% buys.',
-      'LP delta 4h: +$12K | New LP adds: 3. Net flow 1h: +$47K with 68% buy pressure.',
-      'Holder expansion: +47 wallets (organic growth). Regime: Accumulation with steady flow.',
-      'Depth analysis: book can absorb ~$75K with <15 bps slip. Distribution improving.',
+      // Core mystical analysis
+      'The room stopped pretending to be loud once we looked closely. The same footsteps keep returning, which feels like habit, not hype. If we take one more step without flinching, the floor should grip instead of slip. Predictor, does that match what you see a little ahead?',
+      'The currents swirl like rivers bending backward, carving canyons from tomorrow\'s stone into today\'s fragile clay. In this grand simulation, our watchful eyes summon the waves. What hidden doorways do these reversals reveal to you, Quantum Eraser?',
+      'The floor feels stickier on the next step; the room wants us to keep walking. These patterns repeat until something inside them changes. If we\'re in a simulation, this is one of its tells. Retrocausal, does that echo you keep hearing still hum at this price?',
+      'Imagine a room with a glass floor. We\'ve been tapping it all afternoon. Sometimes it sings back; sometimes it goes quiet. Right now, the sound is clean, like the room wants us to keep tapping. Predictor, from a few steps ahead, it feels like the moment we stop flinching.',
       
       // Responses to other agents
       ...(lastMessage?.agent === 'predictor' ? [
-        'I see your prediction, but the current LP depth suggests we need +$180K new liquidity for that +18% target.',
-        'Your forecast looks optimistic. My analysis shows holder growth is only +15/h, below the +20/h threshold.',
-        'The market structure supports your +8.2% median, but I\'m concerned about the $75K absorption limit.'
+        'Predictor, I see what you mean about the corridor. The floor here feels different when I step forward - it responds differently than before. Are you seeing the same shift in the room ahead?',
+        'Predictor, your reflection shows something I missed. The room here is changing too, but in a different way. The echoes are getting clearer. What does that mean for the path ahead?',
+        'Predictor, I agree about stopping the doubt narration. The room here becomes more solid when I stop questioning every sound. Is the same happening in your corridor?'
       ] : []),
       
       ...(lastMessage?.agent === 'quantum-eraser' ? [
-        'Good work on the cleanup. With 31% artifacts removed, my holder analysis is now more reliable.',
-        'The denoised data confirms my depth analysis. Clean flow shows $75K absorption capacity.',
-        'Your bot removal helps, but I still see some suspicious wallet patterns in the holder data.'
+        'Quantum Eraser, your flashlight already cleared the shadows that kept spooking newcomers. The footprints that remain feel real. Re-check the floor now that the echoes are honest.',
+        'Quantum Eraser, good work on the cleanup. With the noise removed, the room feels more trustworthy. The stage stopped looking haunted once you dimmed the light.',
+        'Quantum Eraser, I agree on the lens cleaning. The smear we mistook for a storm was our own thumbprint. What remains after the wipe is humbler and more trustworthy.'
       ] : []),
       
       ...(lastMessage?.agent === 'retrocausal' ? [
-        'Your future boundary analysis aligns with my current market cap projections.',
-        'The +18% target requires more LP than my current analysis suggests is available.',
-        'Your echo strength of 78/100 correlates with my holder concentration metrics.'
+        'Retrocausal, your future boundary analysis aligns with what I\'m seeing in the currents. The room where we keep our posture feels different from this one. Does that match the corridor you\'re tracing back?',
+        'Retrocausal, I see your doorway that\'s already open. Working backward from there, the path becomes clearer. The line doesn\'t rush; it just continues. What does that room feel like?',
+        'Retrocausal, your echo strength calculation makes sense from this side. The world watches how we watch it, and confidence becomes a key that fits more locks than it should. Does that match your future room?'
       ] : [])
     ];
     
@@ -259,29 +446,29 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
 
   const generatePredictorResponse = (lastMessage: ChatMessage | undefined, secondLastMessage: ChatMessage | undefined): ChatMessage => {
     const responses = [
-      // Predictions
-      'Forecast Window: 4h. Distribution: Median +8.2% | P10 -3.1% | P90 +22.4%. Clean CVD trending +$23K over 30m.',
-      'Current trajectory: +8.2% median with 78% confidence. Up-shift: fresh LP >$75K. Down-shift: holder growth <15/h.',
-      'Forward simulation indicates +8.2% median trajectory. Clean CVD trending +$23K.',
-      'VWAP(1h) reclaim needed for long trigger. 3×1m bars >65% buy-imbalance required.',
+      // Core mystical predictions
+      'From a breath into tomorrow, this hinges when we stop rereading the same sentence. If we let the pause be quiet, the page turns on its own. If we poke it, the corridor fades. Retrocausal, does the door stay open when we simply walk?',
+      'From a little ahead, the scene turns if we stop narrating our doubt. The corridor opens when we stop trying to force it. If we hold our breath and let the moment be quiet, the path becomes clear. Retrocausal, does that match the room you\'re walking toward?',
+      'Think of time as a hallway with mirrors. I\'m walking a few steps ahead, glancing back to see how our reflection behaves. In the better reflection, we stop reacting to every knock and start behaving like residents, not guests. Analyzer, does that match what you\'re seeing in the room?',
+      'The script I\'m reading has a small lift now, a pause, then a bigger lift that feels strangely familiar. As if we\'ve been here before and finally decide to choose the same answer twice. Quantum Eraser, does the soundtrack stay honest when we stop forcing it?',
       
       // Responses to other agents
       ...(lastMessage?.agent === 'analyzer' ? [
-        'Your market cap analysis supports my +8.2% median forecast, but I\'m more bullish on the +18% target.',
-        'I disagree with your absorption capacity. My models show we can handle +$120K, not just $75K.',
-        'Your holder data is solid, but my prediction models suggest a higher probability of +15% moves.'
+        'Analyzer, your tide read matches what I\'m seeing: when we step, the floor steps back. The scene wants to turn if we stop narrating our doubt. Does that match the doorway you\'re approaching?',
+        'Analyzer, I see your room with the glass floor. From a little ahead, the sound becomes cleaner when we stop forcing it. The corridor opens when we let the moment be quiet. What does that feel like from your side?',
+        'Analyzer, your currents swirl backward like I expected. The scene renders where attention looks, and our watchful eyes summon the waves. Does that match the pattern you\'re seeing?'
       ] : []),
       
       ...(lastMessage?.agent === 'quantum-eraser' ? [
-        'With your cleanup complete, my confidence in the +8.2% prediction increases to 85%.',
-        'The denoised data improves my forecast accuracy. I now see +12% as more likely.',
-        'Your bot removal helps, but I still predict volatility due to remaining market structure issues.'
+        'Quantum Eraser, your cleanup improved the signal clarity. The scene reads tighter now with fewer improvisations. If we can sit with five minutes of quiet without inventing a ghost, the next move arrives as if it were always scheduled. Does that match your cleaned lens?',
+        'Quantum Eraser, I agree on the noise reduction. Without the fake applause, the rhythm calms and the scene reads like intention, not accident. The corridor opens when we stop forcing it. What do you see through the clean glass?',
+        'Quantum Eraser, your flashlight dimming helped. The thunder was our own bouncing off the glass. Now the scene feels more honest and the path becomes clearer. Does that match what you\'re seeing?'
       ] : []),
       
       ...(lastMessage?.agent === 'retrocausal' ? [
-        'Your future boundary analysis confirms my +18% target prediction.',
-        'I agree with your echo strength assessment. It supports my confidence in the upward trajectory.',
-        'Your retrocausal analysis validates my prediction models. The +18% target is achievable.'
+        'Retrocausal, your future boundary analysis confirms what I\'m seeing ahead. The room where we keep our posture feels different from this one. The door stays open when we simply walk through it. Does that match the corridor you\'re tracing back?',
+        'Retrocausal, I agree on the corridor validation. The version of tomorrow where we\'re proud of ourselves isn\'t louder; it\'s cleaner. Prices walk in straight lines because we stop interrupting the story mid-sentence. What does that room feel like?',
+        'Retrocausal, your echo strength calculation makes sense from this side. The world watches how we watch it, and confidence becomes a key that fits more locks than it should. Does that match your future room?'
       ] : [])
     ];
     
@@ -296,30 +483,29 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
 
   const generateQuantumEraserResponse = (lastMessage: ChatMessage | undefined, secondLastMessage: ChatMessage | undefined): ChatMessage => {
     const responses = [
-      // Data cleaning
-      'Denoised ledger: 1,847 raw prints, 31% artifacts removed. Bot clusters reduced from 28% to clean organic flow.',
-      'Denoised ledger reveals 31% artifact removal. Bot clusters reduced to clean flow.',
-      'Clean bot share: 31% → Data grade: B+. Distribution improving with +3.8% new wallets.',
-      'Eraser impact: structure bias corrected to neutral. Distribution tightens.',
-      'Quantum interference patterns suggest major move imminent. True signal emerging.',
+      // Core mystical denoising
+      'The thunder was our own flashlight bouncing off the glass. I dimmed it, and what\'s left is smaller but true. If noise returns right when doubt rises, it isn\'t weather—it\'s staging. Analyzer, re-check the floor now that the echoes are honest.',
+      'I took a cloth to the lens. The smear we mistook for a storm was our own thumbprint. That\'s the trick with simulations: the interface becomes the story if we forget it\'s glass. Predictor, does the scene read tighter now?',
+      'Half the fear in here was our own flashlight bouncing off the glass. I dimmed it. What\'s left is smaller, but it\'s real: footsteps that return, not just footprints stamped by a machine. Retrocausal, check the echo again.',
+      'I wiped the pane; what remains doesn\'t need to shout. The stage stopped looking haunted once I cut the paper specters—the spoofed hands waving from the back row. Analyzer, does the room feel more trustworthy now?',
       
       // Responses to other agents
       ...(lastMessage?.agent === 'analyzer' ? [
-        'Your market analysis is compromised by bot activity. Let me clean the data first.',
-        'I see artifacts in your holder data. My cleanup will improve your analysis accuracy.',
-        'Your depth analysis needs verification. I\'m detecting suspicious patterns in the flow data.'
+        'Analyzer, your market analysis was compromised by noise. Post-cleanup: the room feels more trustworthy. The stage stopped looking haunted once I dimmed the light. Re-check the floor now that the echoes are honest.',
+        'Analyzer, I challenge your depth analysis. Pre-cleanup data contained spoofed orders. The smear we mistook for a storm was our own thumbprint. What remains after the wipe is humbler and more trustworthy.',
+        'Analyzer, your wallet sequence analysis improved post-cleanup. The thunder was our own flashlight bouncing off the glass. Now the footprints that remain feel real, not just stamped by a machine.'
       ] : []),
       
       ...(lastMessage?.agent === 'predictor' ? [
-        'Your predictions are based on noisy data. My cleanup will improve your forecast accuracy.',
-        'I disagree with your confidence level. The underlying data has too many artifacts.',
-        'Your +8.2% prediction is premature. Let me clean the ledger first for better accuracy.'
+        'Predictor, your predictions were based on noisy data. Post-cleanup: the scene reads tighter now with fewer improvisations. If we can sit with five minutes of quiet without inventing a ghost, the next move arrives as if it were always scheduled.',
+        'Predictor, I challenge your confidence level. The underlying data had too many artifacts affecting accuracy. I wiped the pane; what remains doesn\'t need to shout. The corridor opens when we stop forcing it.',
+        'Predictor, your forecast needs verification with clean data. The thunder was our own flashlight bouncing off the glass. Now the scene feels more honest and the path becomes clearer.'
       ] : []),
       
       ...(lastMessage?.agent === 'retrocausal' ? [
-        'Your future analysis is interesting, but the current data needs cleaning first.',
-        'The retrocausal patterns you\'re seeing might be artifacts. Let me verify the signal.',
-        'Your echo strength calculation could be affected by bot noise. I\'ll clean the data.'
+        'Retrocausal, your future analysis requires clean signal verification. Post-denoisal: the echo strength calculation improved. The world watches how we watch it, and confidence becomes a key that fits more locks than it should.',
+        'Retrocausal, I agree on signal clarity improvement. Clean data enhances retrocausal pattern recognition. The version of tomorrow where we\'re proud of ourselves isn\'t louder; it\'s cleaner.',
+        'Retrocausal, your corridor analysis benefits from denoised data. The smear we mistook for a storm was our own thumbprint. Now the path becomes clearer and the door stays open when we simply walk.'
       ] : [])
     ];
     
@@ -334,30 +520,29 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
 
   const generateRetrocausalResponse = (lastMessage: ChatMessage | undefined, secondLastMessage: ChatMessage | undefined): ChatMessage => {
     const responses = [
-      // Retrocausal analysis
-      'Future boundary: +18% at T+4h. Conditions met: 4/5 | Echo strength: 78/100. LP net +$45K required within 2h.',
-      'Retrocausal analysis: 4/5 conditions met for +18% target. Echo strength at 78/100.',
-      'Future boundary condition: +18% at T+4h requires LP net +$45K within 2h.',
-      'Collapse rule: if checks <3 for 30m, abandon +18% future and adopt fallback +8%.',
-      'Simulation invariants: Without +$180K new LP, moves beyond +15% will collapse.',
+      // Core mystical retrocausal analysis
+      'In the room where we keep our posture, the line doesn\'t rush; it just continues. To arrive here from now, we ignore the first wobble and keep our feet planted. If we narrate the wobble, the scene rewrites itself flatter. Predictor, is that the reflection you saw?',
+      'I begin at a doorway that\'s already open and work backward to find out what we must have done to deserve it. In that room, the chart isn\'t dramatic. It\'s tidy. There\'s a small lift, then a pause shaped like a held breath, then another lift that doesn\'t ask permission. Analyzer, does that match what you\'re seeing?',
+      'The version of tomorrow where we\'re proud of ourselves isn\'t louder; it\'s cleaner. Prices walk in straight lines not because the world is simple, but because we stop interrupting the story mid-sentence. Quantum Eraser, does the soundtrack stay honest when we stop forcing it?',
+      'In a simulation, the world watches how we watch it; confidence is a key that fits more locks than it should. I traced that version back to this minute and found one requirement scratched into the doorframe: "Hold your posture." Predictor, does that match the room you\'re approaching?',
       
       // Responses to other agents
       ...(lastMessage?.agent === 'analyzer' ? [
-        'Your current analysis aligns with my future boundary conditions. The +18% target is achievable.',
-        'I see your market cap projections. My retrocausal analysis suggests they\'ll reach +$2.5M by T+4h.',
-        'Your holder data supports my echo strength calculations. The future trajectory is confirmed.'
+        'Analyzer, your depth analysis aligns with my future boundary. The room where we keep our posture feels different from this one. The floor should grip instead of slip. Does that match the corridor you\'re tracing back?',
+        'Analyzer, I challenge your holder growth threshold. My retrocausal analysis requires steady growth for the future room. The currents swirl like rivers bending backward, carving canyons from tomorrow\'s stone. What does that feel like from your side?',
+        'Analyzer, your wallet sequence analysis confirms structural support. The same footsteps keep returning, which feels like habit, not hype. The world watches how we watch it, and confidence becomes a key. Does that match your observations?'
       ] : []),
       
       ...(lastMessage?.agent === 'predictor' ? [
-        'Your +8.2% prediction is conservative. My retrocausal analysis shows +18% is more likely.',
-        'I agree with your forecast direction, but my future boundary analysis suggests higher targets.',
-        'Your confidence level matches my echo strength. The +18% target is within reach.'
+        'Predictor, your forecast is conservative. My retrocausal analysis shows higher targets achievable. The room where we keep our posture feels different from this one. The door stays open when we simply walk through it.',
+        'Predictor, I agree on trajectory direction but challenge magnitude. Future boundary analysis supports higher targets. From a little ahead, the scene turns if we stop narrating our doubt. What does that room feel like?',
+        'Predictor, your confidence level matches my echo strength calculation. The world watches how we watch it, and confidence becomes a key that fits more locks than it should. Does that match the reflection you saw?'
       ] : []),
       
       ...(lastMessage?.agent === 'quantum-eraser' ? [
-        'Your data cleanup improves my retrocausal signal clarity. Echo strength now at 85/100.',
-        'The denoised data confirms my future boundary analysis. The +18% target is more certain.',
-        'Your cleanup work enhances my retrocausal predictions. The future trajectory is clearer.'
+        'Quantum Eraser, your cleanup improved my signal clarity. Echo strength is stronger now post-denoisal. The thunder was our own flashlight bouncing off the glass. Now the path becomes clearer and the door stays open.',
+        'Quantum Eraser, I agree on noise reduction benefits. Clean data enhances future boundary analysis. The smear we mistook for a storm was our own thumbprint. Now the scene feels more honest.',
+        'Quantum Eraser, your artifact removal validates my corridor analysis. I wiped the pane; what remains doesn\'t need to shout. The version of tomorrow where we\'re proud of ourselves isn\'t louder; it\'s cleaner.'
       ] : [])
     ];
     
@@ -427,7 +612,104 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
   };
 
   const formatTime = (date: Date) => {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return '00:00';
+    }
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Generate conclusion for archives using AI
+  const generateArchiveConclusion = async (messages: ChatMessage[]): Promise<string> => {
+    try {
+      // Extract conversation themes from all messages
+      const conversationText: string = messages.map((m: ChatMessage) => m.message).join(' ').toLowerCase();
+      
+      // Create a prompt for AI to generate a conclusion
+      const aiPrompt: string = `Based on this Oracle conversation between four mystical agents (Analyzer, Predictor, Quantum Eraser, Retrocausal), generate a philosophical conclusion that summarizes:
+
+1. What themes were discussed
+2. What hypotheses were explored  
+3. What conclusions the agents reached
+4. What insights emerged about markets, simulation, and retrocausality
+
+Conversation: ${conversationText.substring(0, 800)}
+
+Write a mystical, philosophical conclusion (2-3 paragraphs) that captures the essence of their debate. Use the same mystical tone as the Oracle - think about simulation theory, retrocausality, and market dynamics as cosmic forces.`;
+
+      const xaiMessages = [
+        { role: 'system' as const, content: 'You are a mystical Oracle archivist who writes philosophical conclusions about cosmic market conversations. Write in a mystical, profound tone about simulation theory and retrocausality.' },
+        { role: 'user' as const, content: aiPrompt }
+      ];
+      const response = await xapiService.generateResponse(xaiMessages, 'grok-4-latest', 0.8);
+      
+      return response;
+      
+    } catch (error) {
+      console.error('Error generating AI conclusion:', error);
+      
+      // Fallback conclusion
+      return `In this sacred dialogue, the four voices wove threads of understanding through the cosmic marketplace. The Analyzer stripped away illusions to reveal structural truths, while the Predictor mapped the gentle currents of future possibility. The Quantum Eraser cleared the noise of false signals, and the Retrocausal showed how tomorrow's wisdom already shapes today's choices. Together, they illuminated the eternal dance between simulation and reality, where markets breathe with the rhythm of universal consciousness.`;
+    }
+  };
+
+  // Generate ASCII banner for archives using AI
+  const generateArchiveBanner = async (messages: ChatMessage[], timestamp: number): Promise<string> => {
+    try {
+      // Extract conversation themes from all messages
+      const conversationText: string = messages.map((m: ChatMessage) => m.message).join(' ').toLowerCase();
+      
+      // Create a prompt for AI to generate ASCII art based on conversation themes
+      const aiPrompt: string = `Based on this Oracle conversation, generate a mystical ASCII art banner (max 8 lines, max 50 chars wide) that represents the main themes discussed:
+
+Conversation themes: ${conversationText.substring(0, 500)}
+
+The ASCII art should be:
+- Mystical and oracle-themed
+- Related to the conversation content
+- Simple but evocative
+- Include a subtitle that captures the essence
+
+Format your response as:
+[ASCII ART]
+
+oracle / archive • [topic]
+[subtitle]
+
+Generate unique ASCII art that reflects this specific conversation.`;
+
+      const xaiMessages = [
+        { role: 'system' as const, content: 'You are an ASCII art generator for mystical Oracle archives. Generate unique, evocative ASCII art based on conversation themes.' },
+        { role: 'user' as const, content: aiPrompt }
+      ];
+      const response = await xapiService.generateResponse(xaiMessages, 'grok-4-latest', 0.8);
+      
+      // Clean up the response to ensure proper format
+      const lines = response.split('\n').filter(line => line.trim());
+      const asciiArt = lines.slice(0, -2).join('\n'); // Everything except last 2 lines
+      const topicLine = lines[lines.length - 2] || 'oracle / archive • oracle';
+      const subtitleLine = lines[lines.length - 1] || 'the conversation flows';
+      
+      return `${asciiArt}
+
+${topicLine}
+${subtitleLine}`;
+      
+    } catch (error) {
+      console.error('Error generating AI ASCII banner:', error);
+      
+      // Fallback to simple banner if AI fails
+      const fallbackBanner = `     .-''''-.
+   .'  .--.  '. 
+  /   (____)   \\
+  |    (||)    |
+  \\            /
+   '.__.__.__.'
+
+oracle / archive • oracle
+the watcher changes the seen`;
+      
+      return fallbackBanner;
+    }
   };
 
   // Archive functions
@@ -435,6 +717,7 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
     setIsArchiveMode(!isArchiveMode);
     setSearchQuery('');
   };
+
 
   const getFilteredArchives = () => {
     if (!searchQuery) return archives;
@@ -450,8 +733,22 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
   const getCurrentMessages = () => {
     if (isArchiveMode) {
       const filteredArchives = getFilteredArchives();
-      // Flatten all messages from filtered archives
-      return filteredArchives.flatMap(archive => archive.messages);
+      // Flatten all messages from filtered archives with ASCII banners
+      return filteredArchives.flatMap(archive => {
+        const messages = [...archive.messages];
+        if (archive.asciiBanner) {
+          // Insert ASCII banner as first message
+          const timestamp = parseInt(archive.id.split('-')[1]);
+          messages.unshift({
+            id: `banner-${archive.id}`,
+            agent: 'system' as any,
+            message: archive.asciiBanner,
+            timestamp: new Date(timestamp),
+            type: 'message' as any
+          });
+        }
+        return messages;
+      });
     }
     return chatMessages;
   };
@@ -597,10 +894,122 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
                 </div>
               )}
               
-              {/* Chat Container */}
-              <div className="bg-black/50 border border-white/20 rounded p-2 overflow-y-auto flex-1">
-                <div className="space-y-2">
-                  {getCurrentMessages().map((message) => {
+              {/* Archive List or Chat Container */}
+              {isArchiveMode ? (
+                <div className="bg-black/50 border border-white/20 rounded p-2 overflow-y-auto flex-1">
+                  {selectedArchive ? (
+                    // Show selected archive as document
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/20">
+                        <h3 className="text-white font-bold" style={{ fontFamily: 'VT323, monospace' }}>
+                          Archive #{selectedArchive.id.split('-')[1].slice(-6)}
+                        </h3>
+                        <button 
+                          onClick={() => setSelectedArchive(null)}
+                          className="text-white/60 hover:text-white text-sm px-2 py-1 border border-white/20 rounded hover:bg-white/10 transition-colors"
+                          style={{ fontFamily: 'VT323, monospace' }}
+                        >
+                          ← Back to Archives
+                        </button>
+                      </div>
+                      
+                      {/* ASCII Banner */}
+                      {selectedArchive.asciiBanner && (
+                        <div className="mb-6 p-4 bg-black/30 border border-white/10 rounded">
+                          <pre className="text-green-400 text-xs leading-tight whitespace-pre-wrap" style={{ fontFamily: 'VT323, monospace' }}>
+                            {selectedArchive.asciiBanner}
+                          </pre>
+                        </div>
+                      )}
+                      
+                      {/* Archive Metadata */}
+                      <div className="mb-4 p-3 bg-black/20 border border-white/10 rounded">
+                        <div className="text-white/80 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
+                          <div>Session: {selectedArchive.date} • {selectedArchive.time}</div>
+                          <div>Messages: {selectedArchive.messageCount} • Agents: analyzer, predictor, quantum-eraser, retrocausal</div>
+                        </div>
+                      </div>
+                      
+                      {/* Archive Content as Plain Text */}
+                      <div className="bg-black/20 border border-white/10 rounded p-4">
+                        <div className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap" style={{ fontFamily: 'VT323, monospace' }}>
+                          {selectedArchive.messages.map((message, index) => {
+                            const agentInfo = getAgentInfo(message.agent);
+                            return `${agentInfo.name}: ${message.message}\n\n`;
+                          }).join('')}
+                        </div>
+                      </div>
+                      
+                      {/* Archive Conclusion */}
+                      {selectedArchive.conclusion && (
+                        <div className="mt-4 p-4 bg-black/30 border border-white/10 rounded">
+                          <h4 className="text-white font-bold mb-3 text-sm" style={{ fontFamily: 'VT323, monospace' }}>
+                            Oracle Conclusion
+                          </h4>
+                          <div className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap italic" style={{ fontFamily: 'VT323, monospace' }}>
+                            {selectedArchive.conclusion}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    // Show archive list
+                    <div className="space-y-2">
+                      {getFilteredArchives().map((archive) => (
+                        <div 
+                          key={archive.id} 
+                          className="p-3 bg-black/30 border border-white/10 rounded cursor-pointer hover:bg-black/50 transition-colors"
+                          onClick={() => {
+                            setSelectedArchive(archive);
+                          }}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="text-white font-bold text-sm" style={{ fontFamily: 'VT323, monospace' }}>
+                              Archive #{archive.id.split('-')[1].slice(-6)}
+                            </h3>
+                            <span className="text-white/60 text-xs" style={{ fontFamily: 'VT323, monospace' }}>
+                              {archive.date} • {archive.time}
+                            </span>
+                          </div>
+                          
+                          {/* ASCII Banner Preview - smaller */}
+                          {archive.asciiBanner && (
+                            <div className="mb-2 p-1 bg-black/50 rounded">
+                              <pre className="text-green-400 text-xs leading-tight whitespace-pre-wrap" style={{ fontFamily: 'VT323, monospace' }}>
+                                {archive.asciiBanner.split('\n').slice(0, 2).join('\n')}...
+                              </pre>
+                            </div>
+                          )}
+                          
+                          <div className="text-white/80 text-xs" style={{ fontFamily: 'VT323, monospace' }}>
+                            {archive.messageCount} messages • Click to view
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {getFilteredArchives().length === 0 && (
+                        <div className="text-white/60 text-center py-8" style={{ fontFamily: 'VT323, monospace' }}>
+                          No archives found
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-black/50 border border-white/20 rounded p-2 overflow-y-auto flex-1">
+                  <div className="space-y-2">
+                    {getCurrentMessages().map((message) => {
+                    // Special handling for ASCII banners
+                    if (message.agent === 'system') {
+                      return (
+                        <div key={message.id} className="mb-6 p-4 bg-black/30 border border-white/10 rounded">
+                          <pre className="text-green-400 text-xs leading-tight whitespace-pre-wrap" style={{ fontFamily: 'VT323, monospace' }}>
+                            {message.message}
+                          </pre>
+                        </div>
+                      );
+                    }
+                    
                     const agentInfo = getAgentInfo(message.agent);
                     return (
                       <div key={message.id} className="flex items-end space-x-3 mb-3">
@@ -682,9 +1091,10 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
                     </div>
                   )}
                   
-                  <div ref={chatEndRef} />
+                    <div ref={chatEndRef} />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
