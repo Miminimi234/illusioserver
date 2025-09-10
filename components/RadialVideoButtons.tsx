@@ -114,7 +114,7 @@ export default function RadialVideoButtons({ isNavigationHubOpen, setIsNavigatio
         >
           {/* Container for all buttons arranged horizontally */}
           <div className="flex items-center gap-2">
-            {BUTTONS.map(({ pos, color, alt, onClick, video, icon, type }, index) => (
+            {BUTTONS.map(({ pos, color, alt, onClick, video, type }, index) => (
               <div
                 key={pos}
                 className="w-12 h-12 rounded-full pointer-events-auto cursor-pointer overflow-hidden webm-button"
