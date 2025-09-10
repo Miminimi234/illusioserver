@@ -55,6 +55,7 @@ export default function TokenSearch({ onTokenSelect, placeholder = "Search by to
       setIsLoading(true);
       setShowDropdown(true); // Show dropdown immediately when search starts
       try {
+        // Search crypto tokens via API
         const response = await fetch(`${SERVER_BASE_URL}/api/tokens/search?q=${encodeURIComponent(debouncedQuery)}&limit=20`);
         
         if (!response.ok) {
@@ -63,6 +64,7 @@ export default function TokenSearch({ onTokenSelect, placeholder = "Search by to
         
         const data = await response.json();
         setResults(data.items || []);
+        
         setShowDropdown(true); // Always show dropdown when we have a search query
         setSelectedIndex(-1);
       } catch (error) {

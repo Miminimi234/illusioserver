@@ -830,6 +830,7 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
           {token.mint.slice(0, 4)}...{token.mint.slice(-4)}
         </span>
       </div>
+      
     </div>
   );
 });
@@ -1404,6 +1405,8 @@ export const Scope = ({
   const [isDragging, setIsDragging] = useState(false);
   const [draggedAgent, setDraggedAgent] = useState<string | null>(null);
   
+  
+  
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -1412,6 +1415,7 @@ export const Scope = ({
       }
     };
   }, []);
+
 
   // Load conversations from localStorage on component mount
   useEffect(() => {

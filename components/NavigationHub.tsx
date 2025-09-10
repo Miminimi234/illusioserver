@@ -307,7 +307,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
 
         {/* Main Content */}
         <motion.div 
-          className="flex flex-col lg:flex-row h-[calc(100vh-200px)]"
+          className="flex flex-col lg:flex-row h-[calc(100vh-200px)] relative"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -406,8 +406,8 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
             )}
           </div>
 
-          {/* Divider */}
-          <div className="hidden lg:block w-px bg-white/10"></div>
+          {/* Divider - Always visible */}
+          <div className="hidden lg:block absolute left-[58%] top-0 w-px bg-white/10 h-full z-10"></div>
           <div className="lg:hidden w-full h-px bg-white/10"></div>
 
           {/* Right: Stream Panel (42% on desktop, 35% on tablet, full width on mobile) */}
