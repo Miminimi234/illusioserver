@@ -1,13 +1,14 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'Quantum Geometry',
-  description: 'Retrocausal trading interface',
+  title: 'Illusio — Retrocausal Market Engine',
+  description: 'A Solana-native prediction framework fusing quantum logic, retrocausality, and simulation theory to forecast market movements beyond probability.',
   viewport: {
     width: 'device-width',
     initialScale: 1,
   },
 }
+
 
 
 export default function RootLayout({
