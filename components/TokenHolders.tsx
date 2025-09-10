@@ -519,7 +519,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
         
         if (data.result && Array.isArray(data.result) && data.result.length > 0) {
           // Sort by blockTime to get first and last transactions
-          const sortedTxs = data.result.sort((a, b) => {
+          const sortedTxs = data.result.sort((a: any, b: any) => {
             const timeA = a.blockTime || 0;
             const timeB = b.blockTime || 0;
             return timeA - timeB;
