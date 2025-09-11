@@ -63,7 +63,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
     const fetchTokenData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost:8080/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
+        const response = await fetch(`https://discerning-reverence-production.up.railway.app/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
         
         if (!response.ok) {
           throw new Error(`Search failed with ${response.status}`);
@@ -359,7 +359,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
       if (holdersData.length === 0) {
         try {
           console.log(`Trying Helius API for ${mint}`);
-          const heliusResponse = await fetch(`http://localhost:8080/api/tokens/${mint}/holders`);
+          const heliusResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/tokens/${mint}/holders`);
           if (heliusResponse.ok) {
             const heliusData = await heliusResponse.json();
             if (heliusData.holders && Array.isArray(heliusData.holders)) {

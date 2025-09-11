@@ -20,9 +20,7 @@ interface TokenSearchProps {
   className?: string;
 }
 
-const SERVER_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://discerning-reverence-production.up.railway.app' 
-  : 'http://localhost:8080';
+const SERVER_BASE_URL = 'https://discerning-reverence-production.up.railway.app';
 
 export default function TokenSearch({ onTokenSelect, placeholder = "Search by token or CA", className = "" }: TokenSearchProps) {
   const [query, setQuery] = useState('');
