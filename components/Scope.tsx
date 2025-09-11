@@ -1970,6 +1970,11 @@ export const Scope = ({
                 tokenData: token
               })
             });
+            
+            if (!serverResponse.ok) {
+              throw new Error(`Server responded with ${serverResponse.status}: ${serverResponse.statusText}`);
+            }
+            
             const serverData = await serverResponse.json();
             response = serverData.analysis || 'No analysis available';
           } else {
@@ -1987,6 +1992,11 @@ export const Scope = ({
                 userMessage: inputMessage
               })
             });
+            
+            if (!serverResponse.ok) {
+              throw new Error(`Server responded with ${serverResponse.status}: ${serverResponse.statusText}`);
+            }
+            
             const serverData = await serverResponse.json();
             response = serverData.companionResponse || 'No response available';
           } else {
@@ -2006,6 +2016,11 @@ export const Scope = ({
               userMessage: inputMessage
             })
           });
+          
+          if (!serverResponse.ok) {
+            throw new Error(`Server responded with ${serverResponse.status}: ${serverResponse.statusText}`);
+          }
+          
           const serverData = await serverResponse.json();
           response = serverData.companionResponse || 'No response available';
         } else {
