@@ -20,3 +20,6 @@ JUPITER_API_KEY=your_jupiter_api_key_here
 # Server Configuration
 PORT=8080
 NODE_ENV=development
+
+# Railway Server URL (for AI companions)
+NEXT_PUBLIC_RAILWAY_SERVER_URL=https://discerning-reverence-production.up.railway.app
