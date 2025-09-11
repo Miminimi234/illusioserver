@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import tokenRoutes from './api/tokenRoutes';
 import transactionRoutes from './api/transactionRoutes';
-import { imageProxy } from './api/imageProxy';
 import { WebSocketService } from './api/websocket';
 import { logger } from './utils/logger';
 
@@ -55,7 +54,6 @@ app.get('/health', (_req, res) => {
 // API routes
 app.use('/api/tokens', tokenRoutes);
 app.use('/api/transactions', transactionRoutes);
-app.get('/api/img', imageProxy);
 
 // Root endpoint
 app.get('/', (_req, res) => {

@@ -333,7 +333,7 @@ const WatchlistPopup: React.FC<{
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-800 flex-shrink-0">
                       <ImageWithFallback
-                        src={token.imageUrl ? `http://localhost:8080/api/img?u=${encodeURIComponent(token.imageUrl)}` : undefined}
+                        src={token.imageUrl || undefined}
                         alt={token.symbol || token.name || "Token"}
                         className="w-full h-full object-cover"
                         fallbackClassName="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold"
@@ -570,7 +570,11 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
   return (
     <div
       ref={cardRef}
-      className={`group relative isolate overflow-visible rounded-xl border p-4 hover:scale-102 hover:z-10 transition-all duration-200 token-card cursor-pointer ${
+      className={`group relative isolate overflow-visible rounded-xl border hover:scale-102 hover:z-10 transition-all duration-200 token-card cursor-pointer ${
+        token.isStock 
+          ? 'p-3' // Smaller padding for stocks
+          : 'p-4' // Normal padding for crypto
+      } ${
         isDragOver
           ? draggedAgent === 'The Quantum Eraser'
             ? 'border-[#637e9a] bg-[#637e9a]/20 scale-105 z-20 ring-2 ring-[#637e9a]/50 animate-pulse'
@@ -740,10 +744,12 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
       {/* Header row: avatar, name/symbol, copy button */}
       <div className="grid grid-cols-[auto_1fr_auto] items-start gap-3">
         {/* Avatar container with HoverImagePreview */}
-        <div className="relative h-12 w-12 shrink-0 overflow-visible">
+        <div className={`relative shrink-0 overflow-visible ${
+          token.isStock ? 'h-10 w-10' : 'h-12 w-12'
+        }`}>
           {token.imageUrl ? (
             <HoverImagePreview 
-              src={`http://localhost:8080/api/img?u=${encodeURIComponent(token.imageUrl)}`}
+              src={token.imageUrl}
               alt={token.symbol || token.name || "Token"}
               thumbClass="h-full w-full object-cover rounded-md"
             />
@@ -756,28 +762,38 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
         
         {/* Token info */}
         <div className="min-w-0 flex-1">
-          <div className="text-white font-semibold truncate flex items-center gap-2">
-            <span className="text-white/80 text-sm font-mono font-bold uppercase">
+          <div className={`text-white font-semibold truncate flex items-center gap-2 ${
+            token.isStock ? 'text-sm' : ''
+          }`}>
+            <span className={`text-white/80 font-mono font-bold uppercase ${
+              token.isStock ? 'text-xs' : 'text-sm'
+            }`}>
               {token.symbol || token.mint.slice(0, 4)}
             </span>
-            <span>
+            <span className={token.isStock ? 'text-sm' : ''}>
               {token.name || token.symbol || `${token.mint.slice(0, 4)}…${token.mint.slice(-4)}`}
             </span>
             {/* Copy button */}
             <button
               onClick={copyMintAddress}
-              className="p-1 bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded border border-white/20 transition-all duration-200 flex items-center shrink-0"
+              className={`bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded border border-white/20 transition-all duration-200 flex items-center shrink-0 ${
+                token.isStock ? 'p-0.5' : 'p-1'
+              }`}
             >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`fill="none" stroke="currentColor" viewBox="0 0 24 24" ${
+                token.isStock ? 'w-2.5 h-2.5' : 'w-3 h-3'
+              }`}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
             </button>
           </div>
-          {/* Creation time display */}
-          <CreationTimeDisplay 
-            createdAt={token.created_at || token.createdAt || new Date()} 
-            className="mt-1"
-          />
+          {/* Creation time display - hide for stocks */}
+          {!token.isStock && (
+            <CreationTimeDisplay 
+              createdAt={token.created_at || token.createdAt || new Date()} 
+              className="mt-1"
+            />
+          )}
         </div>
         
         {/* Star button */}
@@ -830,6 +846,27 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
           {token.mint.slice(0, 4)}...{token.mint.slice(-4)}
         </span>
       </div>
+      
+      {/* Stock-specific information */}
+      {token.stockInfo && (
+        <div className="mt-2 space-y-1">
+          {token.stockInfo.primary_exchange && (
+            <div className="text-xs text-white/50">
+              <span className="text-white/60">Exchange:</span> {token.stockInfo.primary_exchange}
+            </div>
+          )}
+          {token.stockInfo.type && (
+            <div className="text-xs text-white/50">
+              <span className="text-white/60">Type:</span> {token.stockInfo.type}
+            </div>
+          )}
+          {token.stockInfo.locale && (
+            <div className="text-xs text-white/50">
+              <span className="text-white/60">Market:</span> {token.stockInfo.locale.toUpperCase()}
+            </div>
+          )}
+        </div>
+      )}
       
     </div>
   );
@@ -1108,7 +1145,7 @@ function InsightsColumn({
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-800 flex-shrink-0">
                   {focusToken.imageUrl ? (
                     <img 
-                      src={`http://localhost:8080/api/img?u=${encodeURIComponent(focusToken.imageUrl)}`}
+                      src={focusToken.imageUrl}
                       alt={focusToken.symbol || focusToken.name || "Token"}
                       className="w-full h-full object-cover"
                     />
@@ -1405,7 +1442,175 @@ export const Scope = ({
   const [isDragging, setIsDragging] = useState(false);
   const [draggedAgent, setDraggedAgent] = useState<string | null>(null);
   
+  // Asset type dropdown state
+  const [assetType, setAssetType] = useState<'crypto' | 'stocks'>('crypto');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   
+  // Stock data state
+  const [stockData, setStockData] = useState<any[]>([]);
+  const [isLoadingStocks, setIsLoadingStocks] = useState(false);
+  
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
+  // Fetch company logo using multiple free logo APIs
+  const fetchCompanyLogo = async (symbol: string, companyName: string) => {
+    try {
+      // Create a clean company name for domain generation
+      const cleanName = companyName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+        .replace(/\s+/g, '') // Remove spaces
+        .replace(/inc|corp|corporation|company|co|ltd|limited/g, ''); // Remove common suffixes
+      
+      // Try multiple logo APIs with different approaches
+      const logoUrls = [
+        // Clearbit logo API (most reliable for major companies)
+        `https://logo.clearbit.com/${cleanName}.com`,
+        // Alternative domain variations
+        `https://logo.clearbit.com/${cleanName}inc.com`,
+        `https://logo.clearbit.com/${cleanName}corp.com`,
+        // Google favicon API as fallback
+        `https://www.google.com/s2/favicons?domain=${cleanName}.com&sz=64`,
+        // Generic company logo placeholder
+        `https://via.placeholder.com/64x64/4F46E5/FFFFFF?text=${symbol.substring(0, 2).toUpperCase()}`
+      ];
+      
+      // Return the first URL (Clearbit is usually the best)
+      return logoUrls[0];
+    } catch (error) {
+      console.error(`Error generating logo URL for ${symbol}:`, error);
+      // Return a placeholder with the stock symbol
+      return `https://via.placeholder.com/64x64/4F46E5/FFFFFF?text=${symbol.substring(0, 2).toUpperCase()}`;
+    }
+  };
+
+  // Fetch stock data using Polygon.io API
+  const fetchStockData = useCallback(async () => {
+    setIsLoadingStocks(true);
+    try {
+      console.log('🌐 Fetching stock data from Polygon.io...');
+      
+      const response = await fetch(`https://api.polygon.io/v3/reference/tickers?market=stocks&active=true&order=asc&limit=100&sort=ticker&apiKey=6SwtFMhGSebBDn4CpGs1i7yu2lcXtDHd`);
+      
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`🌐 Received ${data.results?.length || 0} stocks from Polygon.io`);
+      
+      if (data.results && data.results.length > 0) {
+        // Sort stocks to get biggest companies first (Apple, Microsoft, etc.)
+        const sortedStocks = data.results.sort((a: any, b: any) => {
+          // Define major companies that should be on top
+          const majorCompanies = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'BRK.A', 'BRK.B', 'UNH', 'JNJ', 'JPM', 'V', 'PG', 'HD', 'MA', 'DIS', 'PYPL', 'ADBE', 'NFLX'];
+          
+          const aIsMajor = majorCompanies.includes(a.ticker);
+          const bIsMajor = majorCompanies.includes(b.ticker);
+          
+          // Major companies first
+          if (aIsMajor && !bIsMajor) return -1;
+          if (!aIsMajor && bIsMajor) return 1;
+          
+          // Among major companies, sort by their predefined order
+          if (aIsMajor && bIsMajor) {
+            return majorCompanies.indexOf(a.ticker) - majorCompanies.indexOf(b.ticker);
+          }
+          
+          // For non-major companies, prioritize major exchanges
+          const exchangePriority: { [key: string]: number } = { 'XNYS': 1, 'XNAS': 2, 'XASE': 3 };
+          const aExchangePriority = exchangePriority[a.primary_exchange] || 999;
+          const bExchangePriority = exchangePriority[b.primary_exchange] || 999;
+          
+          if (aExchangePriority !== bExchangePriority) {
+            return aExchangePriority - bExchangePriority;
+          }
+          
+          // Then sort by ticker alphabetically
+          return a.ticker.localeCompare(b.ticker);
+        });
+
+        // Transform Polygon.io data to match our token format - LIMIT TO 100 STOCKS
+        const transformedStocks = await Promise.all(
+          sortedStocks.slice(0, 100).map(async (stock: any, index: number) => {
+            // Fetch logo for each stock
+            const logoUrl = await fetchCompanyLogo(stock.ticker, stock.name);
+            
+            return {
+              mint: `STOCK_${stock.ticker}_${index}`,
+              symbol: stock.ticker,
+              name: stock.name,
+              displaySymbol: stock.ticker,
+              currency: stock.currency_name?.toUpperCase() || 'USD',
+              type: stock.type || 'CS',
+              status: 'fresh',
+              created_at: new Date().toISOString(),
+              createdAt: new Date(),
+              marketcap: '0', // Polygon.io doesn't provide market cap in this endpoint
+              volume_24h: '0',
+              is_on_curve: false,
+              source: 'Polygon.io',
+              links: {},
+              website: null,
+              twitter: null,
+              telegram: null,
+              imageUrl: logoUrl, // Use logo URL as imageUrl for display
+              logo: logoUrl, // Keep logo URL as well
+              isStock: true, // Flag to identify stocks
+              // Stock-specific data
+              stockInfo: {
+                active: stock.active,
+                cik: stock.cik,
+                composite_figi: stock.composite_figi,
+                currency_name: stock.currency_name,
+                locale: stock.locale,
+                market: stock.market,
+                primary_exchange: stock.primary_exchange,
+                share_class_figi: stock.share_class_figi,
+                type: stock.type,
+                last_updated_utc: stock.last_updated_utc,
+                delisted_utc: stock.delisted_utc
+              }
+            };
+          })
+        );
+        
+        console.log('✅ Stock data transformed with logos:', transformedStocks.length, 'stocks');
+        setStockData(transformedStocks);
+      } else {
+        setStockData([]);
+      }
+    } catch (error) {
+      console.error('Error fetching stock data:', error);
+      setStockData([]);
+    } finally {
+      setIsLoadingStocks(false);
+    }
+  }, []);
+
+  // Fetch stock data when stocks are selected
+  useEffect(() => {
+    if (assetType === 'stocks' && stockData.length === 0) {
+      console.log('📈 Fetching stock data...');
+      fetchStockData();
+    }
+  }, [assetType, stockData.length, fetchStockData]);
   
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -1621,7 +1826,10 @@ export const Scope = ({
     };
 
     // Use transformed property names from useServerData - LIMIT to 100 fresh tokens
-    const newPairs = tokensToFilter.filter(t => t && t.status === 'fresh' && !isUnwantedToken(t)).slice(0, 100); // Show exactly 100 fresh tokens (the actual fresh mints)
+    // Show stocks when stocks are selected, otherwise show crypto tokens
+    const newPairs = assetType === 'stocks' 
+      ? stockData.slice(0, 100) // Show real stock data when stocks selected
+      : tokensToFilter.filter(t => t && t.status === 'fresh' && !isUnwantedToken(t)).slice(0, 100); // Show exactly 100 fresh tokens (the actual fresh mints)
     const filled = tokensToFilter.filter(t => t && t.status === 'active' && !t.isOnCurve && !isUnwantedToken(t)).slice(0, 30); // Show active tokens
     // EDGE: No tokens on edge - temporarily removed
     const onEdge: any[] = [];
@@ -1635,7 +1843,7 @@ export const Scope = ({
       total: tokensToFilter.length
     });
     return { newPairs, onEdge, filled, curveTokens };
-  }, [tokens, isSearchFiltered, searchFilteredTokens]);
+  }, [tokens, isSearchFiltered, searchFilteredTokens, assetType, stockData]);
 
   // Generate smart conversation title based on content
   const generateConversationTitle = useCallback((messages: Array<{ type: 'user' | 'assistant'; content: string; timestamp: Date }>) => {
@@ -1948,7 +2156,10 @@ export const Scope = ({
             <HelpButton onHelpClick={() => setIsHelpOpen(true)} />
 
             {/* Star Button */}
-            <HeaderStarButton tokens={tokens} onTokenClick={setFocusToken} />
+            <HeaderStarButton 
+              tokens={assetType === 'stocks' ? [...tokens, ...stockData] : tokens} 
+              onTokenClick={setFocusToken} 
+            />
 
             {/* Close Button */}
             <motion.button
@@ -2000,8 +2211,63 @@ export const Scope = ({
           <div className="flex flex-col border border-neutral-800/60 rounded-lg overflow-hidden">
             {/* Shared Header Row */}
             <div className="flex border-b border-neutral-800/60">
-              <div className="flex-1 text-center py-4 border-r border-neutral-800/60">
-                <h2 className="text-lg font-bold uppercase tracking-wider text-white">Fresh Mints</h2>
+              <div className="flex-1 text-center py-4 border-r border-neutral-800/60 relative">
+                <h2 className="text-lg font-bold uppercase tracking-wider text-white">
+                  {assetType === 'stocks' ? 'Stocks' : 'Fresh Mints'}
+                </h2>
+                
+                {/* Loading indicator for stocks */}
+                {isLoadingStocks && (
+                  <div className="absolute top-4 right-2 px-2 py-1 bg-blue-500 text-white text-xs rounded">
+                    Loading stocks...
+                  </div>
+                )}
+                
+                <div className="absolute top-4 left-2">
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(!isDropdownOpen);
+                      }}
+                      className="p-1.5 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-md border border-white/20 transition-all duration-200"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </button>
+                    
+                    {isDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-1 bg-black/90 border border-white/20 rounded-md shadow-lg z-50 min-w-[80px]">
+                        <button
+                          onClick={() => {
+                            setAssetType('crypto');
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-1.5 text-sm font-medium text-left hover:bg-white/10 transition-colors duration-200 ${
+                            assetType === 'crypto' ? 'text-white bg-white/10' : 'text-white/70'
+                          }`}
+                        >
+                          Crypto
+                        </button>
+                        <button
+                          onClick={() => {
+                            setAssetType('stocks');
+                            setIsDropdownOpen(false);
+                            // Fetch stock data if not already loaded
+                            if (stockData.length === 0) {
+                              fetchStockData();
+                            }
+                          }}
+                          className={`w-full px-3 py-1.5 text-sm font-medium text-left hover:bg-white/10 transition-colors duration-200 ${
+                            assetType === 'stocks' ? 'text-white bg-white/10' : 'text-white/70'
+                          }`}
+                        >
+                          Stocks
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               <div className="flex-1 text-center py-4 border-r border-neutral-800/60">
                 <h2 className="text-lg font-bold uppercase tracking-wider text-white">Insights</h2>
@@ -2106,7 +2372,7 @@ export const Scope = ({
                       <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-800 flex-shrink-0">
                         {dragTargetToken.imageUrl ? (
                           <img 
-                            src={`http://localhost:8080/api/img?u=${encodeURIComponent(dragTargetToken.imageUrl)}`}
+                            src={dragTargetToken.imageUrl}
                             alt={dragTargetToken.symbol || dragTargetToken.name || "Token"}
                             className="w-full h-full object-cover"
                           />
@@ -2170,7 +2436,7 @@ export const Scope = ({
                         <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-800 flex-shrink-0">
                           {token.imageUrl ? (
                             <img 
-                              src={`http://localhost:8080/api/img?u=${encodeURIComponent(token.imageUrl)}`}
+                              src={token.imageUrl}
                               alt={token.symbol || token.name || "Token"}
                               className="w-full h-full object-cover"
                             />

@@ -252,7 +252,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
             <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-800 flex-shrink-0">
               {tokenData.image_url ? (
                 <ImageWithFallback
-                  src={`http://localhost:8080/api/img?u=${encodeURIComponent(tokenData.image_url)}`}
+                  src={tokenData.image_url}
                   alt={tokenData.symbol || tokenData.mint || 'Token'}
                   className="w-full h-full object-cover"
                   fallbackClassName="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-lg font-bold"
