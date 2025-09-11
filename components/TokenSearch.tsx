@@ -21,7 +21,7 @@ interface TokenSearchProps {
 }
 
 const SERVER_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://yourdomain.com' 
+  ? 'https://discerning-reverence-production.up.railway.app' 
   : 'http://localhost:8080';
 
 export default function TokenSearch({ onTokenSelect, placeholder = "Search by token or CA", className = "" }: TokenSearchProps) {
