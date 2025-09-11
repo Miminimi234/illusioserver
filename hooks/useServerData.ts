@@ -3,7 +3,7 @@ import { useWebSocket } from "./useWebSocket";
 
 // Server API base URL
 const SERVER_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://yourdomain.com' 
+  ? 'https://your-railway-url.up.railway.app' 
   : 'http://localhost:8080';
 
 // Types matching the server API
@@ -132,7 +132,7 @@ export const useServerData = (isOpen: boolean) => {
 
   // WebSocket connection for real-time updates
   const wsUrl = process.env.NODE_ENV === 'production' 
-    ? 'wss://yourdomain.com/ws' 
+    ? 'wss://your-railway-url.up.railway.app/ws' 
     : 'ws://localhost:8080/ws';
   const { isConnected: wsConnected, lastMessage } = useWebSocket(wsUrl);
 
