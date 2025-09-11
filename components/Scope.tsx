@@ -517,7 +517,8 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
     };
   }, []);
   
-  const copyMintAddress = async () => {
+  const copyMintAddress = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click handler from firing
     try {
       await navigator.clipboard.writeText(token.mint);
     } catch (err) {
@@ -776,14 +777,30 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
             {/* Copy button */}
             <button
               onClick={copyMintAddress}
-              className={`bg-white/10 hover:bg-white/20 text-white/60 hover:text-white rounded border border-white/20 transition-all duration-200 flex items-center shrink-0 ${
+              className={`bg-white/10 hover:bg-white/20 rounded border border-white/20 transition-all duration-200 flex items-center shrink-0 relative z-30 ${
                 token.isStock ? 'p-0.5' : 'p-1'
               }`}
             >
-              <svg className={`fill="none" stroke="currentColor" viewBox="0 0 24 24" ${
-                token.isStock ? 'w-2.5 h-2.5' : 'w-3 h-3'
-              }`}>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              <svg 
+                className={`transition-colors duration-200 text-white/60 hover:text-white ${
+                  token.isStock ? 'w-2.5 h-2.5' : 'w-3 h-3'
+                }`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" 
+                />
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M8 2H4a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V4a2 2 0 00-2-2z" 
+                />
               </svg>
             </button>
           </div>
