@@ -1431,7 +1431,7 @@ export const Scope = ({
   // Settings state
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settingsView, setSettingsView] = useState<'menu' | 'api' | 'history'>('menu');
-  const [selectedAPI, setSelectedAPI] = useState('grok4');
+  const [selectedAPI, setSelectedAPI] = useState('server-grok');
   const [apiKeys, setApiKeys] = useState({
     grok4: '',
     gpt4: '',
@@ -1959,14 +1959,59 @@ export const Scope = ({
         console.log('Using token analysis for:', attachedCompanion.name, 'on token:', attachedCompanion.tokenMint);
         const token = tokens.find(t => t.mint === attachedCompanion.tokenMint);
         if (token) {
-          response = await chatService.analyzeToken(token, attachedCompanion.name, inputMessage, selectedAPI, apiKeys);
+          if (selectedAPI === 'server-grok') {
+            // Use server-side Grok API
+            const serverResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/grok/analyze/${token.mint}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                companionName: attachedCompanion.name,
+                userMessage: inputMessage,
+                tokenData: token
+              })
+            });
+            const serverData = await serverResponse.json();
+            response = serverData.analysis || 'No analysis available';
+          } else {
+            response = await chatService.analyzeToken(token, attachedCompanion.name, inputMessage, selectedAPI, apiKeys);
+          }
         } else {
-          response = await chatService.getCompanionResponse(attachedCompanion.name, conversationHistory, inputMessage, selectedAPI, apiKeys);
+          if (selectedAPI === 'server-grok') {
+            // Use server-side Grok API for general chat
+            const serverResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/grok/chat/${attachedCompanion.tokenMint}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                companionName: attachedCompanion.name,
+                conversationHistory: conversationHistory,
+                userMessage: inputMessage
+              })
+            });
+            const serverData = await serverResponse.json();
+            response = serverData.companionResponse || 'No response available';
+          } else {
+            response = await chatService.getCompanionResponse(attachedCompanion.name, conversationHistory, inputMessage, selectedAPI, apiKeys);
+          }
         }
       } else {
         console.log('Using general companion response for:', currentCompanion);
-        // Use general companion response
-        response = await chatService.getCompanionResponse(currentCompanion, conversationHistory, inputMessage, selectedAPI, apiKeys);
+        if (selectedAPI === 'server-grok') {
+          // Use server-side Grok API for general chat
+          const serverResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/grok/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              companionName: currentCompanion,
+              conversationHistory: conversationHistory,
+              userMessage: inputMessage
+            })
+          });
+          const serverData = await serverResponse.json();
+          response = serverData.companionResponse || 'No response available';
+        } else {
+          // Use general companion response
+          response = await chatService.getCompanionResponse(currentCompanion, conversationHistory, inputMessage, selectedAPI, apiKeys);
+        }
       }
       
       console.log('✅ Received response:', response);
@@ -2918,6 +2963,7 @@ export const Scope = ({
                                   onChange={(e) => setSelectedAPI(e.target.value)}
                                   className="w-full p-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-white/20 focus:outline-none"
                                 >
+                                  <option value="server-grok">Grok-4 (ILLUSIO Server) - No API Key Required</option>
                                   <option value="grok4">Grok-4 (X.AI) - Requires API Key</option>
                                   <option value="gpt4">GPT-4 (OpenAI) - Requires API Key</option>
                                   <option value="claude">Claude (Anthropic) - Requires API Key</option>
@@ -2925,32 +2971,46 @@ export const Scope = ({
                                 </select>
                               </div>
 
-                              <div>
-                                <label className="block text-white text-sm font-medium mb-2">API Key</label>
-                                <div className="flex space-x-2">
-                                  <input
-                                    type="password"
-                                    value={apiKeys[selectedAPI as keyof typeof apiKeys] || ''}
-                                    onChange={(e) => setApiKeys(prev => ({ ...prev, [selectedAPI]: e.target.value }))}
-                                    placeholder={`Enter your ${selectedAPI.toUpperCase()} API key`}
-                                    className="flex-1 p-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-white/20 focus:outline-none"
-                                  />
-                                  <button
-                                    onClick={() => {
-                                      const key = apiKeys[selectedAPI as keyof typeof apiKeys];
-                                      if (key) {
-                                        navigator.clipboard.writeText(key);
-                                        // You could add a toast notification here
-                                      }
-                                    }}
-                                    className="px-3 py-3 bg-white/10 border border-white/10 rounded-lg text-white hover:bg-white/20 transition-colors"
-                                  >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                  </button>
+                              {selectedAPI !== 'server-grok' && (
+                                <div>
+                                  <label className="block text-white text-sm font-medium mb-2">API Key</label>
+                                  <div className="flex space-x-2">
+                                    <input
+                                      type="password"
+                                      value={apiKeys[selectedAPI as keyof typeof apiKeys] || ''}
+                                      onChange={(e) => setApiKeys(prev => ({ ...prev, [selectedAPI]: e.target.value }))}
+                                      placeholder={`Enter your ${selectedAPI.toUpperCase()} API key`}
+                                      className="flex-1 p-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-white/20 focus:outline-none"
+                                    />
+                                    <button
+                                      onClick={() => {
+                                        const key = apiKeys[selectedAPI as keyof typeof apiKeys];
+                                        if (key) {
+                                          navigator.clipboard.writeText(key);
+                                          // You could add a toast notification here
+                                        }
+                                      }}
+                                      className="px-3 py-3 bg-white/10 border border-white/10 rounded-lg text-white hover:bg-white/20 transition-colors"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                      </svg>
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
+
+                              {selectedAPI === 'server-grok' && (
+                                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-green-400">✅</span>
+                                    <span className="text-green-400 text-sm font-medium">Using ILLUSIO Server</span>
+                                  </div>
+                                  <p className="text-gray-400 text-sm mt-1">
+                                    No API key required. Using our secure server-side Grok API.
+                                  </p>
+                                </div>
+                              )}
 
                               <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                                 <div className="flex items-start space-x-3">
