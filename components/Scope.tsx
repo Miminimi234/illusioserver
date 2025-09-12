@@ -1123,13 +1123,15 @@ function InsightsColumn({
             console.error('Failed to parse AI analysis:', parseError);
           }
         }
+      } else {
+        console.error('Failed to fetch AI analysis:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch AI analysis:', error);
     } finally {
       setAiLoading(false);
     }
-  }, [focusToken?.mint, aiLoading, SERVER_BASE_URL]);
+  }, [focusToken?.mint, SERVER_BASE_URL]);
 
   // 10-second polling for AI analysis updates
   useEffect(() => {
@@ -2420,7 +2422,7 @@ export const Scope = ({
               transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
               <TokenSearch 
-                placeholder="Search by token or CA"
+                placeholder="Search by token address or name"
                 onTokenSelect={handleTokenSelect}
                 className="w-80"
               />
