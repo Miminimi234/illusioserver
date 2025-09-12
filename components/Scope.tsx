@@ -2315,15 +2315,15 @@ export const Scope = ({
       });
     };
 
-    // Use transformed property names from useServerData - LIMIT to 100 fresh tokens
+    // Use transformed property names from useServerData - LIMIT to 50 fresh tokens
     // Show stocks when stocks are selected, otherwise show crypto tokens
     const freshTokens = assetType === 'stocks' 
-      ? stockData.slice(0, 100) // Show real stock data when stocks selected
+      ? stockData.slice(0, 50) // Show real stock data when stocks selected
       : tokensToFilter.filter(t => t && t.status === 'fresh' && !isUnwantedToken(t)); // Get fresh tokens first
     
     const newPairs = assetType === 'stocks' 
-      ? freshTokens.slice(0, 100) // Show real stock data when stocks selected
-      : applyCustomFilters(freshTokens).slice(0, 100); // Apply custom filters then limit to 100
+      ? freshTokens.slice(0, 50) // Show real stock data when stocks selected
+      : applyCustomFilters(freshTokens).slice(0, 50); // Apply custom filters then limit to 50
     const filled = tokensToFilter.filter(t => t && t.status === 'active' && !t.isOnCurve && !isUnwantedToken(t)).slice(0, 30); // Show active tokens
     // EDGE: No tokens on edge - temporarily removed
     const onEdge: any[] = [];
