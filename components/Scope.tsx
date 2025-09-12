@@ -826,8 +826,8 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
         </div>
       </div>
       
-      {/* Metrics row */}
-      <div className="mt-3 grid grid-cols-2 gap-3 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      {/* Metrics row - Always visible */}
+      <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
         <div className="min-w-0">
           <span className="text-white/60">MC:</span>
           <span className={`ml-1 font-mono truncate font-semibold ${
