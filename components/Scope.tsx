@@ -1133,7 +1133,7 @@ function InsightsColumn({
     }
   }, [focusToken?.mint, SERVER_BASE_URL]);
 
-  // 10-second polling for AI analysis updates
+  // 60-second polling for AI analysis updates (reduced frequency)
   useEffect(() => {
     if (!focusToken?.mint) {
       setAiAnalysis(null);
@@ -1143,10 +1143,10 @@ function InsightsColumn({
     // Initial fetch
     fetchAiAnalysis();
 
-    // Set up 10-second polling
+    // Set up 60-second polling (reduced from 10 seconds)
     const interval = setInterval(() => {
       fetchAiAnalysis();
-    }, 10000); // 10 seconds
+    }, 60000); // 60 seconds
 
     return () => clearInterval(interval);
   }, [focusToken?.mint, fetchAiAnalysis]);

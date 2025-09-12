@@ -95,7 +95,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
     fetchTokenData();
   }, [searchQuery]);
 
-  // Auto-refresh holders data every 5 seconds when token is loaded
+  // Auto-refresh holders data every 30 seconds when token is loaded (reduced frequency)
   useEffect(() => {
     if (!tokenData || !tokenData.mint) return;
 
@@ -105,7 +105,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
     const interval = setInterval(() => {
       console.log(`Auto-refreshing holders for ${tokenData.mint}`);
       fetchHolders(tokenData.mint);
-    }, 10000); // Refresh every 10 seconds for live data
+    }, 30000); // Refresh every 30 seconds for live data (reduced from 10 seconds)
 
     return () => clearInterval(interval);
   }, [tokenData]);

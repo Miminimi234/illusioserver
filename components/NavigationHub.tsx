@@ -35,6 +35,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [holders, setHolders] = useState<any[]>([]);
+  const [showInvalidInput, setShowInvalidInput] = useState(false);
   const [predictionData, setPredictionData] = useState({
     confidence: 0.75,
     expectedRange: { min: 5, max: 15 },
@@ -92,7 +93,20 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setSearchQuery(value);
+    
+    // Check if invalid characters were typed
+    const hasInvalidChars = /[^A-Za-z0-9\s\-_]/.test(value);
+    
+    // Only allow valid token characters (alphanumeric, spaces, hyphens, underscores)
+    const sanitizedValue = value.replace(/[^A-Za-z0-9\s\-_]/g, '');
+    
+    setSearchQuery(sanitizedValue);
+    
+    // Show invalid input feedback briefly
+    if (hasInvalidChars) {
+      setShowInvalidInput(true);
+      setTimeout(() => setShowInvalidInput(false), 1000);
+    }
     
     // Debounce search
     if (debounceRef.current) {
@@ -100,9 +114,9 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
     }
     
     debounceRef.current = setTimeout(() => {
-      if (value.trim()) {
+      if (sanitizedValue.trim()) {
         // Validate that the search query looks like a token address or name
-        const isValidTokenSearch = isValidTokenQuery(value.trim());
+        const isValidTokenSearch = isValidTokenQuery(sanitizedValue.trim());
         
         if (isValidTokenSearch) {
           setIsAnalyzing(true);
@@ -215,8 +229,17 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
                     value={searchQuery}
                     onChange={handleSearchChange}
                     placeholder="Enter token address or name..."
-                    className="w-80 px-4 py-2 bg-transparent border border-white/30 rounded-full text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+                    className={`w-80 px-4 py-2 bg-transparent border rounded-full text-white placeholder-white/50 focus:outline-none focus:ring-2 transition-all duration-200 ${
+                      showInvalidInput 
+                        ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' 
+                        : 'border-white/30 focus:ring-blue-500/50 focus:border-blue-500/50'
+                    }`}
                   />
+                  {showInvalidInput && (
+                    <div className="absolute -bottom-8 left-0 text-red-400 text-xs animate-pulse">
+                      Only token addresses and names allowed
+                    </div>
+                  )}
                   {searchQuery && (
                     <button
                       type="button"

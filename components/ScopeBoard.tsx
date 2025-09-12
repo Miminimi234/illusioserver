@@ -39,7 +39,7 @@ export default function ScopeBoard() {
     };
 
     fetchTokens();
-    const interval = setInterval(fetchTokens, 5000); // refresh every 5s
+    const interval = setInterval(fetchTokens, 30000); // refresh every 30s (reduced from 5s)
     return () => clearInterval(interval);
   }, []);
 

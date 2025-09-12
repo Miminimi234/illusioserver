@@ -133,7 +133,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
     return () => clearInterval(interval);
   }, [tokenData?.mint]);
 
-  // Auto-refresh token data every 30 seconds to get updated metadata
+  // Auto-refresh token data every 2 minutes to get updated metadata (reduced frequency)
   useEffect(() => {
     if (!searchQuery.trim() || searchQuery.length < 2) return;
 
@@ -155,11 +155,11 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
       }
     };
 
-    // Initial refresh after 10 seconds
-    const initialTimeout = setTimeout(refreshTokenData, 10000);
+    // Initial refresh after 30 seconds
+    const initialTimeout = setTimeout(refreshTokenData, 30000);
 
-    // Then refresh every 30 seconds
-    const interval = setInterval(refreshTokenData, 30000);
+    // Then refresh every 2 minutes (reduced from 30 seconds)
+    const interval = setInterval(refreshTokenData, 120000);
 
     return () => {
       clearTimeout(initialTimeout);

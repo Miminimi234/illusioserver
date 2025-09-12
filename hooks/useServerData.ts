@@ -277,7 +277,6 @@ export const useServerData = (isOpen: boolean) => {
   // Pause live updates due to hover
   const pauseLiveOnHover = useCallback(() => {
     setIsHoverPaused(true);
-    console.log("⏸️ Live updates paused due to hover");
   }, []);
 
   // Resume live updates after hover ends
@@ -312,8 +311,6 @@ export const useServerData = (isOpen: boolean) => {
       setQueuedTokens([]);
       setLastUpdate(new Date());
     }
-    
-    console.log("▶️ Live updates resumed after hover");
   }, [queuedTokens]);
 
   // Handle WebSocket messages for real-time updates
@@ -404,7 +401,7 @@ export const useServerData = (isOpen: boolean) => {
         const interval = setInterval(() => {
           // console.log("🔄 Periodic refresh calling fetchTokens...");
           fetchTokens();
-        }, 30000); // Reduced frequency: refresh every 30 seconds for fallback
+        }, 120000); // Reduced frequency: refresh every 2 minutes for fallback (WebSocket handles real-time)
         
         return () => clearInterval(interval);
       }
