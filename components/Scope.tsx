@@ -2013,9 +2013,7 @@ export const Scope = ({
   //     connectionStatus,
   //     lastUpdate: lastUpdate?.toLocaleTimeString() || null
   //   });
-    
-
-  }, [tokens, isLoading, connectionStatus, lastUpdate]);
+  // }, [tokens, isLoading, connectionStatus, lastUpdate]);
 
 
 
@@ -2037,7 +2035,7 @@ export const Scope = ({
     //   symbol: t.symbol,
     //   status: t.status,
     //   isOnCurve: t.isOnCurve // Use transformed property name
-    })));
+    // })));
     
     // Filter out unwanted tokens (Jupiter, Sugar, .sol domains, etc.)
     const isUnwantedToken = (token: any) => {
