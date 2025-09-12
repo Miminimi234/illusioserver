@@ -1111,6 +1111,84 @@ function InsightsColumn({
   focusToken: any | null;
   className?: string;
 }) {
+  const [holderCount, setHolderCount] = useState<number | null>(null);
+  const [holderLoading, setHolderLoading] = useState(false);
+  const [lastHolderUpdate, setLastHolderUpdate] = useState<Date | null>(null);
+
+  // Function to fetch holder count
+  const fetchHolderCount = async (mint: string) => {
+    if (!mint) return;
+    
+    setHolderLoading(true);
+    try {
+      console.log(`🔍 Fetching holder count for ${mint}`);
+      
+      // Try Birdeye API first (with API key)
+      const birdeyeResponse = await fetch(`https://public-api.birdeye.so/public/v1/token/holders?address=${mint}&limit=1`, {
+        headers: {
+          'X-API-KEY': process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || '',
+          'accept': 'application/json'
+        }
+      });
+      
+      if (birdeyeResponse.ok) {
+        const birdeyeData = await birdeyeResponse.json();
+        if (birdeyeData.data && Array.isArray(birdeyeData.data)) {
+          setHolderCount(birdeyeData.data.length);
+          setLastHolderUpdate(new Date());
+          console.log(`✅ Found ${birdeyeData.data.length} holders from Birdeye`);
+          setHolderLoading(false);
+          return;
+        }
+      }
+      
+      // Fallback to DexScreener API
+      const dexResponse = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
+      if (dexResponse.ok) {
+        const dexData = await dexResponse.json();
+        if (dexData.pairs && dexData.pairs.length > 0) {
+          const pair = dexData.pairs[0];
+          if (pair.holders) {
+            setHolderCount(pair.holders.length);
+            setLastHolderUpdate(new Date());
+            console.log(`✅ Found ${pair.holders.length} holders from DexScreener`);
+            setHolderLoading(false);
+            return;
+          }
+        }
+      }
+      
+      // If no data found, keep existing count or set to null
+      console.log(`⚠️ No holder data found for ${mint}`);
+      
+    } catch (error) {
+      console.error(`❌ Error fetching holder count for ${mint}:`, error);
+    } finally {
+      setHolderLoading(false);
+    }
+  };
+
+  // Fetch holders when focusToken changes
+  useEffect(() => {
+    if (focusToken && focusToken.mint) {
+      fetchHolderCount(focusToken.mint);
+    } else {
+      setHolderCount(null);
+      setLastHolderUpdate(null);
+    }
+  }, [focusToken?.mint]);
+
+  // Auto-refresh holder count every 5 seconds
+  useEffect(() => {
+    if (!focusToken || !focusToken.mint) return;
+
+    const interval = setInterval(() => {
+      console.log(`🔄 Auto-refreshing holder count for ${focusToken.mint}`);
+      fetchHolderCount(focusToken.mint);
+    }, 5000); // 5 seconds
+
+    return () => clearInterval(interval);
+  }, [focusToken?.mint]);
   // AI Analysis state
   const [aiAnalysis, setAiAnalysis] = useState<{
     futureEchoDelta: string;
@@ -1415,7 +1493,18 @@ function InsightsColumn({
                 </div>
                 <div>
                   <div className="text-white/50 text-[12px] font-mono mb-1">Holders</div>
-                  <div className="text-white text-[12px] font-mono">{metrics?.holderCount || "N/A"}</div>
+                  <div className="text-white text-[12px] font-mono flex items-center space-x-1">
+                    {holderLoading ? (
+                      <div className="animate-spin rounded-full h-2 w-2 border-b border-white/60"></div>
+                    ) : (
+                      <span>{holderCount !== null ? holderCount.toLocaleString() : "N/A"}</span>
+                    )}
+                    {lastHolderUpdate && (
+                      <span className="text-white/30 text-[10px]">
+                        ({Math.floor((Date.now() - lastHolderUpdate.getTime()) / 1000)}s ago)
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <div className="text-white/50 text-[12px] font-mono mb-1">Age</div>
