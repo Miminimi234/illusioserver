@@ -297,79 +297,34 @@ Respond with ONLY "YES" if the conversation feels complete and ready for archivi
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isTyping]);
 
-  // Advanced conversational AI system for Oracle agents
+  // Oracle now runs globally via oracleService - this component just displays the messages
   useEffect(() => {
-    if (!isOpen) return;
-
-    let interval: NodeJS.Timeout;
-
-    // Start the conversation immediately if there are existing messages, otherwise after a short delay
-    const delay = chatMessages.length > 0 ? 0 : 2000; // No delay if continuing conversation
-    
-    const startDelay = setTimeout(() => {
-      interval = setInterval(async () => {
+    // Refresh messages from localStorage when OracleHub opens
+    const refreshMessages = () => {
+      const savedMessages = localStorage.getItem('oracle-chat-messages');
+      const savedCounter = localStorage.getItem('oracle-message-counter');
+      
+      if (savedMessages) {
         try {
-          // Get the last few messages for context
-          const recentMessages = chatMessages.slice(-5);
-          const lastMessage = recentMessages[recentMessages.length - 1];
-          
-          // Determine which agent should respond based on conversation flow
-          const nextAgent = determineNextAgent(recentMessages, lastMessage);
-          
-          // Update agent rotation ref IMMEDIATELY
-          const agents = ['analyzer', 'predictor', 'quantum-eraser', 'retrocausal'];
-          const agentIndex = agents.indexOf(nextAgent);
-          lastAgentIndexRef.current = agentIndex;
-          
-          console.log(`🎯 Generating message for: ${nextAgent}`);
-          console.log(`📝 Last message from: ${lastMessage?.agent}`);
-          console.log(`💬 Last message: "${lastMessage?.message?.substring(0, 50)}..."`);
-          console.log(`🔄 Updated agent index to: ${agentIndex}`);
-          
-          setIsTyping(true);
-          
-          try {
-            // Generate contextual response using server-side Grok API
-            const newMessage = await generateContextualResponse(nextAgent, chatMessages);
-            
-            console.log(`🤖 Server Response: "${newMessage.message.substring(0, 100)}..."`);
-            console.log(`🔗 Contains agent handoff: ${newMessage.message.toLowerCase().includes('predictor') || newMessage.message.toLowerCase().includes('analyzer') || newMessage.message.toLowerCase().includes('quantum eraser') || newMessage.message.toLowerCase().includes('retrocausal')}`);
-            
-            setTimeout(() => {
-              setChatMessages(prev => {
-                const maxMessages = 100;
-                const newMessages = [...prev, newMessage];
-                const finalMessages = newMessages.length > maxMessages ? newMessages.slice(-maxMessages) : newMessages;
-                
-                // Save to localStorage
-                localStorage.setItem('oracle-chat-messages', JSON.stringify(finalMessages));
-                
-                return finalMessages;
-              });
-              setMessageCounter(prev => {
-                const newCounter = prev + 1;
-                localStorage.setItem('oracle-message-counter', newCounter.toString());
-                return newCounter;
-              });
-              
-              setIsTyping(false);
-            }, 1000 + Math.random() * 1000);
-          } catch (error) {
-            console.error('Error generating message:', error);
-            setIsTyping(false);
-          }
+          const parsedMessages = JSON.parse(savedMessages);
+          setChatMessages(parsedMessages);
         } catch (error) {
-          console.error('Error adding new message:', error);
-          setIsTyping(false);
+          console.error('Error loading messages:', error);
         }
-      }, 3000); // Every 3 seconds for faster conversation
-    }, delay); // Start immediately if continuing, or after 2 seconds if fresh
-
-    return () => {
-      clearTimeout(startDelay);
-      if (interval) clearInterval(interval);
+      }
+      
+      if (savedCounter) {
+        setMessageCounter(parseInt(savedCounter, 10));
+      }
     };
-  }, [isOpen]); // Remove chatMessages from dependencies to prevent restart
+
+    if (isOpen) {
+      refreshMessages();
+      // Set up interval to refresh messages while OracleHub is open
+      const refreshInterval = setInterval(refreshMessages, 2000); // Refresh every 2 seconds
+      return () => clearInterval(refreshInterval);
+    }
+  }, [isOpen]);
 
   // AI Conversation Logic Functions
   const determineNextAgent = (recentMessages: ChatMessage[], lastMessage: ChatMessage | undefined): string => {

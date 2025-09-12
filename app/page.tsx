@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useServerData } from "@/hooks/useServerData";
 import { AnimatePresence } from "framer-motion";
+import { oracleService } from "@/utils/oracleService";
 
 
 // Dynamically import all components to avoid SSR issues
@@ -113,6 +114,18 @@ export default function Page() {
     }
     
     setIsLoading(false);
+  }, []);
+
+  // Initialize Oracle service to run 24/7
+  useEffect(() => {
+    console.log('🚀 Initializing Oracle service for 24/7 operation...');
+    oracleService.startOracle();
+    
+    // Cleanup on unmount
+    return () => {
+      console.log('🛑 Cleaning up Oracle service...');
+      oracleService.stopOracle();
+    };
   }, []);
 
   const handleBirthdaySubmit = (birthday: Date) => {
