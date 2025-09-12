@@ -2474,7 +2474,7 @@ export const Scope = ({
         duration: 0.4, 
         ease: [0.25, 0.46, 0.45, 0.94]
       }}
-    >
+    > 
       {/* Header */}
       <motion.div 
         className="bg-black/80 border-b border-neutral-800/60 p-4 flex-shrink-0"
@@ -2656,8 +2656,6 @@ export const Scope = ({
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
               <div className="flex-1 text-center py-4 border-r border-neutral-800/60">
                 <h2 className="text-lg font-bold uppercase tracking-wider text-white">Insights</h2>
               </div>
@@ -3717,3 +3715,4 @@ const ScopeWithWatchlist: React.FC<{
   };
   
   export default ScopeWithWatchlist;
+  
