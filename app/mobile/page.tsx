@@ -184,15 +184,14 @@ export default function MobilePage() {
 
         {/* Document Button - Coming Soon */}
         <div 
-          className="relative w-12 h-12 flex items-center justify-center hover:scale-125 hover:drop-shadow-lg transition-all duration-300 cursor-not-allowed"
+          className="relative w-12 h-12 flex items-center justify-center hover:scale-125 hover:drop-shadow-lg transition-all duration-300 cursor-not-allowed group"
           style={{
             opacity: visibleButtons.includes(2) ? 1 : 0,
             transform: visibleButtons.includes(2) ? 'scale(1)' : 'scale(0.8)',
           }}
-          title="Coming soon"
         >
           <svg 
-            className="w-6 h-6 text-white/60 hover:text-white/40 transition-colors duration-300" 
+            className="w-6 h-6 text-white/60 group-hover:text-white/40 transition-colors duration-300" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -201,9 +200,9 @@ export default function MobilePage() {
           </svg>
           
           {/* Coming Soon Tooltip */}
-          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-black/80 text-white text-xs rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-black/90 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none z-50">
             Coming soon
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/80"></div>
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/90"></div>
           </div>
         </div>
       </div>
