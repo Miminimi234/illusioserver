@@ -581,7 +581,7 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
       className={`group relative isolate overflow-visible rounded-xl border hover:scale-102 hover:z-10 transition-all duration-200 token-card cursor-pointer ${
         token.isStock 
           ? 'p-3' // Smaller padding for stocks
-          : 'p-4' // Normal padding for crypto
+          : 'p-3' // Reduced padding for crypto to make cards smaller
       } ${
         isDragOver
           ? draggedAgent === 'The Quantum Eraser'
@@ -753,7 +753,7 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
       <div className="grid grid-cols-[auto_1fr_auto] items-start gap-3">
         {/* Avatar container with HoverImagePreview */}
         <div className={`relative shrink-0 overflow-visible ${
-          token.isStock ? 'h-10 w-10' : 'h-12 w-12'
+          token.isStock ? 'h-10 w-10' : 'h-10 w-10'
         }`}>
           {token.imageUrl ? (
             <HoverImagePreview 
@@ -771,14 +771,14 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
         {/* Token info */}
         <div className="min-w-0 flex-1">
           <div className={`text-white font-semibold truncate flex items-center gap-2 ${
-            token.isStock ? 'text-sm' : ''
+            token.isStock ? 'text-sm' : 'text-sm'
           }`}>
             <span className={`text-white/80 font-mono font-bold uppercase ${
-              token.isStock ? 'text-xs' : 'text-sm'
+              token.isStock ? 'text-xs' : 'text-xs'
             }`}>
               {token.symbol || token.mint.slice(0, 4)}
             </span>
-            <span className={token.isStock ? 'text-sm' : ''}>
+            <span className={token.isStock ? 'text-sm' : 'text-sm'}>
               {token.name || token.symbol || `${token.mint.slice(0, 4)}…${token.mint.slice(-4)}`}
             </span>
             {/* Copy button */}
@@ -1716,7 +1716,7 @@ export const Scope = ({
   const [draggedAgent, setDraggedAgent] = useState<string | null>(null);
   
   // Asset type dropdown state
-  const [assetType, setAssetType] = useState<'crypto' | 'stocks'>('crypto');
+  const [assetType, setAssetType] = useState<'crypto' | 'stocks' | 'news'>('crypto');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -2590,7 +2590,7 @@ export const Scope = ({
             <div className="flex border-b border-neutral-800/60">
               <div className="flex-1 text-center py-4 border-r border-neutral-800/60 relative">
                 <h2 className="text-lg font-bold uppercase tracking-wider text-white">
-                  {assetType === 'stocks' ? 'Stocks' : 'Fresh Mints'}
+                  {assetType === 'stocks' ? 'Stocks' : assetType === 'news' ? 'News' : 'Fresh Mints'}
                 </h2>
                 
                 {/* Loading indicator for stocks */}
@@ -2650,6 +2650,17 @@ export const Scope = ({
                           }`}
                         >
                           Stocks
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsDropdownOpen(false);
+                            setShowComingSoon(true);
+                          }}
+                          className={`w-full px-3 py-1.5 text-sm font-medium text-left hover:bg-white/10 transition-colors duration-200 ${
+                            assetType === 'news' ? 'text-white bg-white/10' : 'text-white/70'
+                          }`}
+                        >
+                          News
                         </button>
                       </div>
                     )}
