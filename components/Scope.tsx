@@ -749,8 +749,13 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
         </motion.div>
       )}
       
-      {/* Header row: avatar, name/symbol */}
-      <div className="grid grid-cols-[auto_1fr] items-start gap-2">
+      {/* Star button - top right corner */}
+      <div className="absolute top-2 right-2 z-20">
+        <StarButton tokenMint={token.mint} />
+      </div>
+      
+      {/* Header row: avatar, name/symbol, copy button */}
+      <div className="grid grid-cols-[auto_1fr_auto] items-start gap-2">
         {/* Avatar container with HoverImagePreview */}
         <div className={`relative shrink-0 overflow-visible ${
           token.isStock ? 'h-10 w-10' : 'h-10 w-10'
@@ -781,6 +786,35 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
             <span className={token.isStock ? 'text-sm' : 'text-sm'}>
               {token.name || token.symbol || `${token.mint.slice(0, 4)}…${token.mint.slice(-4)}`}
             </span>
+            {/* Copy button */}
+            <button
+              onClick={copyMintAddress}
+              className={`bg-white/10 hover:bg-white/20 rounded border border-white/20 transition-all duration-200 flex items-center shrink-0 relative z-30 ${
+                token.isStock ? 'p-0.5' : 'p-1'
+              }`}
+            >
+              <svg 
+                className={`transition-colors duration-200 text-white/60 hover:text-white ${
+                  token.isStock ? 'w-2.5 h-2.5' : 'w-3 h-3'
+                }`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" 
+                />
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M8 2H4a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V4a2 2 0 00-2-2z" 
+                />
+              </svg>
+            </button>
           </div>
           {/* Creation time display - hide for stocks */}
           {!token.isStock && (
@@ -790,9 +824,6 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
             />
           )}
         </div>
-        
-        {/* Star button */}
-        <StarButton tokenMint={token.mint} />
       </div>
       
       {/* Metrics row */}
@@ -1697,6 +1728,7 @@ export const Scope = ({
   
   // Coming soon popup state
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [comingSoonType, setComingSoonType] = useState<'stocks' | 'news'>('stocks');
   
   // Filter state
   const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -2615,6 +2647,7 @@ export const Scope = ({
                         <button
                           onClick={() => {
                             setIsDropdownOpen(false);
+                            setComingSoonType('stocks');
                             setShowComingSoon(true);
                           }}
                           className={`w-full px-3 py-1.5 text-sm font-medium text-left hover:bg-white/10 transition-colors duration-200 ${
@@ -2626,6 +2659,7 @@ export const Scope = ({
                         <button
                           onClick={() => {
                             setIsDropdownOpen(false);
+                            setComingSoonType('news');
                             setShowComingSoon(true);
                           }}
                           className={`w-full px-3 py-1.5 text-sm font-medium text-left hover:bg-white/10 transition-colors duration-200 ${
@@ -3485,14 +3519,25 @@ export const Scope = ({
                 <div className="p-3 bg-white/5 rounded-lg border border-white/10">
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
-                      <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
+                      {comingSoonType === 'stocks' ? (
+                        <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                      )}
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-white">Stocks Feature</h3>
+                      <h3 className="text-xl font-semibold text-white">
+                        {comingSoonType === 'stocks' ? 'Stocks Feature' : 'News Feature'}
+                      </h3>
                       <p className="text-base leading-relaxed text-white/90">
-                        Stocks functionality is currently under development. Stay tuned for exciting updates!
+                        {comingSoonType === 'stocks' 
+                          ? 'Stocks functionality is currently under development. Stay tuned for exciting updates!'
+                          : 'News functionality is currently under development. Stay tuned for exciting updates!'
+                        }
                       </p>
                     </div>
                   </div>
