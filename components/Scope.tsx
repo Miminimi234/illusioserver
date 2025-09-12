@@ -3688,7 +3688,7 @@ export const Scope = ({
         </AnimatePresence>
       </motion.div>
     </motion.div>
-    );
+  );
 };
 
 // Wrapped Scope component with WatchlistProvider
