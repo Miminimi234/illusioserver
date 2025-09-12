@@ -39,7 +39,7 @@ export default function ScopeBoard() {
     };
 
     fetchTokens();
-    const interval = setInterval(fetchTokens, 2000); // refresh every 2s (ULTRA FAST for fresh mints)
+    const interval = setInterval(fetchTokens, 1000); // refresh every 1s (INSTANT for fresh mints)
     return () => clearInterval(interval);
   }, []);
 
