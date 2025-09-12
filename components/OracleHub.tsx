@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import { xapiService } from "@/utils/xapiService";
-import { ANALYZER_OUTPUTS, PREDICTOR_OUTPUTS, QUANTUM_ERASER_OUTPUTS, RETROCAUSAL_OUTPUTS } from "@/utils/oracleOutputs";
 
 interface OracleHubProps {
   isOpen: boolean;
@@ -289,19 +288,11 @@ Respond with ONLY "YES" if the conversation feels complete and ready for archivi
           setIsTyping(true);
           
           try {
-            // Generate contextual response using complex unique output selection
-            const response = selectUniqueOutput(nextAgent);
+            // Generate contextual response using server-side Grok API
+            const newMessage = await generateContextualResponse(nextAgent, chatMessages);
             
-            console.log(`🤖 Unique Response: "${response.substring(0, 100)}..."`);
-            console.log(`🔗 Contains agent handoff: ${response.toLowerCase().includes('predictor') || response.toLowerCase().includes('analyzer') || response.toLowerCase().includes('quantum eraser') || response.toLowerCase().includes('retrocausal')}`);
-            
-            const newMessage: ChatMessage = {
-              id: Date.now().toString(),
-              agent: nextAgent as 'analyzer' | 'predictor' | 'quantum-eraser' | 'retrocausal',
-              message: response,
-              timestamp: new Date(),
-              type: nextAgent === 'predictor' || nextAgent === 'retrocausal' ? 'prediction' : 'analysis'
-            };
+            console.log(`🤖 Server Response: "${newMessage.message.substring(0, 100)}..."`);
+            console.log(`🔗 Contains agent handoff: ${newMessage.message.toLowerCase().includes('predictor') || newMessage.message.toLowerCase().includes('analyzer') || newMessage.message.toLowerCase().includes('quantum eraser') || newMessage.message.toLowerCase().includes('retrocausal')}`);
             
             setTimeout(() => {
               setChatMessages(prev => {
@@ -353,57 +344,56 @@ Respond with ONLY "YES" if the conversation feels complete and ready for archivi
     return selectedAgent;
   };
 
-  // Complex output selection to avoid repetition
-  const selectUniqueOutput = (agent: string): string => {
-    const outputs = {
-      analyzer: ANALYZER_OUTPUTS,
-      predictor: PREDICTOR_OUTPUTS,
-      'quantum-eraser': QUANTUM_ERASER_OUTPUTS,
-      retrocausal: RETROCAUSAL_OUTPUTS
-    };
-    
-    const agentOutputs = outputs[agent as keyof typeof outputs];
-    const usedIndices = usedOutputsRef.current[agent];
-    
-    // If all outputs have been used, reset the used list
-    if (usedIndices.length >= agentOutputs.length) {
-      usedOutputsRef.current[agent] = [];
-      console.log(`🔄 Reset used outputs for ${agent} - all ${agentOutputs.length} outputs used`);
+  // Generate oracle response using server-side Grok API
+  const generateOracleResponse = async (agent: string, recentMessages: ChatMessage[]): Promise<string> => {
+    try {
+      // Build context from recent messages
+      const context = recentMessages.slice(-3).map(msg => `${msg.agent}: ${msg.message}`).join('\n');
+      
+      const response = await fetch('https://discerning-reverence-production.up.railway.app/api/grok/oracle/conversation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agent: agent,
+          context: context || 'Start the oracle conversation',
+          recentMessages: recentMessages.slice(-2).map(msg => ({ agent: msg.agent, message: msg.message }))
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.oracleResponse || 'No response available';
+    } catch (error) {
+      console.error('Error generating oracle response:', error);
+      // Fallback to simple response if server fails
+      return `The ${agent} speaks from the oracle realm, contemplating the cosmic market patterns.`;
     }
-    
-    // Find available outputs (not recently used)
-    const availableIndices = agentOutputs
-      .map((_, index) => index)
-      .filter(index => !usedIndices.includes(index));
-    
-    // Select random from available outputs
-    const selectedIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-    
-    // Mark this output as used
-    usedOutputsRef.current[agent].push(selectedIndex);
-    
-    console.log(`🎯 Selected output ${selectedIndex + 1}/${agentOutputs.length} for ${agent}`);
-    console.log(`📝 Used outputs for ${agent}: [${usedIndices.join(', ')}]`);
-    
-    return agentOutputs[selectedIndex];
   };
 
-  const generateContextualResponse = (agent: string, recentMessages: ChatMessage[]): ChatMessage => {
-    const lastMessage = recentMessages[recentMessages.length - 1];
-    const secondLastMessage = recentMessages[recentMessages.length - 2];
-    
-    // Agent-specific response patterns
-    switch (agent) {
-      case 'analyzer':
-        return generateAnalyzerResponse(lastMessage, secondLastMessage);
-      case 'predictor':
-        return generatePredictorResponse(lastMessage, secondLastMessage);
-      case 'quantum-eraser':
-        return generateQuantumEraserResponse(lastMessage, secondLastMessage);
-      case 'retrocausal':
-        return generateRetrocausalResponse(lastMessage, secondLastMessage);
-      default:
-        return generateAnalyzerResponse(lastMessage, secondLastMessage);
+  const generateContextualResponse = async (agent: string, recentMessages: ChatMessage[]): Promise<ChatMessage> => {
+    try {
+      const oracleResponse = await generateOracleResponse(agent, recentMessages);
+      
+      return {
+        id: Date.now().toString(),
+        agent: agent as 'analyzer' | 'predictor' | 'quantum-eraser' | 'retrocausal',
+        message: oracleResponse,
+        timestamp: new Date(),
+        type: 'analysis'
+      };
+    } catch (error) {
+      console.error('Error generating contextual response:', error);
+      // Fallback response
+      return {
+        id: Date.now().toString(),
+        agent: agent as 'analyzer' | 'predictor' | 'quantum-eraser' | 'retrocausal',
+        message: `The ${agent} contemplates the cosmic market patterns from the oracle realm.`,
+        timestamp: new Date(),
+        type: 'analysis'
+      };
     }
   };
 
