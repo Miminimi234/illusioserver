@@ -8,21 +8,15 @@ interface ManifestoProps {
 }
 
 export default function Manifesto({ isOpen, onClose }: ManifestoProps) {
-  const manifestoText = `ILLUSIO exists because markets behave like a simulation claiming to be reality. Prices flicker, narratives multiply, and most of what you see is noise laid over a smaller signal. Our job is to build an instrument that lets you see the signal early enough to matter.
+  const manifestoText = `ILLUSIO exists because markets behave like a simulation that insists it is real. Prices flicker, stories stack on stories, and a quieter signal moves underneath the noise. Our work is to build an instrument that finds that signal early, while action is still cheap and reversible.
 
-WE START by treating every token as an experiment.
+We treat every token as an experiment. We start by observing what is actually there, who arrives, who leaves, where the flow holds or slips, and which moves are natural versus staged. We look for the small, honest bends that precede the loud turns. If the world changes, our read changes with it. The instrument updates, and so do we.
 
-First, we measure what is actually there. Wallets that enter and leave. Liquidity that holds or slips. Order flow that speeds up or stalls. We look for the rare events that quietly bend the curve. This is the work of THE ANALYZER. It takes the blur apart and gives it structure you can inspect.
+Then we clean the record so the history you act on is trustworthy. We strip out planted theatrics and keep what survives a second look. From there, we let tomorrow speak to today. We simulate plausible paths and listen for the footprints they would leave in the present. When those prints appear, we lean in. When they do not, we stand down.
 
-Next, we ask where the path is heading. THE PREDICTOR does not promise miracles. It fits a trajectory from what has been observed and shows its uncertainty out loud. You get a direction, a speed, and a range rather than a slogan. If the world changes, the fit changes with it.
+All of this is visible. The Retrocausality Lab shows live flow as pulses through a simple diagram. Branches light, views update, and you watch cause and effect meet in the middle in real time. Every claim is inspectable. Every change of mind is recorded. Confidence comes from evidence, not volume.
 
-Then, we repair the record. THE QUANTUM ERASER removes what should never have counted in the first place. Spoofed orders, wash trades, synthetic depth, and other tricks are filtered out so the remaining history is something you can trust. Good inputs make better forecasts. There is no mystery there.
-
-Finally, we let tomorrow talk to today. The retrocausality engine runs many possible futures and looks for the footprints they would leave in the present. When those footprints begin to appear in live data, confidence rises. When they fail to appear, confidence falls. You watch cause and effect meet in the middle rather than guessing from one side.
-
-ALL OF THIS IS VISIBLE. The Retrocausality Lab shows live transactions as pulses through a simple diagram of the experiment. You can see which branch a trade reinforces, which detector lights up, and how those paths update the forecast in real time. The result is not a prophecy. It is a decision aid that is honest about what is known, what is changing, and what remains uncertain.
-
-ILLUSIO is not about worshiping charts or chasing stories. It is about building better instruments and using them with discipline. Certainty is not available. Clarity is. We measure, we clean, we simulate, we compare, and then we act when the picture is good enough and still early. That is the point of the project and the promise we intend to keep.`;
+This is not prophecy. It is craft. Measure, clean, simulate, compare, then act when the picture is clear and still early. We prefer discipline over noise, transparency over mystique, and reversibility over bravado. Certainty is not available. Clarity is. Our promise is the same each day: clarity before consensus.`;
 
   return (
     <AnimatePresence mode="wait">
