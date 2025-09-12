@@ -1,5 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Proxy admin requests to Railway server
+  async rewrites() {
+    return [
+      {
+        source: '/admin',
+        destination: 'https://server-production-d3da.up.railway.app/admin-dashboard'
+      },
+      {
+        source: '/admin/:path*',
+        destination: 'https://server-production-d3da.up.railway.app/admin-dashboard/:path*'
+      },
+      {
+        source: '/api/admin/:path*',
+        destination: 'https://server-production-d3da.up.railway.app/api/admin/:path*'
+      }
+    ]
+  },
   // Temporarily disable CSP headers for development
   // async headers() {
   //   return [
