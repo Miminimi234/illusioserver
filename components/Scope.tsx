@@ -432,13 +432,20 @@ const HeaderStarButton: React.FC<{ tokens: any[]; onTokenClick?: (token: any) =>
 };
 
 // Format marketcap with K/M suffixes
-const formatMarketcap = (value: number): string => {
-  if (value >= 1000000) {
-    return (value / 1000000).toFixed(1).replace('.0', '') + 'M';
-  } else if (value >= 1000) {
-    return (value / 1000).toFixed(1).replace('.0', '') + 'K';
+const formatMarketcap = (value: number | string | null | undefined): string => {
+  // Convert to number and handle invalid values
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (!numValue || isNaN(numValue) || numValue <= 0) {
+    return '—';
+  }
+  
+  if (numValue >= 1000000) {
+    return (numValue / 1000000).toFixed(1).replace('.0', '') + 'M';
+  } else if (numValue >= 1000) {
+    return (numValue / 1000).toFixed(1).replace('.0', '') + 'K';
   } else {
-    return value.toFixed(0);
+    return numValue.toFixed(0);
   }
 };
 
@@ -830,13 +837,13 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
                       : 'text-green-400')
                   : 'text-white')
           }`}>
-            {token.is_on_curve ? '— (on curve)' : (token.marketcap && token.marketcap !== 'null' && token.marketcap !== '0' ? `$${formatMarketcap(parseFloat(token.marketcap))}` : '—')}
+            {token.is_on_curve ? '— (on curve)' : (token.marketcap && token.marketcap !== 'null' && token.marketcap !== '0' ? `$${formatMarketcap(token.marketcap)}` : '—')}
           </span>
         </div>
         <div className="min-w-0">
           <span className="text-white/60">Vol:</span>
           <span className="text-white ml-1 font-mono truncate">
-            {token.is_on_curve ? '— (on curve)' : (token.volume_24h && token.volume_24h !== 'null' && token.volume_24h !== '0' ? `$${Math.round(parseFloat(token.volume_24h)).toLocaleString()}` : '—')}
+            {token.is_on_curve ? '— (on curve)' : (token.volume_24h && token.volume_24h !== 'null' && token.volume_24h !== '0' ? `$${formatMarketcap(token.volume_24h)}` : '—')}
           </span>
         </div>
       </div>
@@ -1259,10 +1266,10 @@ function InsightsColumn({
 
     return {
       confidence,
-      marketcap: marketcap ? `$${(Number(marketcap) / 1000000).toFixed(2)}M` : "N/A",
-      liquidity: liquidity ? `$${(Number(liquidity) / 1000).toFixed(1)}K` : "N/A",
-      volume24h: volume24h ? `$${(Number(volume24h) / 1000).toFixed(1)}K` : "N/A",
-      priceUsd: priceUsd ? `$${Number(priceUsd).toFixed(8)}` : "N/A",
+      marketcap: marketcap ? `$${formatMarketcap(marketcap)}` : "N/A",
+      liquidity: liquidity ? `$${formatMarketcap(liquidity)}` : "N/A",
+      volume24h: volume24h ? `$${formatMarketcap(volume24h)}` : "N/A",
+      priceUsd: priceUsd ? `$${formatMarketcap(priceUsd)}` : "N/A",
       holderCount: token.holder_count ?? token.holders ?? "N/A",
       tokenAge: formattedAge,
       price10mMove,
