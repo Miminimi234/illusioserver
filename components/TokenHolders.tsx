@@ -645,11 +645,26 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
   }
 
 
-  if (holders.length === 0 && !holdersLoading) {
+  if (holders.length === 0 && !holdersLoading && hasUserRequestedHolders) {
     return (
       <div className="h-full flex items-center justify-center text-white/40">
         <div className="text-center">
-          <div className="text-4xl mb-4">📊</div>
+          <div className="text-4xl mb-4">👥</div>
+          <div className="text-lg mb-2">No recent holders found</div>
+          <div className="text-sm text-white/50">
+            <p>• Holders will appear here as they are discovered</p>
+            <p>• Check back in a few moments</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (holders.length === 0 && holdersLoading) {
+    return (
+      <div className="h-full flex items-center justify-center text-white/40">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-white/20 border-t-blue-400 rounded-full mx-auto mb-4"></div>
           <div className="text-lg mb-2">Loading holder data...</div>
           <div className="text-sm">Fetching holders for: <span className="text-blue-300 font-mono">{searchQuery}</span></div>
         </div>

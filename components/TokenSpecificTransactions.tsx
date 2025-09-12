@@ -100,7 +100,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
   const fetchTransactions = async (tokenMint: string) => {
     setTransactionsLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/transactions/${tokenMint}?limit=10`); // Reduced from 20 to 10 to save credits
+      const response = await fetch(`https://discerning-reverence-production.up.railway.app/api/transactions/${tokenMint}?limit=10`); // Reduced from 20 to 10 to save credits
       
       if (!response.ok) {
         throw new Error(`Failed to fetch transactions: ${response.status}`);
