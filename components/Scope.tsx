@@ -1292,7 +1292,9 @@ function InsightsColumn({
                 </div>
                 <div>
                   <div className="text-white/50 text-[12px] font-mono mb-1">Marketcap</div>
-                  <div className="text-white text-[12px] font-mono">{metrics?.marketcap || "N/A"}</div>
+                  <div className="text-white text-[12px] font-mono">
+                    {focusToken.is_on_curve ? '— (on curve)' : (focusToken.marketcap && focusToken.marketcap !== 'null' && focusToken.marketcap !== '0' ? `$${formatMarketcap(parseFloat(focusToken.marketcap))}` : '—')}
+                  </div>
                 </div>
                 <div>
                   <div className="text-white/50 text-[12px] font-mono mb-1">Liquidity</div>
@@ -1300,7 +1302,9 @@ function InsightsColumn({
                 </div>
                 <div>
                   <div className="text-white/50 text-[12px] font-mono mb-1">24h Vol</div>
-                  <div className="text-white text-[12px] font-mono">{metrics?.volume24h || "N/A"}</div>
+                  <div className="text-white text-[12px] font-mono">
+                    {focusToken.is_on_curve ? '— (on curve)' : (focusToken.volume_24h && focusToken.volume_24h !== 'null' && focusToken.volume_24h !== '0' ? `$${Math.round(parseFloat(focusToken.volume_24h)).toLocaleString()}` : '—')}
+                  </div>
                 </div>
                 <div>
                   <div className="text-white/50 text-[12px] font-mono mb-1">Holders</div>
@@ -1308,7 +1312,26 @@ function InsightsColumn({
                 </div>
                 <div>
                   <div className="text-white/50 text-[12px] font-mono mb-1">Age</div>
-                  <div className="text-white text-[12px] font-mono">{metrics?.tokenAge || "N/A"}</div>
+                  <div className="text-white text-[12px] font-mono">
+                    {(() => {
+                      const createdDate = new Date(focusToken.created_at || focusToken.createdAt || new Date());
+                      const now = new Date();
+                      const diffInSeconds = Math.floor((now.getTime() - createdDate.getTime()) / 1000);
+                      
+                      if (diffInSeconds < 60) {
+                        return `${diffInSeconds}s ago`;
+                      } else if (diffInSeconds < 3600) {
+                        const minutes = Math.floor(diffInSeconds / 60);
+                        return `${minutes}m ago`;
+                      } else if (diffInSeconds < 86400) {
+                        const hours = Math.floor(diffInSeconds / 3600);
+                        return `${hours}h ago`;
+                      } else {
+                        const days = Math.floor(diffInSeconds / 86400);
+                        return `${days}d ago`;
+                      }
+                    })()}
+                  </div>
                 </div>
               </div>
             </InsightCard>
