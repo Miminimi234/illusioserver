@@ -1697,6 +1697,9 @@ export const Scope = ({
   const [stockData, setStockData] = useState<any[]>([]);
   const [isLoadingStocks, setIsLoadingStocks] = useState(false);
   
+  // Coming soon popup state
+  const [showComingSoon, setShowComingSoon] = useState(false);
+  
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -2555,12 +2558,8 @@ export const Scope = ({
                         </button>
                         <button
                           onClick={() => {
-                            setAssetType('stocks');
                             setIsDropdownOpen(false);
-                            // Fetch stock data if not already loaded
-                            if (stockData.length === 0) {
-                              fetchStockData();
-                            }
+                            setShowComingSoon(true);
                           }}
                           className={`w-full px-3 py-1.5 text-sm font-medium text-left hover:bg-white/10 transition-colors duration-200 ${
                             assetType === 'stocks' ? 'text-white bg-white/10' : 'text-white/70'
@@ -3385,6 +3384,47 @@ export const Scope = ({
         
         {/* Help Popup */}
         <HelpPopup isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+        
+        {/* Coming Soon Popup */}
+        <AnimatePresence>
+          {showComingSoon && (
+            <motion.div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowComingSoon(false)}
+            >
+              <motion.div
+                className="bg-gray-900/95 border border-white/20 rounded-2xl p-8 max-w-md mx-4 text-center"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Coming Soon</h2>
+                  <p className="text-gray-300 text-lg">
+                    Stocks functionality is currently under development. Stay tuned for exciting updates!
+                  </p>
+                </div>
+                <motion.button
+                  onClick={() => setShowComingSoon(false)}
+                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Got it!
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </motion.div>
     );
