@@ -100,7 +100,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
   const fetchTransactions = async (tokenMint: string) => {
     setTransactionsLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/transactions/${tokenMint}?limit=20`);
+      const response = await fetch(`http://localhost:8080/api/transactions/${tokenMint}?limit=10`); // Reduced from 20 to 10 to save credits
       
       if (!response.ok) {
         throw new Error(`Failed to fetch transactions: ${response.status}`);
@@ -117,7 +117,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
     }
   };
 
-  // Auto-refresh transactions every 5 seconds when a token is loaded
+  // Auto-refresh transactions every 30 seconds when a token is loaded (much slower to save credits)
   useEffect(() => {
     if (!tokenData?.mint) return;
 
@@ -128,7 +128,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
     const interval = setInterval(() => {
       // Always refresh if we have a token, regardless of loading state
       fetchTransactions(tokenData.mint);
-    }, 5000); // Refresh every 5 seconds
+    }, 5000); // Refresh every 5 seconds when user is actively viewing transactions
 
     return () => clearInterval(interval);
   }, [tokenData?.mint]);

@@ -49,14 +49,16 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
   const [loading, setLoading] = useState(false);
   const [holdersLoading, setHoldersLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [hasUserRequestedHolders, setHasUserRequestedHolders] = useState(false);
 
-  // Fetch token data when search query changes
+  // Fetch token data when search query changes (but NOT holders automatically)
   useEffect(() => {
     if (!searchQuery.trim() || searchQuery.length < 2) {
       setTokenData(null);
       setHolders([]);
       setLoading(false);
       setHoldersLoading(false);
+      setHasUserRequestedHolders(false);
       return;
     }
 
@@ -76,7 +78,8 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
           // Validate that we have the required fields
           if (token && token.mint) {
             setTokenData(token);
-            // Fetch holders for this token
+            // Automatically fetch holders when token is found (user navigated to holders tab)
+            setHasUserRequestedHolders(true);
             fetchHolders(token.mint);
           } else {
             setTokenData(null);
@@ -95,20 +98,17 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
     fetchTokenData();
   }, [searchQuery]);
 
-  // Auto-refresh holders data every 5 seconds when token is loaded (FAST)
+  // Auto-refresh holders data only when user has requested it
   useEffect(() => {
-    if (!tokenData || !tokenData.mint) return;
-
-    // Initial fetch
-    fetchHolders(tokenData.mint);
+    if (!tokenData || !tokenData.mint || !hasUserRequestedHolders) return;
 
     const interval = setInterval(() => {
-      console.log(`Auto-refreshing holders for ${tokenData.mint}`);
+      console.log(`Auto-refreshing holders for ${tokenData.mint} (user requested)`);
       fetchHolders(tokenData.mint);
-    }, 5000); // Refresh every 5 seconds for live data (FAST)
+    }, 5000); // Refresh every 5 seconds when user is actively viewing holders
 
     return () => clearInterval(interval);
-  }, [tokenData]);
+  }, [tokenData, hasUserRequestedHolders]);
 
   // Force re-render every minute to update holding times live
   useEffect(() => {
@@ -510,7 +510,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
           jsonrpc: '2.0',
           id: 1,
           method: 'getSignaturesForAddress',
-          params: [holderAddress, { limit: 1000 }]
+          params: [holderAddress, { limit: 50 }] // Reduced from 1000 to 50 to save credits
         })
       });
 
@@ -650,9 +650,8 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
       <div className="h-full flex items-center justify-center text-white/40">
         <div className="text-center">
           <div className="text-4xl mb-4">📊</div>
-          <div className="text-lg mb-2">No holder data available</div>
-          <div className="text-sm">Unable to fetch holder data from APIs for: <span className="text-blue-300 font-mono">{searchQuery}</span></div>
-          <div className="text-xs mt-2 text-white/30">Check console for API errors</div>
+          <div className="text-lg mb-2">Loading holder data...</div>
+          <div className="text-sm">Fetching holders for: <span className="text-blue-300 font-mono">{searchQuery}</span></div>
         </div>
       </div>
     );
@@ -707,6 +706,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
             </div>
           </div>
         </div>
+        
       </div>
 
       {/* Holders List */}
