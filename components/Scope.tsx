@@ -1434,64 +1434,6 @@ function InsightsColumn({
               </div>
             </InsightCard>
 
-            {/* Token Details Section */}
-            <InsightCard 
-              title="Token Details" 
-              icon={
-                <svg className="w-3 h-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              }
-            >
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Price</div>
-                  <div className="text-white text-[12px] font-mono">{metrics?.priceUsd || "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Supply</div>
-                  <div className="text-white text-[12px] font-mono">{metrics?.supply || "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Decimals</div>
-                  <div className="text-white text-[12px] font-mono">{metrics?.decimals || "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Status</div>
-                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-[11px] font-mono border ${
-                    metrics?.status === 'fresh' 
-                      ? 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' 
-                      : metrics?.status === 'active'
-                        ? 'bg-green-500/15 text-green-300 border-green-500/30' 
-                        : 'bg-purple-500/15 text-purple-300 border-purple-500/30'
-                  }`}>
-                    {metrics?.status?.toUpperCase() || "N/A"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Source</div>
-                  <div className="text-white text-[12px] font-mono">{metrics?.source || "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">On Curve</div>
-                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-[11px] font-mono border ${
-                    metrics?.isOnCurve 
-                      ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' 
-                      : 'bg-gray-500/15 text-gray-300 border-gray-500/30'
-                  }`}>
-                    {metrics?.isOnCurve ? 'YES' : 'NO'}
-                  </div>
-                </div>
-                {metrics?.creator && (
-                  <div className="col-span-2">
-                    <div className="text-white/50 text-[12px] font-mono mb-1">Creator</div>
-                    <div className="text-white text-[12px] font-mono truncate">
-                      {metrics.creator.slice(0, 8)}...{metrics.creator.slice(-8)}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </InsightCard>
           </div>
         )}
       </div>
