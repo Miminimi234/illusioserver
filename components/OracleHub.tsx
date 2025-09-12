@@ -346,7 +346,7 @@ Respond with ONLY "YES" if the conversation feels complete and ready for archivi
       // Build context from recent messages
       const context = recentMessages.slice(-3).map(msg => `${msg.agent}: ${msg.message}`).join('\n');
       
-      const response = await fetch('https://discerning-reverence-production.up.railway.app/api/grok/oracle/conversation', {
+      const response = await fetch('https://server-production-d3da.up.railway.app/api/grok/oracle/conversation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

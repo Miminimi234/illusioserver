@@ -65,7 +65,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
     const fetchTokenData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`https://discerning-reverence-production.up.railway.app/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
+        const response = await fetch(`https://server-production-d3da.up.railway.app/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
         
         if (!response.ok) {
           throw new Error(`Search failed with ${response.status}`);

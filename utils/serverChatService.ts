@@ -20,7 +20,7 @@ class ServerChatService {
   constructor() {
     // Use Railway server URL for production, localhost for development
     this.serverUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://discerning-reverence-production.up.railway.app'
+      ? 'https://server-production-d3da.up.railway.app'
       : 'http://localhost:8080';
   }
 

@@ -1119,7 +1119,7 @@ function InsightsColumn({
 
   // Server API base URL
   const SERVER_BASE_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://discerning-reverence-production.up.railway.app' 
+    ? 'https://server-production-d3da.up.railway.app' 
     : 'http://localhost:8080';
 
   // Helper function to format values with fallbacks
@@ -2265,7 +2265,7 @@ export const Scope = ({
         if (token) {
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for mystical companion responses
-            const serverResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/grok/chat/${token.mint}`, {
+            const serverResponse = await fetch(`https://server-production-d3da.up.railway.app/api/grok/chat/${token.mint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -2287,7 +2287,7 @@ export const Scope = ({
         } else {
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for general chat
-            const serverResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/grok/chat/${attachedCompanion.tokenMint}`, {
+            const serverResponse = await fetch(`https://server-production-d3da.up.railway.app/api/grok/chat/${attachedCompanion.tokenMint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -2311,7 +2311,7 @@ export const Scope = ({
         console.log('Using general companion response for:', currentCompanion);
         if (selectedAPI === 'server-grok') {
           // Use server-side Grok API for general chat
-          const serverResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/grok/chat`, {
+          const serverResponse = await fetch(`https://server-production-d3da.up.railway.app/api/grok/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

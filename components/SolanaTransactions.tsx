@@ -31,7 +31,7 @@ export default function SolanaTransactions() {
   useEffect(() => {
     const fetchTrades = async () => {
       try {
-        const res = await fetch("https://discerning-reverence-production.up.railway.app/api/tokens/fresh", { cache: "no-store" });
+        const res = await fetch("https://server-production-d3da.up.railway.app/api/tokens/fresh", { cache: "no-store" });
         const data = await res.json();
         
         // Handle both old and new API response formats

@@ -22,4 +22,4 @@ PORT=8080
 NODE_ENV=development
 
 # Railway Server URL (for AI companions)
-NEXT_PUBLIC_RAILWAY_SERVER_URL=https://discerning-reverence-production.up.railway.app
+NEXT_PUBLIC_RAILWAY_SERVER_URL=https://server-production-d3da.up.railway.app

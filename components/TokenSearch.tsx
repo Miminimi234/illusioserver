@@ -20,7 +20,7 @@ interface TokenSearchProps {
   className?: string;
 }
 
-const SERVER_BASE_URL = 'https://discerning-reverence-production.up.railway.app';
+const SERVER_BASE_URL = 'https://server-production-d3da.up.railway.app';
 
 // Validation function to check if search query looks like a token address or name
 const isValidTokenQuery = (query: string): boolean => {
