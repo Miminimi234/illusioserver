@@ -13,6 +13,19 @@ interface NavigationHubProps {
 
 type TabType = 'trades' | 'holders';
 
+// Validation function to check if search query looks like a token address or name
+const isValidTokenQuery = (query: string): boolean => {
+  // Check if it looks like a Solana token address (32-44 characters, alphanumeric)
+  const isTokenAddress = /^[A-Za-z0-9]{32,44}$/.test(query);
+  
+  // Check if it looks like a token name (alphanumeric with spaces, hyphens, underscores)
+  // Must be at least 2 characters and not contain special characters except spaces, hyphens, underscores
+  const isTokenName = /^[A-Za-z0-9\s\-_]{2,50}$/.test(query) && 
+                     !/[!@#$%^&*()+=\[\]{};':"\\|,.<>\/?]/.test(query);
+  
+  return isTokenAddress || isTokenName;
+};
+
 export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -88,18 +101,23 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
     
     debounceRef.current = setTimeout(() => {
       if (value.trim()) {
-        setIsAnalyzing(true);
-        // Simulate analysis
-        setTimeout(() => {
-          setIsAnalyzing(false);
-          // Update prediction data based on search
-          setPredictionData({
-            confidence: 0.6 + Math.random() * 0.3,
-            expectedRange: { min: 3 + Math.random() * 10, max: 10 + Math.random() * 20 },
-            upProbability: 0.3 + Math.random() * 0.4,
-            downProbability: 0.3 + Math.random() * 0.4
-          });
-        }, 1500);
+        // Validate that the search query looks like a token address or name
+        const isValidTokenSearch = isValidTokenQuery(value.trim());
+        
+        if (isValidTokenSearch) {
+          setIsAnalyzing(true);
+          // Simulate analysis
+          setTimeout(() => {
+            setIsAnalyzing(false);
+            // Update prediction data based on search
+            setPredictionData({
+              confidence: 0.6 + Math.random() * 0.3,
+              expectedRange: { min: 3 + Math.random() * 10, max: 10 + Math.random() * 20 },
+              upProbability: 0.3 + Math.random() * 0.4,
+              downProbability: 0.3 + Math.random() * 0.4
+            });
+          }, 1500);
+        }
       }
     }, 400);
   };
@@ -107,8 +125,13 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      setIsAnalyzing(true);
-      // Trigger analysis
+      // Validate that the search query looks like a token address or name
+      const isValidTokenSearch = isValidTokenQuery(searchQuery.trim());
+      
+      if (isValidTokenSearch) {
+        setIsAnalyzing(true);
+        // Trigger analysis
+      }
     }
   };
 
@@ -191,7 +214,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
                     type="text"
                     value={searchQuery}
                     onChange={handleSearchChange}
-                    placeholder="Paste token name or CA..."
+                    placeholder="Enter token address or name..."
                     className="w-80 px-4 py-2 bg-transparent border border-white/30 rounded-full text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
                   />
                   {searchQuery && (
@@ -477,7 +500,7 @@ export default function NavigationHub({ isOpen, onClose }: NavigationHubProps) {
               
               <div>
                 <h3 className="font-semibold text-white mb-2">How to use</h3>
-                <p className="text-sm">Paste CA or search name → press Enter → watch metrics & stream.</p>
+                <p className="text-sm">Enter token address or name → press Enter → watch metrics & stream.</p>
               </div>
               
               <div>

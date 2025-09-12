@@ -344,7 +344,7 @@ export const useServerData = (isOpen: boolean) => {
               console.log('⚠️ DUPLICATE TOKEN PREVENTED:', newToken.mint);
               return prev;
             }
-            console.log('🔥 NEW TOKEN RECEIVED VIA WEBSOCKET:', newToken.name || newToken.symbol || newToken.mint);
+            // console.log('🔥 NEW TOKEN RECEIVED VIA WEBSOCKET:', newToken.name || newToken.symbol || newToken.mint);
             const combined = [newToken, ...prev];
             // NO LIMIT - keep all tokens to prevent fresh mints from disappearing
             return combined;

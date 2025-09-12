@@ -22,7 +22,20 @@ interface TokenSearchProps {
 
 const SERVER_BASE_URL = 'https://discerning-reverence-production.up.railway.app';
 
-export default function TokenSearch({ onTokenSelect, placeholder = "Search by token or CA", className = "" }: TokenSearchProps) {
+// Validation function to check if search query looks like a token address or name
+const isValidTokenQuery = (query: string): boolean => {
+  // Check if it looks like a Solana token address (32-44 characters, alphanumeric)
+  const isTokenAddress = /^[A-Za-z0-9]{32,44}$/.test(query);
+  
+  // Check if it looks like a token name (alphanumeric with spaces, hyphens, underscores)
+  // Must be at least 2 characters and not contain special characters except spaces, hyphens, underscores
+  const isTokenName = /^[A-Za-z0-9\s\-_]{2,50}$/.test(query) && 
+                     !/[!@#$%^&*()+=\[\]{};':"\\|,.<>\/?]/.test(query);
+  
+  return isTokenAddress || isTokenName;
+};
+
+export default function TokenSearch({ onTokenSelect, placeholder = "Search by token address or name", className = "" }: TokenSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<TokenSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +57,13 @@ export default function TokenSearch({ onTokenSelect, placeholder = "Search by to
   // Search tokens when debounced query changes
   useEffect(() => {
     if (debouncedQuery.trim().length < 2) {
+      setResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    // Validate that the search query looks like a token address or name
+    if (!isValidTokenQuery(debouncedQuery.trim())) {
       setResults([]);
       setShowDropdown(false);
       return;

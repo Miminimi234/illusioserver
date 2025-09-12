@@ -1071,6 +1071,21 @@ function InsightsColumn({
   focusToken: any | null;
   className?: string;
 }) {
+  // AI Analysis state
+  const [aiAnalysis, setAiAnalysis] = useState<{
+    futureEchoDelta: string;
+    scenarioBias: string;
+    confidence: number;
+    reasoning: string;
+  } | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [lastAiUpdate, setLastAiUpdate] = useState<Date | null>(null);
+
+  // Server API base URL
+  const SERVER_BASE_URL = process.env.NODE_ENV === 'production' 
+    ? 'https://discerning-reverence-production.up.railway.app' 
+    : 'http://localhost:8080';
+
   // Helper function to format values with fallbacks
   const formatValue = (value: any, fallback: string = "N/A") => {
     if (value === null || value === undefined || value === 'null' || value === '0') {
@@ -1083,6 +1098,56 @@ function InsightsColumn({
   const clamp = (value: number, min: number, max: number) => {
     return Math.min(Math.max(value, min), max);
   };
+
+  // Fetch AI analysis for retrocausality
+  const fetchAiAnalysis = useCallback(async () => {
+    if (!focusToken?.mint || aiLoading) return;
+
+    setAiLoading(true);
+    try {
+      const response = await fetch(`${SERVER_BASE_URL}/api/grok/retrocausality/${focusToken.mint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.analysis) {
+          try {
+            const analysisData = JSON.parse(data.analysis);
+            setAiAnalysis(analysisData);
+            setLastAiUpdate(new Date());
+          } catch (parseError) {
+            console.error('Failed to parse AI analysis:', parseError);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch AI analysis:', error);
+    } finally {
+      setAiLoading(false);
+    }
+  }, [focusToken?.mint, aiLoading, SERVER_BASE_URL]);
+
+  // 10-second polling for AI analysis updates
+  useEffect(() => {
+    if (!focusToken?.mint) {
+      setAiAnalysis(null);
+      return;
+    }
+
+    // Initial fetch
+    fetchAiAnalysis();
+
+    // Set up 10-second polling
+    const interval = setInterval(() => {
+      fetchAiAnalysis();
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(interval);
+  }, [focusToken?.mint, fetchAiAnalysis]);
 
   // Calculate metrics with real token data
   const getTokenMetrics = (token: any) => {
@@ -1153,7 +1218,7 @@ function InsightsColumn({
       return "Weak";
     };
     
-    const futureEchoDelta = getFutureEchoDelta();
+    const futureEchoDelta = getFutureEchoDelta(); 
     
     // Determine scenario bias
     const scenarioBias = confidence > 60 ? "Bullish" : confidence < 40 ? "Bearish" : "Neutral";
@@ -1375,20 +1440,37 @@ function InsightsColumn({
               </div>
             </InsightCard>
 
-            {/* Retrocausality Section */}
+            {/* Retrocausality Section - AI Powered */}
             <InsightCard 
               title="Retrocausality" 
               icon={
-                <svg className="w-3 h-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
+                <div className="flex items-center gap-1">
+                  <svg className="w-3 h-3 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {aiLoading && (
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                  )}
+                </div>
               }
             >
               <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                 <div>
                   <div className="text-white/50 text-[12px] font-mono mb-1">Future-echo Δ</div>
                   <div className="text-white text-[12px] font-mono flex items-center gap-1">
-                    {metrics?.futureEchoDelta && metrics.futureEchoDelta !== "N/A" ? (
+                    {aiAnalysis ? (
+                      <>
+                        <span className={
+                          aiAnalysis.futureEchoDelta === 'Strong' ? 'text-green-400' : 
+                          aiAnalysis.futureEchoDelta === 'Medium' ? 'text-yellow-400' : 
+                          'text-red-400'
+                        }>
+                          {aiAnalysis.futureEchoDelta === 'Strong' ? '▲' : 
+                           aiAnalysis.futureEchoDelta === 'Medium' ? '→' : '▼'}
+                        </span>
+                        {aiAnalysis.futureEchoDelta}
+                      </>
+                    ) : metrics?.futureEchoDelta && metrics.futureEchoDelta !== "N/A" ? (
                       <>
                         <span className={
                           metrics.futureEchoDelta === 'Strong' ? 'text-green-400' : 
@@ -1408,16 +1490,48 @@ function InsightsColumn({
                 <div>
                   <div className="text-white/50 text-[12px] font-mono mb-1">Scenario bias</div>
                   <div className={`inline-flex items-center px-2 py-1 rounded-full text-[11px] font-mono border ${
-                    metrics?.scenarioBias === 'Bullish' 
-                      ? 'bg-green-500/15 text-green-300 border-green-500/30' 
-                      : metrics?.scenarioBias === 'Bearish' 
-                        ? 'bg-red-500/15 text-red-300 border-red-500/30' 
-                        : 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30'
+                    aiAnalysis ? (
+                      aiAnalysis.scenarioBias === 'Bullish' 
+                        ? 'bg-green-500/15 text-green-300 border-green-500/30' 
+                        : aiAnalysis.scenarioBias === 'Bearish' 
+                          ? 'bg-red-500/15 text-red-300 border-red-500/30' 
+                          : 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30'
+                    ) : (
+                      metrics?.scenarioBias === 'Bullish' 
+                        ? 'bg-green-500/15 text-green-300 border-green-500/30' 
+                        : metrics?.scenarioBias === 'Bearish' 
+                          ? 'bg-red-500/15 text-red-300 border-red-500/30' 
+                          : 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30'
+                    )
                   }`}>
-                    {metrics?.scenarioBias || "N/A"}
+                    {aiAnalysis?.scenarioBias || metrics?.scenarioBias || "N/A"}
                   </div>
                 </div>
               </div>
+              
+              {/* AI Analysis Details */}
+              {aiAnalysis && (
+                <div className="mt-3 pt-3 border-t border-white/10">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-white/50 text-[10px] font-mono">AI Analysis</div>
+                    <div className="text-white/30 text-[10px] font-mono">
+                      {lastAiUpdate ? `Updated ${Math.floor((Date.now() - lastAiUpdate.getTime()) / 1000)}s ago` : ''}
+                    </div>
+                  </div>
+                  <div className="text-white/70 text-[11px] font-mono leading-relaxed">
+                    {aiAnalysis.reasoning}
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="text-white/50 text-[10px] font-mono">Confidence:</div>
+                    <div className={`text-[10px] font-mono ${
+                      aiAnalysis.confidence > 70 ? 'text-green-400' : 
+                      aiAnalysis.confidence > 40 ? 'text-yellow-400' : 'text-red-400'
+                    }`}>
+                      {aiAnalysis.confidence}%
+                    </div>
+                  </div>
+                </div>
+              )}
             </InsightCard>
 
             {/* Momentum Section */}
@@ -1891,14 +2005,14 @@ export const Scope = ({
     }
   ];
 
-  // Debug: Monitor tokens state changes
-  useEffect(() => {
-    console.log("SCOPE: Tokens state changed:", {
-      tokensLength: tokens?.length || 0,
-      isLoading,
-      connectionStatus,
-      lastUpdate: lastUpdate?.toLocaleTimeString() || null
-    });
+  // Debug: Monitor tokens state changes (disabled for production)
+  // useEffect(() => {
+  //   console.log("SCOPE: Tokens state changed:", {
+  //     tokensLength: tokens?.length || 0,
+  //     isLoading,
+  //     connectionStatus,
+  //     lastUpdate: lastUpdate?.toLocaleTimeString() || null
+  //   });
     
 
   }, [tokens, isLoading, connectionStatus, lastUpdate]);
@@ -1907,22 +2021,22 @@ export const Scope = ({
 
   // Memoize filtered tokens to prevent recalculation on every render
   const filteredTokens = useMemo(() => {
-    console.log("Filtering tokens:", tokens?.length || 0, "tokens received");
+    // console.log("Filtering tokens:", tokens?.length || 0, "tokens received");
     
     // Use search filtered tokens if available, otherwise use all tokens
     const tokensToFilter = isSearchFiltered ? searchFilteredTokens : tokens;
     
     if (!tokensToFilter || !Array.isArray(tokensToFilter) || tokensToFilter.length === 0) {
-      console.log("❌ No tokens to filter");
+      // console.log("❌ No tokens to filter");
       return { newPairs: [], onEdge: [], filled: [], curveTokens: [] };
     }
     
-    // Debug: Log first few tokens to see their structure
-    console.log("Sample tokens:", tokensToFilter.slice(0, 3).map(t => ({
-      name: t.name,
-      symbol: t.symbol,
-      status: t.status,
-      isOnCurve: t.isOnCurve // Use transformed property name
+    // Debug: Log first few tokens to see their structure (disabled for production)
+    // console.log("Sample tokens:", tokensToFilter.slice(0, 3).map(t => ({
+    //   name: t.name,
+    //   symbol: t.symbol,
+    //   status: t.status,
+    //   isOnCurve: t.isOnCurve // Use transformed property name
     })));
     
     // Filter out unwanted tokens (Jupiter, Sugar, .sol domains, etc.)
@@ -1958,13 +2072,13 @@ export const Scope = ({
     const onEdge: any[] = [];
     const curveTokens = tokensToFilter.filter(t => t && (t.status === 'curve' || t.isOnCurve) && !isUnwantedToken(t)).slice(0, 30);
     
-    console.log("✅ Filtered tokens:", {
-      newPairs: newPairs.length,
-      onEdge: onEdge.length, 
-      filled: filled.length,
-      curveTokens: curveTokens.length,
-      total: tokensToFilter.length
-    });
+    // console.log("✅ Filtered tokens:", {
+    //   newPairs: newPairs.length,
+    //   onEdge: onEdge.length, 
+    //   filled: filled.length,
+    //   curveTokens: curveTokens.length,
+    //   total: tokensToFilter.length
+    // });
     return { newPairs, onEdge, filled, curveTokens };
   }, [tokens, isSearchFiltered, searchFilteredTokens, assetType, stockData]);
 
