@@ -27,10 +27,18 @@ export default function ImageWithFallback({
     <img
       src={src}
       alt={alt}
-      className={`${className} object-cover`}  // fills container
-      onError={() => setBroken(true)}
+      className={`${className} object-cover`}
+      onError={() => {
+        console.log(`Image failed to load: ${src}`);
+        setBroken(true);
+      }}
+      onLoad={() => {
+        // Reset broken state if image loads successfully
+        setBroken(false);
+      }}
       loading="lazy"
       decoding="async"
+      crossOrigin="anonymous"
     />
   );
 }
