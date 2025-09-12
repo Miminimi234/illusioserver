@@ -436,7 +436,7 @@ const formatMarketcap = (value: number | string | null | undefined): string => {
   // Convert to number and handle invalid values
   const numValue = typeof value === 'string' ? parseFloat(value) : value;
   
-  if (!numValue || isNaN(numValue) || numValue <= 0) {
+  if (!numValue || isNaN(numValue) || numValue <= 0 || typeof numValue !== 'number') {
     return '—';
   }
   
@@ -2903,7 +2903,7 @@ export const Scope = ({
                         // Add analysis message
                         const analysisMessage = {
                           type: 'assistant' as const,
-                          content: `${companionName}: Analyzed ${token.name || token.symbol || 'this token'}. MC: ${token.marketcap ? `$${token.marketcap.toLocaleString()}` : 'N/A'}, Price: ${token.price_usd ? `$${token.price_usd.toFixed(8)}` : 'N/A'}. ${token.is_on_curve ? 'On bonding curve - interesting dynamics!' : 'Standard market behavior.'}`,
+                          content: `${companionName}: Analyzed ${token.name || token.symbol || 'this token'}. MC: ${token.marketcap ? `$${token.marketcap.toLocaleString()}` : 'N/A'}, Price: ${token.price_usd && typeof token.price_usd === 'number' ? `$${token.price_usd.toFixed(8)}` : 'N/A'}. ${token.is_on_curve ? 'On bonding curve - interesting dynamics!' : 'Standard market behavior.'}`,
                           timestamp: new Date()
                         };
                         setMessages([analysisMessage]);

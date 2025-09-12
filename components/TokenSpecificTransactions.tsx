@@ -399,7 +399,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
                     </div>
                     <div>
                       <span className="text-white/60">Price:</span>
-                      <span className="text-white ml-2">${tx.price.toFixed(6)}</span>
+                      <span className="text-white ml-2">${typeof tx.price === 'number' ? tx.price.toFixed(6) : '0.000000'}</span>
                     </div>
                     <div>
                       <span className="text-white/60">User:</span>
@@ -409,7 +409,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
                     </div>
                     <div>
                       <span className="text-white/60">Fee:</span>
-                      <span className="text-white ml-2">{tx.fee.toFixed(6)} SOL</span>
+                      <span className="text-white ml-2">{typeof tx.fee === 'number' ? tx.fee.toFixed(6) : '0.000000'} SOL</span>
                     </div>
                   </div>
                 </div>

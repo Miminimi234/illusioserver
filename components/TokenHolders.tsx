@@ -483,6 +483,9 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
 
 
   const formatBalance = (balance: number) => {
+    if (!balance || isNaN(balance) || typeof balance !== 'number') {
+      return '0';
+    }
     if (balance >= 1000000) {
       return `${(balance / 1000000).toFixed(1)}M`;
     } else if (balance >= 1000) {
@@ -735,7 +738,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
                   {formatBalance(holder.balance)}
                 </div>
                 <div className="text-white/60 text-xs">
-                  {holder.percentage.toFixed(1)}%
+                  {typeof holder.percentage === 'number' ? holder.percentage.toFixed(1) : '0.0'}%
                 </div>
               </div>
             </div>

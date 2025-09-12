@@ -351,7 +351,7 @@ export default function QuantumEraserSketch({ onNodeHover, predictionData }: Qua
         if (predictionData?.expectedRange) {
           p.fill(200);
           p.textSize(11);
-          p.text(`Range: ±${predictionData.expectedRange.min.toFixed(1)}% to ±${predictionData.expectedRange.max.toFixed(1)}%`, panelX + 16, panelY + 85);
+          p.text(`Range: ±${typeof predictionData.expectedRange.min === 'number' ? predictionData.expectedRange.min.toFixed(1) : '0.0'}% to ±${typeof predictionData.expectedRange.max === 'number' ? predictionData.expectedRange.max.toFixed(1) : '0.0'}%`, panelX + 16, panelY + 85);
         }
         
         // Up/Down probability with better visibility
