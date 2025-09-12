@@ -1960,8 +1960,8 @@ export const Scope = ({
         const token = tokens.find(t => t.mint === attachedCompanion.tokenMint);
         if (token) {
           if (selectedAPI === 'server-grok') {
-            // Use server-side Grok API
-            const serverResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/grok/analyze/${token.mint}`, {
+            // Use server-side Grok API for mystical companion responses
+            const serverResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/grok/chat/${token.mint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -1976,7 +1976,7 @@ export const Scope = ({
             }
             
             const serverData = await serverResponse.json();
-            response = serverData.analysis || 'No analysis available';
+            response = serverData.companionResponse || 'No response available';
           } else {
             response = await chatService.analyzeToken(token, attachedCompanion.name, inputMessage, selectedAPI, apiKeys);
           }
