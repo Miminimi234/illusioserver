@@ -44,9 +44,9 @@ export const useWebSocket = (url: string) => {
             if (message.type === 'connected') {
               console.log('WebSocket:', message.message);
             } else if (message.type === 'new_token') {
-              console.log('New token received:', message.data);
+              // console.log('New token received:', message.data);
             } else if (message.type === 'token_update') {
-              console.log('Token update received:', message.data);
+              // console.log('Token update received:', message.data);
             } else if (message.type === 'price_alert') {
               console.log('🚨 PRICE ALERT:', message.data);
             }

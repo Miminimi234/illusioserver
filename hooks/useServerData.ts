@@ -139,7 +139,7 @@ export const useServerData = (isOpen: boolean) => {
   // Fetch tokens from server
   const fetchTokens = useCallback(async () => {
     try {
-      console.log("🔍 Fetching tokens from:", `${SERVER_BASE_URL}/api/tokens?limit=100`);
+      // console.log("🔍 Fetching tokens from:", `${SERVER_BASE_URL}/api/tokens?limit=100`);
       setConnectionStatus("Fetching tokens...");
       
       // Add timeout to prevent hanging
@@ -157,7 +157,7 @@ export const useServerData = (isOpen: boolean) => {
       }
       
       const data = await response.json();
-      console.log("📊 Received data:", { itemsCount: data?.items?.length, total: data?.total, isArray: Array.isArray(data) });
+      // console.log("📊 Received data:", { itemsCount: data?.items?.length, total: data?.total, isArray: Array.isArray(data) });
       
       // Handle both old and new API response formats
       const total = data?.total ?? data?.items?.length ?? (Array.isArray(data) ? data.length : 0);
@@ -198,7 +198,7 @@ export const useServerData = (isOpen: boolean) => {
       };
       setStats(newStats);
       
-      console.log("✅ fetchTokens completed successfully");
+      // console.log("✅ fetchTokens completed successfully");
       
     } catch (error) {
       console.error("❌ Failed to fetch tokens from server:", error);
@@ -208,7 +208,7 @@ export const useServerData = (isOpen: boolean) => {
         setConnectionStatus("Failed to connect to server - using WebSocket data only");
       }
     } finally {
-      console.log("🏁 fetchTokens completed, setting isLoading to false");
+      // console.log("🏁 fetchTokens completed, setting isLoading to false");
       setIsLoading(false);
     }
   }, []);
@@ -362,7 +362,7 @@ export const useServerData = (isOpen: boolean) => {
           token.mint === updatedToken.mint ? updatedToken : token
         ));
         setLastUpdate(new Date());
-        console.log('🔄 TOKEN UPDATED VIA WEBSOCKET:', updatedToken.name || updatedToken.symbol || updatedToken.mint);
+        // console.log('🔄 TOKEN UPDATED VIA WEBSOCKET:', updatedToken.name || updatedToken.symbol || updatedToken.mint);
       } else if (lastMessage.type === 'price_alert') {
         // Handle significant price changes
         const priceAlert = lastMessage.data;
@@ -402,7 +402,7 @@ export const useServerData = (isOpen: boolean) => {
       // Set up periodic refresh when live mode is on (less frequent since WebSocket handles real-time)
       if (live) {
         const interval = setInterval(() => {
-          console.log("🔄 Periodic refresh calling fetchTokens...");
+          // console.log("🔄 Periodic refresh calling fetchTokens...");
           fetchTokens();
         }, 30000); // Reduced frequency: refresh every 30 seconds for fallback
         
