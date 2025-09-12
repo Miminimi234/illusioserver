@@ -1114,9 +1114,9 @@ function InsightsColumn({
     let confidence = 50; // Base confidence
     
     // Boost confidence for tokens with good fundamentals
-    if (marketcap && marketcap > 1000000) confidence += 20; // $1M+ market cap
-    if (liquidity && liquidity > 100000) confidence += 15; // $100K+ liquidity
-    if (volume24h && volume24h > 50000) confidence += 15; // $50K+ volume
+    if (marketcap && Number(marketcap) > 1000000) confidence += 20; // $1M+ market cap
+    if (liquidity && Number(liquidity) > 100000) confidence += 15; // $100K+ liquidity
+    if (volume24h && Number(volume24h) > 50000) confidence += 15; // $50K+ volume
     if (typeof tokenAge === 'number' && tokenAge > 7) confidence += 10; // 1+ week old
     
     // Reduce confidence for risky indicators
@@ -1147,7 +1147,7 @@ function InsightsColumn({
     // Calculate future-echo delta based on token metrics
     const getFutureEchoDelta = () => {
       if (!marketcap || !liquidity) return "N/A";
-      const liquidityRatio = liquidity / marketcap;
+      const liquidityRatio = Number(liquidity) / Number(marketcap);
       if (liquidityRatio > 0.1) return "Strong";
       if (liquidityRatio > 0.05) return "Medium";
       return "Weak";
@@ -1161,14 +1161,14 @@ function InsightsColumn({
     // Calculate momentum metrics based on volume and age
     const getPriceMomentum = () => {
       if (!volume24h || !marketcap) return "N/A";
-      const volumeRatio = volume24h / marketcap;
+      const volumeRatio = Number(volume24h) / Number(marketcap);
       if (volumeRatio > 0.2) return "High";
       if (volumeRatio > 0.1) return "Medium";
       return "Low";
     };
     
     const priceMomentum = getPriceMomentum();
-    const volumeMomentum = volume24h ? (volume24h > 100000 ? "High" : volume24h > 10000 ? "Medium" : "Low") : "N/A";
+    const volumeMomentum = volume24h ? (Number(volume24h) > 100000 ? "High" : Number(volume24h) > 10000 ? "Medium" : "Low") : "N/A";
     
     // Calculate acceleration based on age and status
     const getAcceleration = () => {
@@ -1182,9 +1182,9 @@ function InsightsColumn({
     
     // Determine heating/cooling based on confidence and volume
     const getHeatingCooling = () => {
-      if (confidence > 70 && volume24h && volume24h > 50000) return "Hot";
-      if (confidence > 60 && volume24h && volume24h > 10000) return "Warm";
-      if (confidence < 40 || !volume24h || volume24h < 1000) return "Cool";
+      if (confidence > 70 && volume24h && Number(volume24h) > 50000) return "Hot";
+      if (confidence > 60 && volume24h && Number(volume24h) > 10000) return "Warm";
+      if (confidence < 40 || !volume24h || Number(volume24h) < 1000) return "Cool";
       return "Warm";
     };
     
@@ -1192,10 +1192,10 @@ function InsightsColumn({
 
     return {
       confidence,
-      marketcap: marketcap ? `$${(marketcap / 1000000).toFixed(2)}M` : "N/A",
-      liquidity: liquidity ? `$${(liquidity / 1000).toFixed(1)}K` : "N/A",
-      volume24h: volume24h ? `$${(volume24h / 1000).toFixed(1)}K` : "N/A",
-      priceUsd: priceUsd ? `$${priceUsd.toFixed(8)}` : "N/A",
+      marketcap: marketcap ? `$${(Number(marketcap) / 1000000).toFixed(2)}M` : "N/A",
+      liquidity: liquidity ? `$${(Number(liquidity) / 1000).toFixed(1)}K` : "N/A",
+      volume24h: volume24h ? `$${(Number(volume24h) / 1000).toFixed(1)}K` : "N/A",
+      priceUsd: priceUsd ? `$${Number(priceUsd).toFixed(8)}` : "N/A",
       holderCount: token.holder_count ?? token.holders ?? "N/A",
       tokenAge: formattedAge,
       price10mMove,
