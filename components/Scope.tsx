@@ -3514,15 +3514,15 @@ export const Scope = ({
               onClick={() => setShowFilterPopup(false)}
             >
               <motion.div
-                className="bg-black/90 border border-white/20 rounded-lg p-6 max-w-lg w-full mx-4 relative z-[70] shadow-2xl"
+                className="bg-black/90 border border-white/20 rounded-lg p-4 max-w-md w-full mx-4 relative z-[70] shadow-2xl"
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold text-white">Filter Fresh Mints</h2>
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="text-lg font-bold text-white">Filter Fresh Mints</h2>
                   <button
                     onClick={() => setShowFilterPopup(false)}
                     className="text-white/60 hover:text-white transition-colors duration-200"
@@ -3533,28 +3533,28 @@ export const Scope = ({
                   </button>
                 </div>
                 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {/* Market Cap Range */}
-                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-                    <h3 className="text-lg font-semibold text-white mb-3">Market Cap Range</h3>
-                    <div className="grid grid-cols-2 gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-sm font-semibold text-white mb-2">Market Cap Range</h3>
+                    <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-sm text-white/70 mb-1">Min ($)</label>
+                        <label className="block text-xs text-white/70 mb-1">Min ($)</label>
                         <input
                           type="number"
                           value={filters.minMarketCap}
                           onChange={(e) => setFilters(prev => ({ ...prev, minMarketCap: e.target.value }))}
-                          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                          className="w-full px-2 py-1.5 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40 text-sm"
                           placeholder="0"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-white/70 mb-1">Max ($)</label>
+                        <label className="block text-xs text-white/70 mb-1">Max ($)</label>
                         <input
                           type="number"
                           value={filters.maxMarketCap}
                           onChange={(e) => setFilters(prev => ({ ...prev, maxMarketCap: e.target.value }))}
-                          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                          className="w-full px-2 py-1.5 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40 text-sm"
                           placeholder="1000000"
                         />
                       </div>
@@ -3562,38 +3562,38 @@ export const Scope = ({
                   </div>
 
                   {/* Keywords */}
-                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-                    <h3 className="text-lg font-semibold text-white mb-3">Keywords</h3>
+                  <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-sm font-semibold text-white mb-2">Keywords</h3>
                     <input
                       type="text"
                       value={filters.keywords}
                       onChange={(e) => setFilters(prev => ({ ...prev, keywords: e.target.value }))}
-                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                      className="w-full px-2 py-1.5 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40 text-sm"
                       placeholder="Search by name or symbol..."
                     />
                   </div>
 
                   {/* Age Range */}
-                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-                    <h3 className="text-lg font-semibold text-white mb-3">Token Age</h3>
-                    <div className="grid grid-cols-2 gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-sm font-semibold text-white mb-2">Token Age</h3>
+                    <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-sm text-white/70 mb-1">Min (minutes)</label>
+                        <label className="block text-xs text-white/70 mb-1">Min (minutes)</label>
                         <input
                           type="number"
                           value={filters.minAge}
                           onChange={(e) => setFilters(prev => ({ ...prev, minAge: e.target.value }))}
-                          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                          className="w-full px-2 py-1.5 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40 text-sm"
                           placeholder="0"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-white/70 mb-1">Max (minutes)</label>
+                        <label className="block text-xs text-white/70 mb-1">Max (minutes)</label>
                         <input
                           type="number"
                           value={filters.maxAge}
                           onChange={(e) => setFilters(prev => ({ ...prev, maxAge: e.target.value }))}
-                          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                          className="w-full px-2 py-1.5 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40 text-sm"
                           placeholder="60"
                         />
                       </div>
@@ -3601,9 +3601,9 @@ export const Scope = ({
                   </div>
 
                   {/* Filter Options */}
-                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-                    <h3 className="text-lg font-semibold text-white mb-3">Show Only</h3>
-                    <div className="space-y-2">
+                  <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-sm font-semibold text-white mb-2">Show Only</h3>
+                    <div className="space-y-1.5">
                       <label className="flex items-center space-x-2">
                         <input
                           type="checkbox"
@@ -3611,7 +3611,7 @@ export const Scope = ({
                           onChange={(e) => setFilters(prev => ({ ...prev, highlightPumpFun: e.target.checked }))}
                           className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
                         />
-                        <span className="text-white">Show only Pump.fun tokens</span>
+                        <span className="text-white text-sm">Show only Pump.fun tokens</span>
                       </label>
                       <label className="flex items-center space-x-2">
                         <input
@@ -3620,7 +3620,7 @@ export const Scope = ({
                           onChange={(e) => setFilters(prev => ({ ...prev, highlightBonk: e.target.checked }))}
                           className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
                         />
-                        <span className="text-white">Show only Bonk tokens</span>
+                        <span className="text-white text-sm">Show only Bonk tokens</span>
                       </label>
                       <label className="flex items-center space-x-2">
                         <input
@@ -3629,13 +3629,13 @@ export const Scope = ({
                           onChange={(e) => setFilters(prev => ({ ...prev, showBoth: e.target.checked }))}
                           className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
                         />
-                        <span className="text-white">Show all tokens</span>
+                        <span className="text-white text-sm">Show all tokens</span>
                       </label>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex gap-2 pt-3">
                     <button
                       onClick={() => {
                         setFilters({
@@ -3649,13 +3649,13 @@ export const Scope = ({
                           showBoth: true
                         });
                       }}
-                      className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded transition-all duration-200"
+                      className="flex-1 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded transition-all duration-200 text-sm"
                     >
                       Clear Filters
                     </button>
                     <button
                       onClick={() => setShowFilterPopup(false)}
-                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-all duration-200"
+                      className="flex-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded transition-all duration-200 text-sm"
                     >
                       Apply Filters
                     </button>
