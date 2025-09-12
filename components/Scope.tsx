@@ -980,9 +980,9 @@ function TokenColumn({
                                    (token.name && token.name.toLowerCase().includes('bonk')) ||
                                    (token.symbol && token.symbol.toLowerCase().includes('bonk'));
                 
-                const shouldHighlight = (filters.highlightPumpFun && isPumpFunToken) || 
-                                       (filters.highlightBonk && isBonkToken);
-                const shouldShow = filters.showBoth || shouldHighlight;
+                const shouldShow = filters.showBoth || 
+                                   (filters.highlightPumpFun && isPumpFunToken) || 
+                                   (filters.highlightBonk && isBonkToken);
                 
                 // Skip token if it doesn't meet highlight criteria
                 if (!shouldShow) return null;
@@ -990,9 +990,7 @@ function TokenColumn({
                 return (
                   <div 
                     key={`${token.mint}-${token.updated_at || token.created_at || index}`} 
-                    className={`relative ${index === items.length - 1 ? 'mb-4' : ''} ${
-                      shouldHighlight ? 'ring-2 ring-yellow-400/50 bg-yellow-400/10 rounded-lg p-1' : ''
-                    }`}
+                    className={`relative ${index === items.length - 1 ? 'mb-4' : ''}`}
                     data-mint={token.mint}
                   >
                     {isNewToken ? (
@@ -3619,9 +3617,9 @@ export const Scope = ({
                     </div>
                   </div>
 
-                  {/* Highlight Options */}
+                  {/* Filter Options */}
                   <div className="p-3 bg-white/5 rounded-lg border border-white/10">
-                    <h3 className="text-lg font-semibold text-white mb-3">Highlight Tokens</h3>
+                    <h3 className="text-lg font-semibold text-white mb-3">Show Only</h3>
                     <div className="space-y-2">
                       <label className="flex items-center space-x-2">
                         <input
@@ -3630,7 +3628,7 @@ export const Scope = ({
                           onChange={(e) => setFilters(prev => ({ ...prev, highlightPumpFun: e.target.checked }))}
                           className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
                         />
-                        <span className="text-white">Highlight Pump.fun tokens</span>
+                        <span className="text-white">Show only Pump.fun tokens</span>
                       </label>
                       <label className="flex items-center space-x-2">
                         <input
@@ -3639,7 +3637,7 @@ export const Scope = ({
                           onChange={(e) => setFilters(prev => ({ ...prev, highlightBonk: e.target.checked }))}
                           className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
                         />
-                        <span className="text-white">Highlight Bonk tokens</span>
+                        <span className="text-white">Show only Bonk tokens</span>
                       </label>
                       <label className="flex items-center space-x-2">
                         <input
@@ -3648,7 +3646,7 @@ export const Scope = ({
                           onChange={(e) => setFilters(prev => ({ ...prev, showBoth: e.target.checked }))}
                           className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
                         />
-                        <span className="text-white">Show both highlighted and regular tokens</span>
+                        <span className="text-white">Show all tokens</span>
                       </label>
                     </div>
                   </div>
