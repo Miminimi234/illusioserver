@@ -13,7 +13,10 @@ export default function ImageWithFallback({
 }) {
   const [broken, setBroken] = useState(false);
   
-  if (!src || broken) {
+  // Convert HTTP URLs to HTTPS to prevent mixed content errors
+  const secureSrc = src?.replace(/^http:\/\//, 'https://');
+  
+  if (!secureSrc || broken) {
     // Generate a more attractive fallback with gradient background
     const initials = alt.slice(0, 2).toUpperCase();
     return (
@@ -25,11 +28,11 @@ export default function ImageWithFallback({
   
   return (
     <img
-      src={src}
+      src={secureSrc}
       alt={alt}
       className={`${className} object-cover`}
       onError={() => {
-        console.log(`Image failed to load: ${src}`);
+        console.log(`Image failed to load: ${secureSrc}`);
         setBroken(true);
       }}
       onLoad={() => {
