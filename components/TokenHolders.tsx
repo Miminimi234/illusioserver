@@ -355,22 +355,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
         }
       }
 
-      // Fourth try: Helius API (if available)
-      if (holdersData.length === 0) {
-        try {
-          console.log(`Trying Helius API for ${mint}`);
-          const heliusResponse = await fetch(`https://discerning-reverence-production.up.railway.app/api/tokens/${mint}/holders`);
-          if (heliusResponse.ok) {
-            const heliusData = await heliusResponse.json();
-            if (heliusData.holders && Array.isArray(heliusData.holders)) {
-              holdersData = heliusData.holders;
-              console.log(`Found ${holdersData.length} holders from Helius`);
-            }
-          }
-        } catch (heliusError) {
-          console.log('Helius API failed:', heliusError);
-        }
-      }
+      // Fourth try: Skip broken server endpoint, go directly to Helius RPC
 
       // Process the real data
       if (holdersData.length > 0) {
