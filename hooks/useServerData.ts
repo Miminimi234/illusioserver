@@ -146,7 +146,7 @@ export const useServerData = (isOpen: boolean) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      const response = await fetch(`${SERVER_BASE_URL}/api/tokens?limit=100`, {
+      const response = await fetch(`${SERVER_BASE_URL}/api/tokens/fresh?limit=100`, {
         signal: controller.signal
       });
       
@@ -172,7 +172,7 @@ export const useServerData = (isOpen: boolean) => {
         
           // If there are new tokens from server, add them to the beginning
           if (newTokens.length > 0) {
-            console.log(`📥 Added ${newTokens.length} new tokens from server refresh`);
+            // console.log(`📥 Added ${newTokens.length} new tokens from server refresh`);
             const combined = [...newTokens, ...prev];
             // NO LIMIT - keep all tokens to prevent fresh mints from disappearing
             return combined;
@@ -285,7 +285,7 @@ export const useServerData = (isOpen: boolean) => {
     
     // Process any queued tokens
     if (queuedTokens.length > 0) {
-      console.log(`🔄 Processing ${queuedTokens.length} queued tokens after hover`);
+      // console.log(`🔄 Processing ${queuedTokens.length} queued tokens after hover`);
       
       // Add queued tokens to the main list
       setTokens(prev => {
@@ -326,10 +326,10 @@ export const useServerData = (isOpen: boolean) => {
             // Check for duplicates in queue
             const exists = prev.some(token => token.mint === newToken.mint);
             if (exists) {
-              console.log('⚠️ DUPLICATE TOKEN PREVENTED IN QUEUE:', newToken.mint);
+              // console.log('⚠️ DUPLICATE TOKEN PREVENTED IN QUEUE:', newToken.mint);
               return prev;
             }
-            console.log('📦 TOKEN QUEUED DURING HOVER PAUSE:', newToken.name || newToken.symbol || newToken.mint);
+            // console.log('📦 TOKEN QUEUED DURING HOVER PAUSE:', newToken.name || newToken.symbol || newToken.mint);
             return [...prev, newToken];
           });
         } else {
@@ -338,7 +338,7 @@ export const useServerData = (isOpen: boolean) => {
             // Check if token already exists
             const exists = prev.some(token => token.mint === newToken.mint);
             if (exists) {
-              console.log('⚠️ DUPLICATE TOKEN PREVENTED:', newToken.mint);
+              // console.log('⚠️ DUPLICATE TOKEN PREVENTED:', newToken.mint);
               return prev;
             }
             // console.log('🔥 NEW TOKEN RECEIVED VIA WEBSOCKET:', newToken.name || newToken.symbol || newToken.mint);

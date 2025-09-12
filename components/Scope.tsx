@@ -509,10 +509,10 @@ type CardProps = {
   draggedAgent?: string | null;
 };
 const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef, onCompanionAttached, agents, attachedCompanion, onCompanionDetach, onHoverEnter, onHoverLeave, onFocusToken, onDragTargetChange, draggedAgent }) => {
-  // Debug logging for market cap and volume data
-  if (token.marketcap !== undefined || token.volume_24h !== undefined) {
-    console.log(`Token ${token.mint}: MC=${token.marketcap}, Vol=${token.volume_24h}, Price=${token.price_usd}`);
-  }
+  // Debug logging for market cap and volume data (disabled to reduce console spam)
+  // if (token.marketcap !== undefined || token.volume_24h !== undefined) {
+  //   console.log(`Token ${token.mint}: MC=${token.marketcap}, Vol=${token.volume_24h}, Price=${token.price_usd}`);
+  // }
   const cardRef = useVisibility(token.mint, visibleMintsRef);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -1121,7 +1121,7 @@ function InsightsColumn({
     
     setHolderLoading(true);
     try {
-      console.log(`🔍 Fetching holder count for ${mint}`);
+      // console.log(`🔍 Fetching holder count for ${mint}`);
       
       // Try our server-side holder endpoint first (most reliable)
       try {
@@ -1131,13 +1131,13 @@ function InsightsColumn({
           if (serverData.holders && Array.isArray(serverData.holders)) {
             setHolderCount(serverData.holders.length);
             setLastHolderUpdate(new Date());
-            console.log(`✅ Found ${serverData.holders.length} holders from server`);
+            // console.log(`✅ Found ${serverData.holders.length} holders from server`);
             setHolderLoading(false);
             return;
           }
         }
       } catch (serverError) {
-        console.log('Server endpoint failed:', serverError);
+        // console.log('Server endpoint failed:', serverError);
       }
       
       // Try Birdeye API (may hit rate limits)
@@ -1246,7 +1246,7 @@ function InsightsColumn({
     if (!focusToken || !focusToken.mint) return;
 
     const interval = setInterval(() => {
-      console.log(`🔄 Auto-refreshing holder count for ${focusToken.mint}`);
+      // console.log(`🔄 Auto-refreshing holder count for ${focusToken.mint}`);
       fetchHolderCount(focusToken.mint);
     }, 5000); // 5 seconds
 
@@ -1779,6 +1779,7 @@ function InsightsColumn({
   );
 }
 
+// Cache buster: v2.1.0 - Console logs removed
 export const Scope = ({ 
   isOpen, 
   tokens, 
@@ -2144,7 +2145,7 @@ export const Scope = ({
 
   // Handle token selection from search
   const handleTokenSelect = useCallback((selectedToken: any) => {
-    console.log('Selected token from search:', selectedToken);
+    // console.log('Selected token from search:', selectedToken);
     
     // Filter tokens to show only the selected token
     const filtered = tokens.filter(token => token.mint === selectedToken.mint);
@@ -2281,17 +2282,17 @@ export const Scope = ({
 
     // Apply custom filters to fresh tokens
     const applyCustomFilters = (tokens: any[]) => {
-      console.log(`🔍 Applying filters: minMC=${filters.minMarketCap}, maxMC=${filters.maxMarketCap}, keywords=${filters.keywords}`);
+      // console.log(`🔍 Applying filters: minMC=${filters.minMarketCap}, maxMC=${filters.maxMarketCap}, keywords=${filters.keywords}`);
       return tokens.filter(token => {
         // Market cap filtering
         const marketcap = token.marketcap || token.latest_marketcap?.marketcap || 0;
-        console.log(`📊 Token ${token.mint}: marketcap=${marketcap}, min=${filters.minMarketCap}, max=${filters.maxMarketCap}`);
+        // console.log(`📊 Token ${token.mint}: marketcap=${marketcap}, min=${filters.minMarketCap}, max=${filters.maxMarketCap}`);
         if (filters.minMarketCap && marketcap < parseFloat(filters.minMarketCap)) {
-          console.log(`❌ Filtered out ${token.mint}: marketcap ${marketcap} < min ${filters.minMarketCap}`);
+          // console.log(`❌ Filtered out ${token.mint}: marketcap ${marketcap} < min ${filters.minMarketCap}`);
           return false;
         }
         if (filters.maxMarketCap && marketcap > parseFloat(filters.maxMarketCap)) {
-          console.log(`❌ Filtered out ${token.mint}: marketcap ${marketcap} > max ${filters.maxMarketCap}`);
+          // console.log(`❌ Filtered out ${token.mint}: marketcap ${marketcap} > max ${filters.maxMarketCap}`);
           return false;
         }
         
@@ -2372,19 +2373,19 @@ export const Scope = ({
 
   // Chat functions - memoized to prevent recreation
   const sendMessage = useCallback(async () => {
-    console.log('SENDMESSAGE FUNCTION CALLED!');
-    console.log('📝 Input message:', inputMessage);
-    console.log('📝 Input message length:', inputMessage.length);
-    console.log('📝 Input message trimmed:', inputMessage.trim());
+    // console.log('SENDMESSAGE FUNCTION CALLED!');
+    // console.log('📝 Input message:', inputMessage);
+    // console.log('📝 Input message length:', inputMessage.length);
+    // console.log('📝 Input message trimmed:', inputMessage.trim());
     
     if (!inputMessage.trim()) {
-      console.log('❌ No message to send - input is empty');
+      // console.log('❌ No message to send - input is empty');
       return;
     }
     
-    console.log('Sending message:', inputMessage);
-    console.log('🤖 Active companion:', attachedCompanion);
-    console.log('📝 Current messages:', messages.length);
+    // console.log('Sending message:', inputMessage);
+    // console.log('🤖 Active companion:', attachedCompanion);
+    // console.log('📝 Current messages:', messages.length);
     
     const userMessage = { type: 'user' as const, content: inputMessage, timestamp: new Date() };
     setMessages(prev => [...prev, userMessage]);
@@ -2428,12 +2429,12 @@ export const Scope = ({
     
     // Call the chat service
     try {
-      console.log('📞 Calling chat service...');
+      // console.log('📞 Calling chat service...');
       let response: string;
       
       // If there's an active companion attached to a token, use token analysis
       if (attachedCompanion && attachedCompanion.tokenMint) {
-        console.log('Using token analysis for:', attachedCompanion.name, 'on token:', attachedCompanion.tokenMint);
+        // console.log('Using token analysis for:', attachedCompanion.name, 'on token:', attachedCompanion.tokenMint);
         const token = tokens.find(t => t.mint === attachedCompanion.tokenMint);
         if (token) {
           if (selectedAPI === 'server-grok') {

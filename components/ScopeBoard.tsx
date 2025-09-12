@@ -23,7 +23,7 @@ export default function ScopeBoard() {
   useEffect(() => {
     const fetchTokens = async () => {
       try {
-        const res = await fetch("/api/tokens");
+        const res = await fetch("/api/tokens/fresh");
         const data = await res.json();
         if (Array.isArray(data)) {
           setTokens(data);
