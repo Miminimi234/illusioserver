@@ -580,8 +580,8 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
       ref={cardRef}
       className={`group relative isolate overflow-visible rounded-xl border hover:scale-102 hover:z-10 transition-all duration-200 token-card cursor-pointer ${
         token.isStock 
-          ? 'p-3' // Smaller padding for stocks
-          : 'p-3' // Reduced padding for crypto to make cards smaller
+          ? 'p-2' // Even smaller padding for stocks
+          : 'p-2' // Even smaller padding for crypto
       } ${
         isDragOver
           ? draggedAgent === 'The Quantum Eraser'
@@ -749,8 +749,8 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
         </motion.div>
       )}
       
-      {/* Header row: avatar, name/symbol, copy button */}
-      <div className="grid grid-cols-[auto_1fr_auto] items-start gap-3">
+      {/* Header row: avatar, name/symbol */}
+      <div className="grid grid-cols-[auto_1fr] items-start gap-2">
         {/* Avatar container with HoverImagePreview */}
         <div className={`relative shrink-0 overflow-visible ${
           token.isStock ? 'h-10 w-10' : 'h-10 w-10'
@@ -781,35 +781,6 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
             <span className={token.isStock ? 'text-sm' : 'text-sm'}>
               {token.name || token.symbol || `${token.mint.slice(0, 4)}…${token.mint.slice(-4)}`}
             </span>
-            {/* Copy button */}
-            <button
-              onClick={copyMintAddress}
-              className={`bg-white/10 hover:bg-white/20 rounded border border-white/20 transition-all duration-200 flex items-center shrink-0 relative z-30 ${
-                token.isStock ? 'p-0.5' : 'p-1'
-              }`}
-            >
-              <svg 
-                className={`transition-colors duration-200 text-white/60 hover:text-white ${
-                  token.isStock ? 'w-2.5 h-2.5' : 'w-3 h-3'
-                }`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" 
-                />
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M8 2H4a2 2 0 00-2 2v4a2 2 0 002 2h4a2 2 0 002-2V4a2 2 0 00-2-2z" 
-                />
-              </svg>
-            </button>
           </div>
           {/* Creation time display - hide for stocks */}
           {!token.isStock && (
@@ -858,7 +829,7 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
       )}
       
       {/* Badges row */}
-      <div className="mt-3 flex items-center gap-2">
+      <div className="mt-2 flex items-center gap-2">
         <SocialBadges 
           links={token.links} 
           website={token.website}
@@ -2104,7 +2075,8 @@ export const Scope = ({
         'vault', 'test', 'demo', 'lend', 'borrow',
         'raydium cpmm', 'cpmm', 'creator pool', 'creator', 'pool',
         'meteora', 'meteora dbc', 'dbc', 'dynamic bonding curve', 'meteora dynamic',
-        'associated token', 'token account', 'ata', 'atoken'
+        'associated token', 'token account', 'ata', 'atoken',
+        'moon', 'moonit', 'mooncoin', 'moon token'
       ];
       
       return unwantedPatterns.some(pattern => 
