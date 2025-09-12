@@ -10,6 +10,11 @@ class WebsiteAnalytics {
   }
 
   private getOrCreateSessionId(): string {
+    // Only access localStorage on client side
+    if (typeof window === 'undefined') {
+      return 'server_session_' + Date.now();
+    }
+    
     // Try to get existing session ID from localStorage
     let sessionId = localStorage.getItem('analytics_session_id');
     

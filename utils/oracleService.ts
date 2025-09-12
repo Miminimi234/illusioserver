@@ -32,6 +32,9 @@ class OracleService {
   }
 
   private loadPersistedData() {
+    // Only access localStorage on client side
+    if (typeof window === 'undefined') return;
+    
     try {
       const savedMessages = localStorage.getItem('oracle-chat-messages');
       const savedCounter = localStorage.getItem('oracle-message-counter');
