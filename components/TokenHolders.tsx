@@ -159,18 +159,19 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
       if (holdersData.length === 0) {
         try {
           console.log(`Fetching holders from Birdeye for ${mint}`);
-          const birdeyeResponse = await fetch(`https://public-api.birdeye.so/public/v1/token/holders?address=${mint}&limit=200`, {
+          const birdeyeResponse = await fetch(`https://public-api.birdeye.so/defi/v3/token/holder?address=${mint}&limit=100&ui_amount_mode=scaled`, {
             headers: {
               'X-API-KEY': process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || '',
-              'accept': 'application/json'
+              'accept': 'application/json',
+              'x-chain': 'solana'
             }
           });
           if (birdeyeResponse.ok) {
             const birdeyeData = await birdeyeResponse.json();
             console.log('Birdeye response:', birdeyeData);
             
-            if (birdeyeData.data && Array.isArray(birdeyeData.data)) {
-              holdersData = birdeyeData.data;
+            if (birdeyeData.data && birdeyeData.data.items && Array.isArray(birdeyeData.data.items)) {
+              holdersData = birdeyeData.data.items;
               console.log(`Found ${holdersData.length} holders from Birdeye`);
             }
           } else {

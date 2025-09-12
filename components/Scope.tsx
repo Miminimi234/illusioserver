@@ -1124,19 +1124,20 @@ function InsightsColumn({
       console.log(`🔍 Fetching holder count for ${mint}`);
       
       // Try Birdeye API first (with API key)
-      const birdeyeResponse = await fetch(`https://public-api.birdeye.so/public/v1/token/holders?address=${mint}&limit=1`, {
+      const birdeyeResponse = await fetch(`https://public-api.birdeye.so/defi/v3/token/holder?address=${mint}&limit=100&ui_amount_mode=scaled`, {
         headers: {
           'X-API-KEY': process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || '',
-          'accept': 'application/json'
+          'accept': 'application/json',
+          'x-chain': 'solana'
         }
       });
       
       if (birdeyeResponse.ok) {
         const birdeyeData = await birdeyeResponse.json();
-        if (birdeyeData.data && Array.isArray(birdeyeData.data)) {
-          setHolderCount(birdeyeData.data.length);
+        if (birdeyeData.data && birdeyeData.data.items && Array.isArray(birdeyeData.data.items)) {
+          setHolderCount(birdeyeData.data.items.length);
           setLastHolderUpdate(new Date());
-          console.log(`✅ Found ${birdeyeData.data.length} holders from Birdeye`);
+          console.log(`✅ Found ${birdeyeData.data.items.length} holders from Birdeye`);
           setHolderLoading(false);
           return;
         }
