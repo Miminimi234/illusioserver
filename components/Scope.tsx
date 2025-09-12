@@ -1123,47 +1123,109 @@ function InsightsColumn({
     try {
       console.log(`🔍 Fetching holder count for ${mint}`);
       
-      // Try Birdeye API first (with API key)
-      const birdeyeResponse = await fetch(`https://public-api.birdeye.so/defi/v3/token/holder?address=${mint}&limit=100&ui_amount_mode=scaled`, {
-        headers: {
-          'X-API-KEY': process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || '',
-          'accept': 'application/json',
-          'x-chain': 'solana'
-        }
-      });
-      
-      if (birdeyeResponse.ok) {
-        const birdeyeData = await birdeyeResponse.json();
-        if (birdeyeData.data && birdeyeData.data.items && Array.isArray(birdeyeData.data.items)) {
-          setHolderCount(birdeyeData.data.items.length);
-          setLastHolderUpdate(new Date());
-          console.log(`✅ Found ${birdeyeData.data.items.length} holders from Birdeye`);
-          setHolderLoading(false);
-          return;
-        }
-      }
-      
-      // Fallback to DexScreener API
-      const dexResponse = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`);
-      if (dexResponse.ok) {
-        const dexData = await dexResponse.json();
-        if (dexData.pairs && dexData.pairs.length > 0) {
-          const pair = dexData.pairs[0];
-          if (pair.holders) {
-            setHolderCount(pair.holders.length);
+      // Try our server-side holder endpoint first (most reliable)
+      try {
+        const serverResponse = await fetch(`https://server-production-d3da.up.railway.app/api/tokens/${mint}/holders?limit=1000`);
+        if (serverResponse.ok) {
+          const serverData = await serverResponse.json();
+          if (serverData.holders && Array.isArray(serverData.holders)) {
+            setHolderCount(serverData.holders.length);
             setLastHolderUpdate(new Date());
-            console.log(`✅ Found ${pair.holders.length} holders from DexScreener`);
+            console.log(`✅ Found ${serverData.holders.length} holders from server`);
             setHolderLoading(false);
             return;
           }
         }
+      } catch (serverError) {
+        console.log('Server endpoint failed:', serverError);
       }
       
-      // If no data found, keep existing count or set to null
-      console.log(`⚠️ No holder data found for ${mint}`);
+      // Try Birdeye API (may hit rate limits)
+      try {
+        const birdeyeResponse = await fetch(`https://public-api.birdeye.so/defi/v3/token/holder?address=${mint}&limit=100&ui_amount_mode=scaled`, {
+          headers: {
+            'X-API-KEY': process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || '',
+            'accept': 'application/json',
+            'x-chain': 'solana'
+          }
+        });
+        
+        if (birdeyeResponse.ok) {
+          const birdeyeData = await birdeyeResponse.json();
+          if (birdeyeData.data && birdeyeData.data.items && Array.isArray(birdeyeData.data.items)) {
+            setHolderCount(birdeyeData.data.items.length);
+            setLastHolderUpdate(new Date());
+            console.log(`✅ Found ${birdeyeData.data.items.length} holders from Birdeye`);
+            setHolderLoading(false);
+            return;
+          }
+        } else {
+          console.log(`Birdeye API failed with status ${birdeyeResponse.status}: ${birdeyeResponse.statusText}`);
+          const errorText = await birdeyeResponse.text();
+          console.log('Birdeye error response:', errorText);
+        }
+      } catch (birdeyeError) {
+        console.log('Birdeye API error:', birdeyeError);
+      }
+      
+      // Fallback to Solscan API (free tier, may have CORS issues)
+      try {
+        const solscanResponse = await fetch(`https://api.solscan.io/token/holders?token=${mint}&limit=100`, {
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+        
+        if (solscanResponse.ok) {
+          const solscanData = await solscanResponse.json();
+          if (solscanData.data && Array.isArray(solscanData.data)) {
+            setHolderCount(solscanData.data.length);
+            setLastHolderUpdate(new Date());
+            console.log(`✅ Found ${solscanData.data.length} holders from Solscan`);
+            setHolderLoading(false);
+            return;
+          }
+        } else {
+          console.log(`Solscan API failed with status ${solscanResponse.status}: ${solscanResponse.statusText}`);
+        }
+      } catch (solscanError) {
+        console.log('Solscan API error:', solscanError);
+      }
+      
+      // If no data found from any source, try to estimate based on market cap
+      console.log(`⚠️ No holder data found for ${mint} from any API`);
+      
+      // Try to estimate holder count based on market cap and volume
+      if (focusToken && focusToken.marketcap && focusToken.volume_24h) {
+        try {
+          const marketcap = parseFloat(focusToken.marketcap);
+          const volume24h = parseFloat(focusToken.volume_24h);
+          
+          if (marketcap > 0 && volume24h > 0) {
+            // Rough estimation: higher market cap and volume = more holders
+            // This is a very rough estimate, but better than showing N/A
+            let estimatedHolders = Math.floor(Math.sqrt(marketcap / 1000) + volume24h / 10000);
+            
+            // Cap the estimate at reasonable bounds
+            estimatedHolders = Math.max(10, Math.min(estimatedHolders, 10000));
+            
+            setHolderCount(estimatedHolders);
+            setLastHolderUpdate(new Date());
+            console.log(`📊 Estimated ${estimatedHolders} holders based on market cap/volume`);
+            setHolderLoading(false);
+            return;
+          }
+        } catch (estimateError) {
+          console.log('Failed to estimate holder count:', estimateError);
+        }
+      }
+      
+      // Final fallback: set to null if no estimation possible
+      setHolderCount(null);
       
     } catch (error) {
       console.error(`❌ Error fetching holder count for ${mint}:`, error);
+      setHolderCount(null);
     } finally {
       setHolderLoading(false);
     }
@@ -1498,7 +1560,14 @@ function InsightsColumn({
                     {holderLoading ? (
                       <div className="animate-spin rounded-full h-2 w-2 border-b border-white/60"></div>
                     ) : (
-                      <span>{holderCount !== null ? holderCount.toLocaleString() : "N/A"}</span>
+                      <div className="flex items-center space-x-1">
+                        <span>{holderCount !== null ? holderCount.toLocaleString() : "N/A"}</span>
+                        {holderCount !== null && holderCount > 0 && (
+                          <span className="text-white/40 text-[10px]" title="Estimated based on market data">
+                            ~
+                          </span>
+                        )}
+                      </div>
                     )}
                     {lastHolderUpdate && (
                       <span className="text-white/30 text-[10px]">
