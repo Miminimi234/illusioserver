@@ -44,6 +44,37 @@ export default function OracleHub({ isOpen, onClose }: OracleHubProps) {
   }); // Track which outputs have been used
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Load archives from localStorage on mount
+  useEffect(() => {
+    const savedArchives = localStorage.getItem('oracle-archives');
+    if (savedArchives) {
+      try {
+        const parsedArchives = JSON.parse(savedArchives);
+        setArchives(parsedArchives);
+      } catch (error) {
+        console.error('Error loading archives from localStorage:', error);
+      }
+    }
+  }, []);
+
+  // Load chat messages and counter from localStorage on mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('oracle-chat-messages');
+    const savedCounter = localStorage.getItem('oracle-message-counter');
+    
+    if (savedMessages) {
+      try {
+        const parsedMessages = JSON.parse(savedMessages);
+        setChatMessages(parsedMessages);
+      } catch (error) {
+        console.error('Error loading messages from localStorage:', error);
+      }
+    }
+    
+    if (savedCounter) {
+      setMessageCounter(parseInt(savedCounter, 10));
+    }
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -217,7 +248,12 @@ Respond with ONLY "YES" if the conversation feels complete and ready for archivi
         conclusion: conclusion
       };
       
-      setArchives(prev => [archiveEntry, ...prev]);
+      setArchives(prev => {
+        const newArchives = [archiveEntry, ...prev];
+        // Persist archives to localStorage
+        localStorage.setItem('oracle-archives', JSON.stringify(newArchives));
+        return newArchives;
+      });
       
       // Clear the current chat messages after archiving
       setChatMessages([]);
@@ -243,7 +279,12 @@ Respond with ONLY "YES" if the conversation feels complete and ready for archivi
         messageCount: chatMessages.length
       };
       
-      setArchives(prev => [archiveEntry, ...prev]);
+      setArchives(prev => {
+        const newArchives = [archiveEntry, ...prev];
+        // Persist archives to localStorage
+        localStorage.setItem('oracle-archives', JSON.stringify(newArchives));
+        return newArchives;
+      });
       setChatMessages([]);
       setMessageCounter(0);
       localStorage.setItem('oracle-chat-messages', JSON.stringify([]));
@@ -328,7 +369,7 @@ Respond with ONLY "YES" if the conversation feels complete and ready for archivi
       clearTimeout(startDelay);
       if (interval) clearInterval(interval);
     };
-  }, [isOpen, chatMessages]);
+  }, [isOpen]); // Remove chatMessages from dependencies to prevent restart
 
   // AI Conversation Logic Functions
   const determineNextAgent = (recentMessages: ChatMessage[], lastMessage: ChatMessage | undefined): string => {
