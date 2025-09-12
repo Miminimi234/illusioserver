@@ -2212,10 +2212,19 @@ export const Scope = ({
 
     // Apply custom filters to fresh tokens
     const applyCustomFilters = (tokens: any[]) => {
+      console.log(`🔍 Applying filters: minMC=${filters.minMarketCap}, maxMC=${filters.maxMarketCap}, keywords=${filters.keywords}`);
       return tokens.filter(token => {
         // Market cap filtering
-        if (filters.minMarketCap && token.marketCap < parseFloat(filters.minMarketCap)) return false;
-        if (filters.maxMarketCap && token.marketCap > parseFloat(filters.maxMarketCap)) return false;
+        const marketcap = token.marketcap || token.latest_marketcap?.marketcap || 0;
+        console.log(`📊 Token ${token.mint}: marketcap=${marketcap}, min=${filters.minMarketCap}, max=${filters.maxMarketCap}`);
+        if (filters.minMarketCap && marketcap < parseFloat(filters.minMarketCap)) {
+          console.log(`❌ Filtered out ${token.mint}: marketcap ${marketcap} < min ${filters.minMarketCap}`);
+          return false;
+        }
+        if (filters.maxMarketCap && marketcap > parseFloat(filters.maxMarketCap)) {
+          console.log(`❌ Filtered out ${token.mint}: marketcap ${marketcap} > max ${filters.maxMarketCap}`);
+          return false;
+        }
         
         // Keywords filtering
         if (filters.keywords) {
@@ -2227,7 +2236,8 @@ export const Scope = ({
         
         // Age filtering (in minutes)
         if (filters.minAge || filters.maxAge) {
-          const tokenAge = token.createdAt ? (Date.now() - new Date(token.createdAt).getTime()) / (1000 * 60) : 0;
+          const createdAt = token.created_at || token.createdAt || token.blocktime;
+          const tokenAge = createdAt ? (Date.now() - new Date(createdAt).getTime()) / (1000 * 60) : 0;
           if (filters.minAge && tokenAge < parseFloat(filters.minAge)) return false;
           if (filters.maxAge && tokenAge > parseFloat(filters.maxAge)) return false;
         }
