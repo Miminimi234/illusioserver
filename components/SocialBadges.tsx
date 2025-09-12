@@ -90,8 +90,8 @@ export default function SocialBadges({ links, website, twitter, telegram, source
         </A>
       )}
       
-      {/* Source Platform */}
-      {(source || mint.endsWith('pump') || mint.endsWith('bonk')) && (
+      {/* Source Platform - only show if we have a valid URL */}
+      {(source || mint.endsWith('pump') || mint.endsWith('bonk')) && getSourceUrl(source, mint) && (
         <A href={getSourceUrl(source, mint)} title={`View on ${source || (mint.endsWith('pump') ? 'pump.fun' : 'bonk.fun')}`}>
           {getSourceIcon(source, mint)}
         </A>
