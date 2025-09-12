@@ -120,23 +120,29 @@ export default function BottomNavigation({ isNavigationHubOpen = false, isOracle
         </svg>
       </button>
 
-      {/* Document Button */}
-      <button
-        onClick={() => window.open('/documentation', '_blank')}
-        className="w-12 h-12 flex items-center justify-center hover:scale-125 hover:drop-shadow-lg transition-all duration-300"
+      {/* Document Button - Coming Soon */}
+      <div 
+        className="relative w-12 h-12 flex items-center justify-center hover:scale-125 hover:drop-shadow-lg transition-all duration-300 cursor-not-allowed"
         style={{
           opacity: visibleButtons.includes(2) ? 1 : 0,
         }}
+        title="Coming soon"
       >
         <svg 
-          className="w-6 h-6 text-white hover:text-white/80 transition-colors duration-300" 
+          className="w-6 h-6 text-white/60 hover:text-white/40 transition-colors duration-300" 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-      </button>
+        
+        {/* Coming Soon Tooltip */}
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-black/80 text-white text-xs rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+          Coming soon
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-black/80"></div>
+        </div>
+      </div>
     </div>
   );
 }
