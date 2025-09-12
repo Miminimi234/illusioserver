@@ -3389,38 +3389,48 @@ export const Scope = ({
         <AnimatePresence>
           {showComingSoon && (
             <motion.div
-              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[70] flex items-center justify-center"
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               onClick={() => setShowComingSoon(false)}
             >
               <motion.div
-                className="bg-gray-900/95 border border-white/20 rounded-2xl p-8 max-w-md mx-4 text-center"
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-black/90 border border-white/20 rounded-lg p-6 max-w-md w-full mx-4 relative z-[70] shadow-2xl"
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="mb-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold text-white">Coming Soon</h2>
+                  <button
+                    onClick={() => setShowComingSoon(false)}
+                    className="text-white/60 hover:text-white transition-colors duration-200"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Coming Soon</h2>
-                  <p className="text-gray-300 text-lg">
-                    Stocks functionality is currently under development. Stay tuned for exciting updates!
-                  </p>
+                  </button>
                 </div>
-                <motion.button
-                  onClick={() => setShowComingSoon(false)}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Got it!
-                </motion.button>
+                
+                <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white">Stocks Feature</h3>
+                      <p className="text-base leading-relaxed text-white/90">
+                        Stocks functionality is currently under development. Stay tuned for exciting updates!
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             </motion.div>
           )}
