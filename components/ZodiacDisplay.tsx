@@ -10,15 +10,15 @@ export default function ZodiacDisplay({ zodiacSign, onComplete }: ZodiacDisplayP
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Show zodiac display after a short delay
+    // Show zodiac display immediately
     const timer = setTimeout(() => {
       setIsVisible(true);
-    }, 500);
+    }, 100);
 
-    // Auto-complete after showing zodiac for 3 seconds
+    // Auto-complete after showing zodiac for 1.5 seconds (much faster)
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, 3500);
+    }, 1500);
 
     return () => {
       clearTimeout(timer);
@@ -48,7 +48,7 @@ export default function ZodiacDisplay({ zodiacSign, onComplete }: ZodiacDisplayP
 
   return (
     <div 
-      className={`fixed inset-0 bg-black flex items-center justify-center z-[90] transition-opacity duration-1000 ${
+      className={`fixed inset-0 bg-black flex items-center justify-center z-[90] transition-opacity duration-500 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
     >
