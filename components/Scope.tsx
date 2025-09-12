@@ -928,7 +928,8 @@ function TokenColumn({
   onHoverLeave,
   onFocusToken,
   onDragTargetChange,
-  draggedAgent
+  draggedAgent,
+  filters
 }: { 
   title: string; 
   items: any[]; 
@@ -944,6 +945,16 @@ function TokenColumn({
   onFocusToken?: (token: any) => void;
   onDragTargetChange?: (token: any | null) => void;
   draggedAgent?: string | null;
+  filters: {
+    minMarketCap: string;
+    maxMarketCap: string;
+    keywords: string;
+    minAge: string;
+    maxAge: string;
+    highlightPumpFun: boolean;
+    highlightBonk: boolean;
+    showBoth: boolean;
+  };
 }) {
 
   return (
@@ -960,10 +971,28 @@ function TokenColumn({
               {items.map((token, index) => {
                 const isNewToken = newTokenMint === token.mint;
                 const companionForToken = attachedCompanion && attachedCompanion.tokenMint === token.mint ? attachedCompanion.name : null;
+                
+                // Check if token should be highlighted
+                const isPumpFunToken = token.mint && token.mint.toLowerCase().includes('pump') || 
+                                     (token.name && token.name.toLowerCase().includes('pump')) ||
+                                     (token.symbol && token.symbol.toLowerCase().includes('pump'));
+                const isBonkToken = token.mint && token.mint.toLowerCase().includes('bonk') || 
+                                   (token.name && token.name.toLowerCase().includes('bonk')) ||
+                                   (token.symbol && token.symbol.toLowerCase().includes('bonk'));
+                
+                const shouldHighlight = (filters.highlightPumpFun && isPumpFunToken) || 
+                                       (filters.highlightBonk && isBonkToken);
+                const shouldShow = filters.showBoth || shouldHighlight;
+                
+                // Skip token if it doesn't meet highlight criteria
+                if (!shouldShow) return null;
+                
                 return (
                   <div 
                     key={`${token.mint}-${token.updated_at || token.created_at || index}`} 
-                    className={`relative ${index === items.length - 1 ? 'mb-4' : ''}`}
+                    className={`relative ${index === items.length - 1 ? 'mb-4' : ''} ${
+                      shouldHighlight ? 'ring-2 ring-yellow-400/50 bg-yellow-400/10 rounded-lg p-1' : ''
+                    }`}
                     data-mint={token.mint}
                   >
                     {isNewToken ? (
@@ -1700,6 +1729,19 @@ export const Scope = ({
   // Coming soon popup state
   const [showComingSoon, setShowComingSoon] = useState(false);
   
+  // Filter state
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [filters, setFilters] = useState({
+    minMarketCap: '',
+    maxMarketCap: '',
+    keywords: '',
+    minAge: '',
+    maxAge: '',
+    highlightPumpFun: false,
+    highlightBonk: false,
+    showBoth: true
+  });
+  
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -2072,11 +2114,41 @@ export const Scope = ({
       );
     };
 
+    // Apply custom filters to fresh tokens
+    const applyCustomFilters = (tokens: any[]) => {
+      return tokens.filter(token => {
+        // Market cap filtering
+        if (filters.minMarketCap && token.marketCap < parseFloat(filters.minMarketCap)) return false;
+        if (filters.maxMarketCap && token.marketCap > parseFloat(filters.maxMarketCap)) return false;
+        
+        // Keywords filtering
+        if (filters.keywords) {
+          const keyword = filters.keywords.toLowerCase();
+          const name = (token.name || '').toLowerCase();
+          const symbol = (token.symbol || '').toLowerCase();
+          if (!name.includes(keyword) && !symbol.includes(keyword)) return false;
+        }
+        
+        // Age filtering (in minutes)
+        if (filters.minAge || filters.maxAge) {
+          const tokenAge = token.createdAt ? (Date.now() - new Date(token.createdAt).getTime()) / (1000 * 60) : 0;
+          if (filters.minAge && tokenAge < parseFloat(filters.minAge)) return false;
+          if (filters.maxAge && tokenAge > parseFloat(filters.maxAge)) return false;
+        }
+        
+        return true;
+      });
+    };
+
     // Use transformed property names from useServerData - LIMIT to 100 fresh tokens
     // Show stocks when stocks are selected, otherwise show crypto tokens
-    const newPairs = assetType === 'stocks' 
+    const freshTokens = assetType === 'stocks' 
       ? stockData.slice(0, 100) // Show real stock data when stocks selected
-      : tokensToFilter.filter(t => t && t.status === 'fresh' && !isUnwantedToken(t)).slice(0, 100); // Show exactly 100 fresh tokens (the actual fresh mints)
+      : tokensToFilter.filter(t => t && t.status === 'fresh' && !isUnwantedToken(t)); // Get fresh tokens first
+    
+    const newPairs = assetType === 'stocks' 
+      ? freshTokens.slice(0, 100) // Show real stock data when stocks selected
+      : applyCustomFilters(freshTokens).slice(0, 100); // Apply custom filters then limit to 100
     const filled = tokensToFilter.filter(t => t && t.status === 'active' && !t.isOnCurve && !isUnwantedToken(t)).slice(0, 30); // Show active tokens
     // EDGE: No tokens on edge - temporarily removed
     const onEdge: any[] = [];
@@ -2530,7 +2602,7 @@ export const Scope = ({
                   </div>
                 )}
                 
-                <div className="absolute top-4 left-2">
+                <div className="absolute top-4 left-2 flex gap-2">
                   <div className="relative" ref={dropdownRef}>
                     <button
                       onClick={() => {
@@ -2542,6 +2614,20 @@ export const Scope = ({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                       </svg>
                     </button>
+                  </div>
+                  
+                  {/* Filter Button */}
+                  {assetType === 'crypto' && (
+                    <button
+                      onClick={() => setShowFilterPopup(true)}
+                      className="p-1.5 bg-white/10 hover:bg-white/20 text-white/80 hover:text-white rounded-md border border-white/20 transition-all duration-200"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
                     
                     {isDropdownOpen && (
                       <div className="absolute top-full left-0 mt-1 bg-black/90 border border-white/20 rounded-md shadow-lg z-50 min-w-[80px]">
@@ -2595,6 +2681,7 @@ export const Scope = ({
                   onHoverLeave={resumeLiveAfterHover}
                   onFocusToken={setFocusToken}
                   onDragTargetChange={setDragTargetToken}
+                  filters={filters}
                   draggedAgent={draggedAgent}
                   onCompanionAttached={(companionName, token) => {
                     // Handle companion attachment
@@ -3429,6 +3516,170 @@ export const Scope = ({
                         Stocks functionality is currently under development. Stay tuned for exciting updates!
                       </p>
                     </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Filter Popup */}
+        <AnimatePresence>
+          {showFilterPopup && (
+            <motion.div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              onClick={() => setShowFilterPopup(false)}
+            >
+              <motion.div
+                className="bg-black/90 border border-white/20 rounded-lg p-6 max-w-lg w-full mx-4 relative z-[70] shadow-2xl"
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-bold text-white">Filter Fresh Mints</h2>
+                  <button
+                    onClick={() => setShowFilterPopup(false)}
+                    className="text-white/60 hover:text-white transition-colors duration-200"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Market Cap Range */}
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-lg font-semibold text-white mb-3">Market Cap Range</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-white/70 mb-1">Min ($)</label>
+                        <input
+                          type="number"
+                          value={filters.minMarketCap}
+                          onChange={(e) => setFilters(prev => ({ ...prev, minMarketCap: e.target.value }))}
+                          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-white/70 mb-1">Max ($)</label>
+                        <input
+                          type="number"
+                          value={filters.maxMarketCap}
+                          onChange={(e) => setFilters(prev => ({ ...prev, maxMarketCap: e.target.value }))}
+                          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                          placeholder="1000000"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Keywords */}
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-lg font-semibold text-white mb-3">Keywords</h3>
+                    <input
+                      type="text"
+                      value={filters.keywords}
+                      onChange={(e) => setFilters(prev => ({ ...prev, keywords: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                      placeholder="Search by name or symbol..."
+                    />
+                  </div>
+
+                  {/* Age Range */}
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-lg font-semibold text-white mb-3">Token Age</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm text-white/70 mb-1">Min (minutes)</label>
+                        <input
+                          type="number"
+                          value={filters.minAge}
+                          onChange={(e) => setFilters(prev => ({ ...prev, minAge: e.target.value }))}
+                          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-white/70 mb-1">Max (minutes)</label>
+                        <input
+                          type="number"
+                          value={filters.maxAge}
+                          onChange={(e) => setFilters(prev => ({ ...prev, maxAge: e.target.value }))}
+                          className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+                          placeholder="60"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Highlight Options */}
+                  <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="text-lg font-semibold text-white mb-3">Highlight Tokens</h3>
+                    <div className="space-y-2">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={filters.highlightPumpFun}
+                          onChange={(e) => setFilters(prev => ({ ...prev, highlightPumpFun: e.target.checked }))}
+                          className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-white">Highlight Pump.fun tokens</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={filters.highlightBonk}
+                          onChange={(e) => setFilters(prev => ({ ...prev, highlightBonk: e.target.checked }))}
+                          className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-white">Highlight Bonk tokens</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={filters.showBoth}
+                          onChange={(e) => setFilters(prev => ({ ...prev, showBoth: e.target.checked }))}
+                          className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-white">Show both highlighted and regular tokens</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => {
+                        setFilters({
+                          minMarketCap: '',
+                          maxMarketCap: '',
+                          keywords: '',
+                          minAge: '',
+                          maxAge: '',
+                          highlightPumpFun: false,
+                          highlightBonk: false,
+                          showBoth: true
+                        });
+                      }}
+                      className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded transition-all duration-200"
+                    >
+                      Clear Filters
+                    </button>
+                    <button
+                      onClick={() => setShowFilterPopup(false)}
+                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-all duration-200"
+                    >
+                      Apply Filters
+                    </button>
                   </div>
                 </div>
               </motion.div>
