@@ -155,11 +155,16 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
         console.log('Solscan API error:', solscanError);
       }
 
-      // Second try: Birdeye API (free tier)
+      // Second try: Birdeye API (with API key for better data)
       if (holdersData.length === 0) {
         try {
           console.log(`Fetching holders from Birdeye for ${mint}`);
-          const birdeyeResponse = await fetch(`https://public-api.birdeye.so/public/v1/token/holders?address=${mint}&limit=200`);
+          const birdeyeResponse = await fetch(`https://public-api.birdeye.so/public/v1/token/holders?address=${mint}&limit=200`, {
+            headers: {
+              'X-API-KEY': process.env.NEXT_PUBLIC_BIRDEYE_API_KEY || '',
+              'accept': 'application/json'
+            }
+          });
           if (birdeyeResponse.ok) {
             const birdeyeData = await birdeyeResponse.json();
             console.log('Birdeye response:', birdeyeData);

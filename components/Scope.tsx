@@ -509,6 +509,10 @@ type CardProps = {
   draggedAgent?: string | null;
 };
 const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef, onCompanionAttached, agents, attachedCompanion, onCompanionDetach, onHoverEnter, onHoverLeave, onFocusToken, onDragTargetChange, draggedAgent }) => {
+  // Debug logging for market cap and volume data
+  if (token.marketcap !== undefined || token.volume_24h !== undefined) {
+    console.log(`Token ${token.mint}: MC=${token.marketcap}, Vol=${token.volume_24h}, Price=${token.price_usd}`);
+  }
   const cardRef = useVisibility(token.mint, visibleMintsRef);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -833,19 +837,19 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
           <span className={`ml-1 font-mono truncate font-semibold ${
             token.is_on_curve 
               ? 'text-white' 
-              : (token.marketcap && token.marketcap !== 'null' && token.marketcap !== '0' 
+              : (token.marketcap && token.marketcap !== 'null' && token.marketcap !== '0' && token.marketcap !== 0
                   ? (parseFloat(token.marketcap) > 30000 
                       ? 'text-yellow-400' 
                       : 'text-green-400')
                   : 'text-white')
           }`}>
-            {token.is_on_curve ? '— (on curve)' : (token.marketcap && token.marketcap !== 'null' && token.marketcap !== '0' ? `$${formatMarketcap(token.marketcap)}` : '—')}
+            {token.is_on_curve ? '— (on curve)' : (token.marketcap && token.marketcap !== 'null' && token.marketcap !== '0' && token.marketcap !== 0 ? `$${formatMarketcap(token.marketcap)}` : '—')}
           </span>
         </div>
         <div className="min-w-0">
           <span className="text-white/60">Vol:</span>
           <span className="text-white ml-1 font-mono truncate">
-            {token.is_on_curve ? '— (on curve)' : (token.volume_24h && token.volume_24h !== 'null' && token.volume_24h !== '0' ? `$${formatMarketcap(token.volume_24h)}` : '—')}
+            {token.is_on_curve ? '— (on curve)' : (token.volume_24h && token.volume_24h !== 'null' && token.volume_24h !== '0' && token.volume_24h !== 0 ? `$${formatMarketcap(token.volume_24h)}` : '—')}
           </span>
         </div>
       </div>

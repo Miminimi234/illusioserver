@@ -5,6 +5,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { useServerData } from "@/hooks/useServerData";
 import { AnimatePresence } from "framer-motion";
 import { oracleService } from "@/utils/oracleService";
+import { websiteAnalytics } from "@/utils/analytics";
 
 
 // Dynamically import all components to avoid SSR issues
@@ -57,13 +58,33 @@ export default function Page() {
   useEffect(() => {
     console.log("🎯 STATE CHANGED - isScopeOpen:", isScopeOpen, "isNavigationHubOpen:", isNavigationHubOpen, "isOracleHubOpen:", isOracleHubOpen, "isManifestoOpen:", isManifestoOpen);
     
-    // Additional debug info
+    // Track feature usage
     if (isScopeOpen) {
+      websiteAnalytics.trackFeatureUsage('scope', 'opened');
       console.log("🎯 SCOPE IS NOW OPEN - useServerData continues monitoring (always active)");
     } else {
+      websiteAnalytics.trackFeatureUsage('scope', 'closed');
       console.log("🎯 SCOPE IS NOW CLOSED - useServerData continues monitoring (always active)");
     }
-  }, [isScopeOpen, isNavigationHubOpen, isOracleHubOpen]);
+    
+    if (isNavigationHubOpen) {
+      websiteAnalytics.trackFeatureUsage('navigation_hub', 'opened');
+    } else {
+      websiteAnalytics.trackFeatureUsage('navigation_hub', 'closed');
+    }
+    
+    if (isOracleHubOpen) {
+      websiteAnalytics.trackFeatureUsage('oracle_hub', 'opened');
+    } else {
+      websiteAnalytics.trackFeatureUsage('oracle_hub', 'closed');
+    }
+    
+    if (isManifestoOpen) {
+      websiteAnalytics.trackFeatureUsage('manifesto', 'opened');
+    } else {
+      websiteAnalytics.trackFeatureUsage('manifesto', 'closed');
+    }
+  }, [isScopeOpen, isNavigationHubOpen, isOracleHubOpen, isManifestoOpen]);
 
   // Smooth CornerLogo visibility transitions
   useEffect(() => {
