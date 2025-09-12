@@ -396,12 +396,12 @@ export const useServerData = (isOpen: boolean) => {
       console.log("📡 Calling fetchTokens...");
       fetchTokens();
       
-      // Set up periodic refresh when live mode is on (less frequent since WebSocket handles real-time)
+      // Set up periodic refresh when live mode is on (FAST for fresh mints)
       if (live) {
         const interval = setInterval(() => {
           // console.log("🔄 Periodic refresh calling fetchTokens...");
           fetchTokens();
-        }, 120000); // Reduced frequency: refresh every 2 minutes for fallback (WebSocket handles real-time)
+        }, 5000); // FAST: refresh every 5 seconds for fresh mints
         
         return () => clearInterval(interval);
       }
