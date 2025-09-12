@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Force rebuild to clear cache
+  generateBuildId: async () => {
+    return 'build-' + Date.now()
+  },
   // Proxy admin requests to Railway server
   async rewrites() {
     return [
