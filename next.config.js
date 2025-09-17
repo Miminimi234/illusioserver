@@ -6,18 +6,23 @@ const nextConfig = {
   },
   // Proxy admin requests to Railway server
   async rewrites() {
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+      (process.env.NODE_ENV === 'production' 
+        ? 'https://server-production-d3da.up.railway.app'
+        : 'http://localhost:8080');
+    
     return [
       {
         source: '/admin',
-        destination: 'https://server-production-d3da.up.railway.app/admin-dashboard'
+        destination: `${serverUrl}/admin-dashboard`
       },
       {
         source: '/admin/:path*',
-        destination: 'https://server-production-d3da.up.railway.app/admin-dashboard/:path*'
+        destination: `${serverUrl}/admin-dashboard/:path*`
       },
       {
         source: '/api/admin/:path*',
-        destination: 'https://server-production-d3da.up.railway.app/api/admin/:path*'
+        destination: `${serverUrl}/api/admin/:path*`
       }
     ]
   },

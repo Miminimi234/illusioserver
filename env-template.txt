@@ -21,5 +21,9 @@ JUPITER_API_KEY=your_jupiter_api_key_here
 PORT=8080
 NODE_ENV=development
 
-# Railway Server URL (for AI companions)
+# Server URL (for API calls and WebSocket)
+NEXT_PUBLIC_SERVER_URL=https://illusioserver-production.up.railway.app
+NEXT_PUBLIC_WS_URL=wss://illusioserver-production.up.railway.app/ws
+
+# Railway Server URL (for AI companions) - DEPRECATED, use NEXT_PUBLIC_SERVER_URL instead
 NEXT_PUBLIC_RAILWAY_SERVER_URL=https://server-production-d3da.up.railway.app

@@ -127,7 +127,12 @@ class OracleService {
       // Build context from recent messages
       const context = messages.slice(-3).map(msg => `${msg.agent}: ${msg.message}`).join('\n');
       
-      const response = await fetch('https://server-production-d3da.up.railway.app/api/grok/oracle/conversation', {
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+        (process.env.NODE_ENV === 'production' 
+          ? 'https://server-production-d3da.up.railway.app'
+          : 'http://localhost:8080');
+      
+      const response = await fetch(`${serverUrl}/api/grok/oracle/conversation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

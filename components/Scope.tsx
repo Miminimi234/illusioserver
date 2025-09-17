@@ -1125,7 +1125,7 @@ function InsightsColumn({
       
       // Try our server-side holder endpoint first (most reliable)
       try {
-        const serverResponse = await fetch(`https://server-production-d3da.up.railway.app/api/tokens/${mint}/holders?limit=1000`);
+        const serverResponse = await fetch(`${SERVER_BASE_URL}/api/tokens/${mint}/holders?limit=1000`);
         if (serverResponse.ok) {
           const serverData = await serverResponse.json();
           if (serverData.holders && Array.isArray(serverData.holders)) {
@@ -1263,9 +1263,10 @@ function InsightsColumn({
   const [lastAiUpdate, setLastAiUpdate] = useState<Date | null>(null);
 
   // Server API base URL
-  const SERVER_BASE_URL = process.env.NODE_ENV === 'production' 
-    ? 'https://server-production-d3da.up.railway.app' 
-    : 'http://localhost:8080';
+  const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 
+    (process.env.NODE_ENV === 'production' 
+      ? 'https://server-production-d3da.up.railway.app' 
+      : 'http://localhost:8080');
 
   // Helper function to format values with fallbacks
   const formatValue = (value: any, fallback: string = "N/A") => {
@@ -2439,7 +2440,7 @@ export const Scope = ({
         if (token) {
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for mystical companion responses
-            const serverResponse = await fetch(`https://server-production-d3da.up.railway.app/api/grok/chat/${token.mint}`, {
+            const serverResponse = await fetch(`${SERVER_BASE_URL}/api/grok/chat/${token.mint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -2461,7 +2462,7 @@ export const Scope = ({
         } else {
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for general chat
-            const serverResponse = await fetch(`https://server-production-d3da.up.railway.app/api/grok/chat/${attachedCompanion.tokenMint}`, {
+            const serverResponse = await fetch(`${SERVER_BASE_URL}/api/grok/chat/${attachedCompanion.tokenMint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -2485,7 +2486,7 @@ export const Scope = ({
         console.log('Using general companion response for:', currentCompanion);
         if (selectedAPI === 'server-grok') {
           // Use server-side Grok API for general chat
-          const serverResponse = await fetch(`https://server-production-d3da.up.railway.app/api/grok/chat`, {
+          const serverResponse = await fetch(`${SERVER_BASE_URL}/api/grok/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

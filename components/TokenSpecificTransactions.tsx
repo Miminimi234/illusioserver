@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 import CreationTimeDisplay from './CreationTimeDisplay';
 import ImageWithFallback from './ImageWithFallback';
 
+const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://server-production-d3da.up.railway.app'
+    : 'http://localhost:8080');
+
 interface TokenData {
   id: number;
   name?: string;
@@ -63,7 +68,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
       setError(null);
       
       try {
-        const response = await fetch(`https://server-production-d3da.up.railway.app/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
+        const response = await fetch(`${SERVER_BASE_URL}/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
         
         if (!response.ok) {
           throw new Error(`Search failed with ${response.status}`);
@@ -100,7 +105,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
   const fetchTransactions = async (tokenMint: string) => {
     setTransactionsLoading(true);
     try {
-      const response = await fetch(`https://server-production-d3da.up.railway.app/api/transactions/${tokenMint}?limit=10`); // Reduced from 20 to 10 to save credits
+      const response = await fetch(`${SERVER_BASE_URL}/api/transactions/${tokenMint}?limit=10`); // Reduced from 20 to 10 to save credits
       
       if (!response.ok) {
         throw new Error(`Failed to fetch transactions: ${response.status}`);
@@ -139,7 +144,7 @@ export default function TokenSpecificTransactions({ searchQuery, isSearching, on
 
     const refreshTokenData = async () => {
       try {
-        const response = await fetch(`https://server-production-d3da.up.railway.app/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
+        const response = await fetch(`${SERVER_BASE_URL}/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
 
         if (response.ok) {
           const data = await response.json();
