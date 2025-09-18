@@ -8,7 +8,7 @@ const nextConfig = {
   async rewrites() {
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
       (process.env.NODE_ENV === 'production' 
-        ? 'https://testillusioserver-production-3833.up.railway.app'
+        ? 'https://servertest-production-6715.up.railway.app'
         : 'http://localhost:8080');
     
     return [
@@ -35,7 +35,7 @@ const nextConfig = {
   generateEtags: true,
   // Image optimization
   images: {
-    domains: ['testillusioserver-production-3833.up.railway.app'],
+    domains: ['servertest-production-6715.up.railway.app'],
     formats: ['image/webp', 'image/avif'],
   },
   // Caching headers for better performance
