@@ -148,8 +148,8 @@ export const useServerData = (isOpen: boolean) => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      // Use the original Jupiter API endpoint that was working
-      const response = await fetch('https://lite-api.jup.ag/tokens/v2', {
+      // Use Jupiter recent tokens endpoint for new mints
+      const response = await fetch('https://lite-api.jup.ag/tokens/v2/recent', {
         signal: controller.signal,
         cache: 'no-store', // Always fetch fresh data
         headers: {

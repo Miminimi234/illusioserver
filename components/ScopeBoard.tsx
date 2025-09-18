@@ -23,7 +23,7 @@ export default function ScopeBoard() {
   useEffect(() => {
     const fetchTokens = async () => {
       try {
-        const res = await fetch("https://lite-api.jup.ag/tokens/v2");
+        const res = await fetch("https://lite-api.jup.ag/tokens/v2/recent");
         const data = await res.json();
         if (Array.isArray(data)) {
           // Transform Jupiter data to our format
