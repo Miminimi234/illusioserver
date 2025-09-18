@@ -4,7 +4,7 @@ import { useWebSocket } from "./useWebSocket";
 // Server API base URL
 const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 
   (process.env.NODE_ENV === 'production' 
-    ? 'https://server-production-d3da.up.railway.app' 
+    ? 'https://servertest-production-6715.up.railway.app' 
     : 'http://localhost:8080');
 
 // Types matching the server API
@@ -134,7 +134,7 @@ export const useServerData = (isOpen: boolean) => {
   // WebSocket connection for real-time updates
   const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 
     (process.env.NODE_ENV === 'production' 
-      ? 'wss://server-production-d3da.up.railway.app/ws' 
+      ? 'wss://servertest-production-6715.up.railway.app/ws' 
       : 'ws://localhost:8080/ws');
   const { isConnected: wsConnected, lastMessage } = useWebSocket(wsUrl);
 

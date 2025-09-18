@@ -1305,7 +1305,7 @@ function InsightsColumn({
       try {
         const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
           (process.env.NODE_ENV === 'production' 
-            ? 'https://server-production-d3da.up.railway.app'
+            ? 'https://servertest-production-6715.up.railway.app'
             : 'http://localhost:8080');
         const serverResponse = await fetch(`${serverUrl}/api/tokens/${mint}/holders?limit=1000`);
         if (serverResponse.ok) {
@@ -1495,7 +1495,7 @@ function InsightsColumn({
     try {
       const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
         (process.env.NODE_ENV === 'production' 
-          ? 'https://server-production-d3da.up.railway.app'
+          ? 'https://servertest-production-6715.up.railway.app'
           : 'http://localhost:8080');
       const response = await fetch(`${serverUrl}/api/grok/retrocausality/${focusToken.mint}`, {
         method: 'POST',
@@ -2803,7 +2803,7 @@ export const Scope = ({
             // Use server-side Grok API for mystical companion responses
             const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
               (process.env.NODE_ENV === 'production' 
-                ? 'https://server-production-d3da.up.railway.app'
+                ? 'https://servertest-production-6715.up.railway.app'
                 : 'http://localhost:8080');
             const serverResponse = await fetch(`${serverUrl}/api/grok/chat/${token.mint}`, {
               method: 'POST',
@@ -2829,7 +2829,7 @@ export const Scope = ({
             // Use server-side Grok API for general chat
             const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
               (process.env.NODE_ENV === 'production' 
-                ? 'https://server-production-d3da.up.railway.app'
+                ? 'https://servertest-production-6715.up.railway.app'
                 : 'http://localhost:8080');
             const serverResponse = await fetch(`${serverUrl}/api/grok/chat/${attachedCompanion.tokenMint}`, {
               method: 'POST',
@@ -2857,7 +2857,7 @@ export const Scope = ({
           // Use server-side Grok API for general chat
           const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
             (process.env.NODE_ENV === 'production' 
-              ? 'https://server-production-d3da.up.railway.app'
+              ? 'https://servertest-production-6715.up.railway.app'
               : 'http://localhost:8080');
           const serverResponse = await fetch(`${serverUrl}/api/grok/chat`, {
             method: 'POST',
