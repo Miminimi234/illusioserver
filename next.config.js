@@ -8,7 +8,7 @@ const nextConfig = {
   async rewrites() {
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
       (process.env.NODE_ENV === 'production' 
-        ? 'https://servertest-production-6715.up.railway.app'
+        ? 'https://testillusioserver-production-3833.up.railway.app'
         : 'http://localhost:8080');
     
     return [
@@ -26,9 +26,30 @@ const nextConfig = {
       }
     ]
   },
-  // CSP headers - relaxed for admin route
+  experimental: {
+    esmExternals: 'loose'
+  },
+  // Performance optimizations
+  compress: true,
+  poweredByHeader: false,
+  generateEtags: true,
+  // Image optimization
+  images: {
+    domains: ['testillusioserver-production-3833.up.railway.app'],
+    formats: ['image/webp', 'image/avif'],
+  },
+  // Caching headers for better performance
   async headers() {
     return [
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=60, stale-while-revalidate=300',
+          },
+        ],
+      },
       {
         source: '/admin',
         headers: [
@@ -51,9 +72,6 @@ const nextConfig = {
         ]
       }
     ]
-  },
-  experimental: {
-    esmExternals: 'loose'
   },
   // Optimize bundle splitting for mobile route
   webpack: (config, { isServer }) => {

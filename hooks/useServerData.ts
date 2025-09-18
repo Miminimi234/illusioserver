@@ -134,7 +134,7 @@ export const useServerData = (isOpen: boolean) => {
   // WebSocket connection for real-time updates
   const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 
     (process.env.NODE_ENV === 'production' 
-      ? 'wss://testillusioserver-production-3833.up.railway.app/ws' 
+      ? 'wss://servertest-production-6715.up.railway.app/ws' 
       : 'ws://localhost:8080/ws');
   const { isConnected: wsConnected, lastMessage } = useWebSocket(wsUrl);
 
@@ -149,7 +149,12 @@ export const useServerData = (isOpen: boolean) => {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       const response = await fetch(`${SERVER_BASE_URL}/api/tokens/fresh?limit=100`, {
-        signal: controller.signal
+        signal: controller.signal,
+        cache: 'no-store', // Always fetch fresh data
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       
       clearTimeout(timeoutId);

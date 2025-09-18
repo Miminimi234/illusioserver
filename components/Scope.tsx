@@ -2802,9 +2802,15 @@ export const Scope = ({
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for mystical companion responses
             const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+<<<<<<< HEAD
           (process.env.NODE_ENV === 'production' 
             ? 'https://servertest-production-6715.up.railway.app'
             : 'http://localhost:8080');
+=======
+              (process.env.NODE_ENV === 'production' 
+                ? 'https://servertest-production-6715.up.railway.app'
+                : 'http://localhost:8080');
+>>>>>>> f6fd8fe6f1b96d65b9273ae835e84e155411730a
             const serverResponse = await fetch(`${serverUrl}/api/grok/chat/${token.mint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -2828,9 +2834,15 @@ export const Scope = ({
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for general chat
             const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+<<<<<<< HEAD
           (process.env.NODE_ENV === 'production' 
             ? 'https://servertest-production-6715.up.railway.app'
             : 'http://localhost:8080');
+=======
+              (process.env.NODE_ENV === 'production' 
+                ? 'https://servertest-production-6715.up.railway.app'
+                : 'http://localhost:8080');
+>>>>>>> f6fd8fe6f1b96d65b9273ae835e84e155411730a
             const serverResponse = await fetch(`${serverUrl}/api/grok/chat/${attachedCompanion.tokenMint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -2856,9 +2868,15 @@ export const Scope = ({
         if (selectedAPI === 'server-grok') {
           // Use server-side Grok API for general chat
           const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+<<<<<<< HEAD
           (process.env.NODE_ENV === 'production' 
             ? 'https://servertest-production-6715.up.railway.app'
             : 'http://localhost:8080');
+=======
+            (process.env.NODE_ENV === 'production' 
+              ? 'https://servertest-production-6715.up.railway.app'
+              : 'http://localhost:8080');
+>>>>>>> f6fd8fe6f1b96d65b9273ae835e84e155411730a
           const serverResponse = await fetch(`${serverUrl}/api/grok/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
