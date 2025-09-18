@@ -33,6 +33,7 @@ type TokenData = {
 export default function ScopeBoard() {
   const [tokens, setTokens] = useState<TokenData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchTokens = async () => {
@@ -54,15 +55,6 @@ export default function ScopeBoard() {
             if (jupiterToken.launchpad === 'pump.fun' && jupiterToken.bondingCurve === 0) {
               status = 'migrated';
             }
-
-            // Debug logging
-            console.log('Jupiter token data:', {
-              id: jupiterToken.id,
-              name: jupiterToken.name,
-              mcap: jupiterToken.mcap,
-              fdv: jupiterToken.fdv,
-              usdPrice: jupiterToken.usdPrice
-            });
 
             return {
               mint: jupiterToken.id,
@@ -93,12 +85,25 @@ export default function ScopeBoard() {
             };
           });
           
-          console.log('Transformed tokens count:', transformedTokens.length);
-          console.log('First few transformed tokens:', transformedTokens.slice(0, 3));
+          // Add new tokens to existing list (avoid duplicates)
+          setTokens(prevTokens => {
+            const existingMints = new Set(prevTokens.map(t => t.mint));
+            const newTokens = transformedTokens.filter(token => !existingMints.has(token.mint));
+            
+            if (newTokens.length > 0) {
+              console.log(`Adding ${newTokens.length} new tokens to existing ${prevTokens.length}`);
+            }
+            
+            // Combine and sort by creation time (newest first)
+            const combinedTokens = [...newTokens, ...prevTokens];
+            combinedTokens.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+            
+            // Keep only the most recent 100 tokens to prevent memory issues
+            return combinedTokens.slice(0, 100);
+          });
           
-          setTokens(transformedTokens);
+          setLastFetchTime(new Date());
         } else {
-          setTokens([]);
           console.error("Invalid data format from Jupiter API:", data);
         }
       } catch (err) {
@@ -124,97 +129,124 @@ export default function ScopeBoard() {
   const migrated = tokens.filter((t) => t.status === "migrated");
 
   return (
-    <div className="grid grid-cols-3 gap-6 p-6 text-white" style={{ background: 'radial-gradient(circle at bottom center, rgba(0,0,0,0.9), rgba(0,0,0,0.7))' }}>
-      <TokenColumn title="New Pairs" tokens={newPairs} />
-      <TokenColumn title="Final Stretch" tokens={finalStretch} />
-      <TokenColumn title="Migrated" tokens={migrated} />
+    <div className="p-6 text-white" style={{ background: 'radial-gradient(circle at bottom center, rgba(0,0,0,0.9), rgba(0,0,0,0.7))' }}>
+      {/* Status header */}
+      <div className="mb-6 flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Live Token Stream</h1>
+        <div className="text-sm opacity-70">
+          Total: {tokens.length} tokens | Last update: {lastFetchTime ? lastFetchTime.toLocaleTimeString() : 'Never'}
+        </div>
+      </div>
+      
+      {/* Single column for chronological display */}
+      <div className="space-y-3 max-h-screen overflow-y-auto">
+        {tokens.map((token, index) => (
+          <TokenCard key={`${token.mint}-${index}`} token={token} index={index} />
+        ))}
+      </div>
     </div>
   );
 }
 
-function TokenColumn({ title, tokens }: { title: string; tokens: TokenData[] }) {
+function TokenCard({ token, index }: { token: TokenData; index: number }) {
+  const isNew = index < 5; // Highlight first 5 tokens as "new"
+  
   return (
-    <div className="bg-black/40 rounded-lg p-4 border border-white/10">
-      <h2 className="text-lg font-bold mb-4 text-white">{title}</h2>
-      <div className="space-y-3">
-        {tokens.map((t) => (
-          <div
-            key={t.mint}
-            className="p-3 rounded bg-white/5 border border-white/10 hover:border-white/30 transition-all duration-300 hover:shadow-glow"
-          >
-            <div className="flex justify-between items-start">
-              <div className="flex items-center space-x-2">
-                {t.imageUrl && (
-                  <img 
-                    src={t.imageUrl} 
-                    alt={t.name} 
-                    className="w-6 h-6 rounded-full"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                )}
-                <div>
-                  <span className="font-medium">{t.name}</span>
-                  <span className="text-xs opacity-70 ml-1">({t.symbol})</span>
-                </div>
-              </div>
-              <span className="text-xs opacity-70">{t.mint.slice(0,6)}…</span>
-            </div>
-            
-            <div className="mt-2 text-sm opacity-80">
-              <div className="flex justify-between">
-                <span>MC: ${t.marketcap?.toLocaleString() || 'N/A'}</span>
-                <span>FDV: ${t.fdv?.toLocaleString() || 'N/A'}</span>
-              </div>
-              {/* Debug info - remove this later */}
-              <div className="text-xs text-gray-400 mt-1">
-                Debug: mcap={t.marketcap}, fdv={t.fdv}
-              </div>
-              <div className="flex justify-between">
-                <span>Price: ${t.price_usd?.toFixed(8) || 'N/A'}</span>
-                <span className={t.priceChange24h && t.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'}>
-                  {t.priceChange24h ? `${t.priceChange24h > 0 ? '+' : ''}${t.priceChange24h.toFixed(2)}%` : 'N/A'}
+    <div
+      className={`p-4 rounded-lg border transition-all duration-300 hover:shadow-glow ${
+        isNew 
+          ? 'bg-green-500/10 border-green-500/30 hover:border-green-500/50' 
+          : 'bg-white/5 border-white/10 hover:border-white/30'
+      }`}
+    >
+      <div className="flex justify-between items-start">
+        <div className="flex items-center space-x-3">
+          {token.imageUrl && (
+            <img 
+              src={token.imageUrl} 
+              alt={token.name} 
+              className="w-8 h-8 rounded-full"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="font-medium text-lg">{token.name}</span>
+              <span className="text-sm opacity-70">({token.symbol})</span>
+              {isNew && (
+                <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs font-bold">
+                  NEW
                 </span>
-              </div>
-            </div>
-            
-            <div className="mt-1 text-xs opacity-70">
-              <div className="flex justify-between">
-                <span>Liquidity: ${t.liquidity?.toLocaleString() || 'N/A'}</span>
-                <span>Holders: {t.holderCount || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Vol 24h: ${t.volume_24h?.toLocaleString() || 'N/A'}</span>
-                <span>Traders: {t.numTraders24h || 'N/A'}</span>
-              </div>
-            </div>
-            
-            <div className="mt-1 text-xs opacity-60">
-              <div className="flex justify-between">
-                <span>Buys: {t.numBuys24h || 'N/A'}</span>
-                <span>Sells: {t.numSells24h || 'N/A'}</span>
-                <span>Net: {t.netBuyers24h || 'N/A'}</span>
-              </div>
-              {t.launchpad && (
-                <div className="mt-1">
-                  <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">
-                    {t.launchpad}
-                  </span>
-                  {t.bondingCurve && t.bondingCurve > 0 && (
-                    <span className="ml-2 px-2 py-1 bg-orange-500/20 text-orange-300 rounded text-xs">
-                      Curve: {t.bondingCurve.toFixed(2)}%
-                    </span>
-                  )}
-                </div>
               )}
             </div>
-            
-            <div className="mt-2">
-              <CreationTimeDisplay createdAt={t.createdAt} />
-            </div>
+            <span className="text-xs opacity-50">{token.mint.slice(0,8)}…{token.mint.slice(-4)}</span>
           </div>
-        ))}
+        </div>
+        <div className="text-right">
+          <div className="text-sm opacity-70">#{index + 1}</div>
+          <CreationTimeDisplay createdAt={token.createdAt} />
+        </div>
+      </div>
+      
+      <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+        <div className="space-y-1">
+          <div className="flex justify-between">
+            <span className="opacity-70">Market Cap:</span>
+            <span className="font-medium">${token.marketcap?.toLocaleString() || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="opacity-70">Price:</span>
+            <span className="font-medium">${token.price_usd?.toFixed(8) || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="opacity-70">Liquidity:</span>
+            <span className="font-medium">${token.liquidity?.toLocaleString() || 'N/A'}</span>
+          </div>
+        </div>
+        
+        <div className="space-y-1">
+          <div className="flex justify-between">
+            <span className="opacity-70">24h Change:</span>
+            <span className={`font-medium ${token.priceChange24h && token.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {token.priceChange24h ? `${token.priceChange24h > 0 ? '+' : ''}${token.priceChange24h.toFixed(2)}%` : 'N/A'}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="opacity-70">Volume 24h:</span>
+            <span className="font-medium">${token.volume_24h?.toLocaleString() || 'N/A'}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="opacity-70">Traders:</span>
+            <span className="font-medium">{token.numTraders24h || 'N/A'}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-3 flex flex-wrap gap-2">
+        {token.launchpad && (
+          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">
+            {token.launchpad}
+          </span>
+        )}
+        {token.bondingCurve && token.bondingCurve > 0 && (
+          <span className="px-2 py-1 bg-orange-500/20 text-orange-300 rounded text-xs">
+            Curve: {token.bondingCurve.toFixed(2)}%
+          </span>
+        )}
+        {token.holderCount && (
+          <span className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs">
+            {token.holderCount} holders
+          </span>
+        )}
+        <span className={`px-2 py-1 rounded text-xs ${
+          token.status === 'new' ? 'bg-green-500/20 text-green-300' :
+          token.status === 'final' ? 'bg-yellow-500/20 text-yellow-300' :
+          'bg-gray-500/20 text-gray-300'
+        }`}>
+          {token.status}
+        </span>
       </div>
     </div>
   );
