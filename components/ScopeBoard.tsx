@@ -23,23 +23,52 @@ export default function ScopeBoard() {
   useEffect(() => {
     const fetchTokens = async () => {
       try {
-        const res = await fetch("/api/tokens/fresh");
+        const res = await fetch("https://lite-api.jup.ag/tokens/v2");
         const data = await res.json();
         if (Array.isArray(data)) {
-          setTokens(data);
+          // Transform Jupiter data to our format
+          const transformedTokens = data.map((jupiterToken: any) => {
+            // Determine status based on Jupiter data
+            let status: 'new' | 'final' | 'migrated' = 'new';
+            
+            // If it has significant trading activity, consider it final
+            if (jupiterToken.stats24h?.numTraders && jupiterToken.stats24h.numTraders > 10) {
+              status = 'final';
+            }
+            
+            // If it's migrated from pump.fun, consider it migrated
+            if (jupiterToken.launchpad === 'pump.fun' && jupiterToken.bondingCurve === 0) {
+              status = 'migrated';
+            }
+
+            return {
+              mint: jupiterToken.id,
+              name: jupiterToken.name,
+              symbol: jupiterToken.symbol,
+              imageUrl: jupiterToken.icon,
+              marketcap: jupiterToken.mcap,
+              price_usd: jupiterToken.usdPrice,
+              volume_24h: jupiterToken.stats24h?.buyVolume || 0,
+              liquidity: jupiterToken.liquidity,
+              status,
+              createdAt: new Date(jupiterToken.firstPool.createdAt)
+            };
+          });
+          
+          setTokens(transformedTokens);
         } else {
           setTokens([]);
-          console.error("Invalid data format from API:", data);
+          console.error("Invalid data format from Jupiter API:", data);
         }
       } catch (err) {
-        console.error("Error fetching tokens:", err);
+        console.error("Error fetching tokens from Jupiter:", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchTokens();
-    const interval = setInterval(fetchTokens, 1000); // refresh every 1s (INSTANT for fresh mints)
+    const interval = setInterval(fetchTokens, 10000); // refresh every 10s for Jupiter API
     return () => clearInterval(interval);
   }, []);
 

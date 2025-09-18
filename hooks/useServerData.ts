@@ -138,20 +138,22 @@ export const useServerData = (isOpen: boolean) => {
       : 'ws://localhost:8080/ws');
   const { isConnected: wsConnected, lastMessage } = useWebSocket(wsUrl);
 
-  // Fetch tokens from server
+  // Fetch tokens from Jupiter API
   const fetchTokens = useCallback(async () => {
     try {
-      // console.log("🔍 Fetching tokens from:", `${SERVER_BASE_URL}/api/tokens?limit=100`);
-      setConnectionStatus("Fetching tokens...");
+      console.log("🔍 Fetching tokens from Jupiter API...");
+      setConnectionStatus("Fetching tokens from Jupiter...");
       
       // Add timeout to prevent hanging
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      const response = await fetch(`${SERVER_BASE_URL}/api/tokens/fresh?limit=100`, {
+      // Use the original Jupiter API endpoint that was working
+      const response = await fetch('https://lite-api.jup.ag/tokens/v2', {
         signal: controller.signal,
         cache: 'no-store', // Always fetch fresh data
         headers: {
+          'Accept': 'application/json',
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
         }
@@ -160,112 +162,180 @@ export const useServerData = (isOpen: boolean) => {
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
+        throw new Error(`Jupiter API responded with ${response.status}`);
       }
       
       const data = await response.json();
-      // console.log("📊 Received data:", { itemsCount: data?.items?.length, total: data?.total, isArray: Array.isArray(data) });
+      console.log("📊 Received data from Jupiter:", { itemsCount: data?.length });
       
-      // Handle both old and new API response formats
-      const total = data?.total ?? data?.items?.length ?? (Array.isArray(data) ? data.length : 0);
-      const items = data?.items ?? (Array.isArray(data) ? data : []);
-      
-      const transformedTokens = items.map(transformTokenData);
-      
-      // Merge with existing tokens to prevent duplicates and preserve WebSocket-added tokens
-      setTokens(prev => {
-        const existingMints = new Set(prev.map(t => t.mint));
-        const newTokens = transformedTokens.filter((t: any) => !existingMints.has(t.mint));
+      // Transform Jupiter data to our format
+      const transformedTokens = data.map((jupiterToken: any) => {
+        // Determine status based on Jupiter data
+        let status: 'fresh' | 'active' | 'curve' = 'fresh';
         
-          // If there are new tokens from server, add them to the beginning
-          if (newTokens.length > 0) {
-            // console.log(`📥 Added ${newTokens.length} new tokens from server refresh`);
-            const combined = [...newTokens, ...prev];
-            // NO LIMIT - keep all tokens to prevent fresh mints from disappearing
-            return combined;
-          }
+        // If it has significant trading activity, consider it active
+        if (jupiterToken.stats24h?.numTraders && jupiterToken.stats24h.numTraders > 10) {
+          status = 'active';
+        }
         
-        // If no new tokens, just update existing ones with fresh data
-        const updatedTokens = prev.map(existingToken => {
-          const serverToken = transformedTokens.find((t: any) => t.mint === existingToken.mint);
-          return serverToken || existingToken;
-        });
-        
-        return updatedTokens;
+        // If it's on a bonding curve (pump.fun, etc.), consider it curve
+        if (jupiterToken.launchpad === 'pump.fun' || jupiterToken.bondingCurve > 0) {
+          status = 'curve';
+        }
+
+        return {
+          mint: jupiterToken.id,
+          name: jupiterToken.name,
+          symbol: jupiterToken.symbol,
+          decimals: jupiterToken.decimals,
+          supply: jupiterToken.totalSupply,
+          blocktime: new Date(jupiterToken.firstPool.createdAt).getTime(),
+          status,
+          imageUrl: jupiterToken.icon,
+          metadataUri: undefined,
+          isOnCurve: jupiterToken.launchpad === 'pump.fun' || jupiterToken.bondingCurve > 0,
+          bondingCurveAddress: jupiterToken.firstPool.id,
+          marketcap: jupiterToken.mcap,
+          price_usd: jupiterToken.usdPrice,
+          volume_24h: jupiterToken.stats24h?.buyVolume || 0,
+          liquidity: jupiterToken.liquidity,
+          source: 'jupiter',
+          website: jupiterToken.website,
+          twitter: jupiterToken.twitter,
+          telegram: undefined,
+          links: {
+            dexscreener: `https://dexscreener.com/solana/${jupiterToken.id}`,
+            jupiter: `https://jup.ag/swap/SOL-${jupiterToken.id}`,
+            explorer: `https://solscan.io/token/${jupiterToken.id}`,
+          },
+          createdAt: new Date(jupiterToken.firstPool.createdAt)
+        };
       });
       
+      // Sort by creation time (newest first)
+      transformedTokens.sort((a: any, b: any) => b.createdAt.getTime() - a.createdAt.getTime());
+      
+      setTokens(transformedTokens);
       setLastUpdate(new Date());
-      setConnectionStatus(wsConnected ? "Connected to server (Live)" : "Connected to server");
+      setConnectionStatus("Connected to Jupiter (Live)");
       
       // Calculate stats from the data
       const newStats = {
-        totalTokens: total,
-        freshTokens: items.filter((t: any) => t.status === 'fresh').length,
-        activeTokens: items.filter((t: any) => t.status === 'active').length
+        totalTokens: transformedTokens.length,
+        freshTokens: transformedTokens.filter((t: any) => t.status === 'fresh').length,
+        activeTokens: transformedTokens.filter((t: any) => t.status === 'active').length
       };
       setStats(newStats);
       
-      // console.log("✅ fetchTokens completed successfully");
+      console.log("✅ fetchTokens from Jupiter completed successfully");
       
     } catch (error) {
-      console.error("❌ Failed to fetch tokens from server:", error);
+      console.error("❌ Failed to fetch tokens from Jupiter:", error);
       if (error instanceof Error && error.name === 'AbortError') {
-        setConnectionStatus("Request timeout - using WebSocket data only");
+        setConnectionStatus("Request timeout - Jupiter API");
       } else {
-        setConnectionStatus("Failed to connect to server - using WebSocket data only");
+        setConnectionStatus("Failed to connect to Jupiter API");
       }
     } finally {
-      // console.log("🏁 fetchTokens completed, setting isLoading to false");
       setIsLoading(false);
     }
   }, []);
 
-  // Search tokens
+  // Search tokens using Jupiter API
   const searchTokens = useCallback(async (query: string) => {
     if (!query || query.trim().length < 2) return;
     
     try {
-      const response = await fetch(`${SERVER_BASE_URL}/api/tokens/search?q=${encodeURIComponent(query)}&limit=50`);
+      console.log("🔍 Searching tokens on Jupiter:", query);
+      setConnectionStatus("Searching tokens...");
+      
+      const response = await fetch(`https://lite-api.jup.ag/tokens/v2/search?query=${encodeURIComponent(query)}`, {
+        cache: 'no-store',
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       
       if (!response.ok) {
-        throw new Error(`Search failed with ${response.status}`);
+        throw new Error(`Jupiter search failed with ${response.status}`);
       }
       
       const data = await response.json();
       
-      // Handle both old and new API response formats
-      const items = data?.items ?? (Array.isArray(data) ? data : []);
-      const transformedTokens = items.map(transformTokenData);
+      // Transform Jupiter search results to our format
+      const transformedTokens = data.map((jupiterToken: any) => {
+        // Determine status based on Jupiter data
+        let status: 'fresh' | 'active' | 'curve' = 'fresh';
+        
+        // If it has significant trading activity, consider it active
+        if (jupiterToken.stats24h?.numTraders && jupiterToken.stats24h.numTraders > 10) {
+          status = 'active';
+        }
+        
+        // If it's on a bonding curve (pump.fun, etc.), consider it curve
+        if (jupiterToken.launchpad === 'pump.fun' || jupiterToken.bondingCurve > 0) {
+          status = 'curve';
+        }
+
+        return {
+          mint: jupiterToken.id,
+          name: jupiterToken.name,
+          symbol: jupiterToken.symbol,
+          decimals: jupiterToken.decimals,
+          supply: jupiterToken.totalSupply,
+          blocktime: new Date(jupiterToken.firstPool.createdAt).getTime(),
+          status,
+          imageUrl: jupiterToken.icon,
+          metadataUri: undefined,
+          isOnCurve: jupiterToken.launchpad === 'pump.fun' || jupiterToken.bondingCurve > 0,
+          bondingCurveAddress: jupiterToken.firstPool.id,
+          marketcap: jupiterToken.mcap,
+          price_usd: jupiterToken.usdPrice,
+          volume_24h: jupiterToken.stats24h?.buyVolume || 0,
+          liquidity: jupiterToken.liquidity,
+          source: 'jupiter',
+          website: jupiterToken.website,
+          twitter: jupiterToken.twitter,
+          telegram: undefined,
+          links: {
+            dexscreener: `https://dexscreener.com/solana/${jupiterToken.id}`,
+            jupiter: `https://jup.ag/swap/SOL-${jupiterToken.id}`,
+            explorer: `https://solscan.io/token/${jupiterToken.id}`,
+          },
+          createdAt: new Date(jupiterToken.firstPool.createdAt)
+        };
+      });
+      
       setTokens(transformedTokens);
       setLastUpdate(new Date());
+      setConnectionStatus("Search completed");
       
     } catch (error) {
-      console.error("Search failed:", error);
+      console.error("Jupiter search failed:", error);
+      setConnectionStatus("Search failed");
     }
   }, []);
 
-  // Filter tokens by status
+  // Filter tokens by status (using existing Jupiter data)
   const filterByStatus = useCallback(async (status: 'fresh' | 'active') => {
     try {
-      const endpoint = status;
-      const response = await fetch(`${SERVER_BASE_URL}/api/tokens/${endpoint}?limit=100`);
+      console.log("🔍 Filtering tokens by status:", status);
+      setConnectionStatus(`Filtering by ${status}...`);
       
-      if (!response.ok) {
-        throw new Error(`Status filter failed with ${response.status}`);
-      }
+      // Fetch fresh data and filter
+      await fetchTokens();
       
-      const data = await response.json();
-      
-      // Handle both old and new API response formats
-      const items = data?.items ?? (Array.isArray(data) ? data : []);
-      const transformedTokens = items.map(transformTokenData);
-      setTokens(transformedTokens);
-      setLastUpdate(new Date());
+      // Apply status filter to current tokens
+      setTokens(prev => prev.filter(token => token.status === status));
+      setConnectionStatus(`Filtered by ${status}`);
       
     } catch (error) {
       console.error("Status filter failed:", error);
+      setConnectionStatus("Filter failed");
     }
-  }, []);
+  }, [fetchTokens]);
 
 
 
@@ -403,12 +473,12 @@ export const useServerData = (isOpen: boolean) => {
       console.log("📡 Calling fetchTokens...");
       fetchTokens();
       
-      // Set up periodic refresh when live mode is on (FAST for fresh mints)
+      // Set up periodic refresh when live mode is on
       if (live) {
         const interval = setInterval(() => {
-          // console.log("🔄 Periodic refresh calling fetchTokens...");
+          console.log("🔄 Periodic refresh calling fetchTokens...");
           fetchTokens();
-        }, 5000); // FAST: refresh every 5 seconds for fresh mints
+        }, 10000); // Refresh every 10 seconds for Jupiter API
         
         return () => clearInterval(interval);
       }
