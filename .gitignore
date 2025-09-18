@@ -67,3 +67,5 @@ jspm_packages/
 
 # dotenv environment variables file
 .env
+public/zodiac/
+public/WIZZARD/
