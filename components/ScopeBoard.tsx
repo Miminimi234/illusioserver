@@ -55,6 +55,15 @@ export default function ScopeBoard() {
               status = 'migrated';
             }
 
+            // Debug logging
+            console.log('Jupiter token data:', {
+              id: jupiterToken.id,
+              name: jupiterToken.name,
+              mcap: jupiterToken.mcap,
+              fdv: jupiterToken.fdv,
+              usdPrice: jupiterToken.usdPrice
+            });
+
             return {
               mint: jupiterToken.id,
               name: jupiterToken.name,
@@ -83,6 +92,9 @@ export default function ScopeBoard() {
               createdAt: new Date(jupiterToken.firstPool.createdAt)
             };
           });
+          
+          console.log('Transformed tokens count:', transformedTokens.length);
+          console.log('First few transformed tokens:', transformedTokens.slice(0, 3));
           
           setTokens(transformedTokens);
         } else {
@@ -154,6 +166,10 @@ function TokenColumn({ title, tokens }: { title: string; tokens: TokenData[] }) 
               <div className="flex justify-between">
                 <span>MC: ${t.marketcap?.toLocaleString() || 'N/A'}</span>
                 <span>FDV: ${t.fdv?.toLocaleString() || 'N/A'}</span>
+              </div>
+              {/* Debug info - remove this later */}
+              <div className="text-xs text-gray-400 mt-1">
+                Debug: mcap={t.marketcap}, fdv={t.fdv}
               </div>
               <div className="flex justify-between">
                 <span>Price: ${t.price_usd?.toFixed(8) || 'N/A'}</span>
