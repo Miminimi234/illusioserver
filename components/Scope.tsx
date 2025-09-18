@@ -872,6 +872,36 @@ const TokenCardBase: React.FC<CardProps> = React.memo(({ token, visibleMintsRef,
           telegram={token.telegram}
           source={token.source}
         />
+        
+        {/* Dev Holding Indicator */}
+        {!token.isStock && (
+          <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-mono border ${
+            token.dev_holding_percentage && typeof token.dev_holding_percentage === 'number' && token.dev_holding_percentage > 0
+              ? 'bg-green-500/10 text-green-400 border-green-500/30'
+              : 'bg-red-500/10 text-red-400 border-red-500/30'
+          }`}>
+            <svg 
+              className="w-3 h-3" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+              />
+            </svg>
+            <span>
+              {token.dev_holding_percentage && typeof token.dev_holding_percentage === 'number' && token.dev_holding_percentage > 0 
+                ? `${token.dev_holding_percentage.toFixed(1)}%`
+                : '0%'
+              }
+            </span>
+          </div>
+        )}
+        
         <span className="text-xs text-white/30 font-mono ml-auto">
           {token.mint.slice(0, 4)}...{token.mint.slice(-4)}
         </span>
@@ -1114,6 +1144,154 @@ function InsightsColumn({
   const [holderCount, setHolderCount] = useState<number | null>(null);
   const [holderLoading, setHolderLoading] = useState(false);
   const [lastHolderUpdate, setLastHolderUpdate] = useState<Date | null>(null);
+  
+  // Time period selection
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'5m' | '1h' | '6h' | '24h'>('5m');
+
+  // Real-time market data from Jupiter (consolidated)
+  const [jupiterData, setJupiterData] = useState<{
+    usdPrice: number;
+    priceChange: number;
+    marketCap: number;
+    liquidity: number;
+    volume: {
+      buy: number;
+      sell: number;
+      total: number;
+    };
+    holderCount: number;
+    topHoldersPercentage: number;
+    devHoldingPercentage: number;
+    lastUpdate: Date;
+  } | null>(null);
+  const [jupiterLoading, setJupiterLoading] = useState(false);
+  const [jupiterRefreshing, setJupiterRefreshing] = useState(false);
+
+  // Function to fetch all market data from Jupiter (consolidated)
+  const fetchJupiterMarketData = async (mint: string, isInitial = false) => {
+    if (!mint) return;
+    
+    if (isInitial) {
+      setJupiterLoading(true);
+    } else {
+      setJupiterRefreshing(true);
+    }
+    
+    try {
+      console.log(`🔄 JUPITER: Fetching all market data for ${mint.slice(0, 8)}...`);
+      
+      const response = await fetch(`https://lite-api.jup.ag/tokens/v2/search?query=${mint}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const tokenData = data[0];
+        
+        if (tokenData) {
+          // Use Jupiter's provided market cap or calculate if not available
+          const marketCap = tokenData.mcap || (tokenData.usdPrice * (tokenData.totalSupply || 1000000000));
+          
+          // Get data based on selected timeframe
+          const getTimeframeData = (timeframe: string) => {
+            switch (timeframe) {
+              case '5m':
+                return {
+                  priceChange: tokenData.stats5m?.priceChange || 0,
+                  volume: {
+                    buy: tokenData.stats5m?.buyVolume || 0,
+                    sell: tokenData.stats5m?.sellVolume || 0,
+                    total: (tokenData.stats5m?.buyVolume || 0) + (tokenData.stats5m?.sellVolume || 0)
+                  }
+                };
+              case '1h':
+                return {
+                  priceChange: tokenData.stats1h?.priceChange || 0,
+                  volume: {
+                    buy: tokenData.stats1h?.buyVolume || 0,
+                    sell: tokenData.stats1h?.sellVolume || 0,
+                    total: (tokenData.stats1h?.buyVolume || 0) + (tokenData.stats1h?.sellVolume || 0)
+                  }
+                };
+              case '6h':
+                return {
+                  priceChange: tokenData.stats6h?.priceChange || 0,
+                  volume: {
+                    buy: tokenData.stats6h?.buyVolume || 0,
+                    sell: tokenData.stats6h?.sellVolume || 0,
+                    total: (tokenData.stats6h?.buyVolume || 0) + (tokenData.stats6h?.sellVolume || 0)
+                  }
+                };
+              case '24h':
+                return {
+                  priceChange: tokenData.stats24h?.priceChange || 0,
+                  volume: {
+                    buy: tokenData.stats24h?.buyVolume || 0,
+                    sell: tokenData.stats24h?.sellVolume || 0,
+                    total: (tokenData.stats24h?.buyVolume || 0) + (tokenData.stats24h?.sellVolume || 0)
+                  }
+                };
+              default:
+                return {
+                  priceChange: tokenData.stats5m?.priceChange || 0,
+                  volume: {
+                    buy: tokenData.stats5m?.buyVolume || 0,
+                    sell: tokenData.stats5m?.sellVolume || 0,
+                    total: (tokenData.stats5m?.buyVolume || 0) + (tokenData.stats5m?.sellVolume || 0)
+                  }
+                };
+            }
+          };
+
+          const timeframeData = getTimeframeData(selectedTimeframe);
+          
+          console.log(`🔍 JUPITER DEBUG (${selectedTimeframe}):`, {
+            mint: mint.slice(0, 8),
+            price: tokenData.usdPrice,
+            marketCap: tokenData.mcap,
+            liquidity: tokenData.liquidity,
+            priceChange: timeframeData.priceChange,
+            volume: timeframeData.volume,
+            holderCount: tokenData.holderCount,
+            topHoldersPercentage: tokenData.audit?.topHoldersPercentage || 0,
+            devHoldingPercentage: tokenData.audit?.devBalancePercentage || 0,
+            calculatedMarketCap: marketCap,
+            totalSupply: tokenData.totalSupply,
+            audit: tokenData.audit
+          });
+          
+          setJupiterData({
+            usdPrice: tokenData.usdPrice,
+            priceChange: timeframeData.priceChange,
+            marketCap: marketCap,
+            liquidity: tokenData.liquidity || 0,
+            volume: timeframeData.volume,
+            holderCount: tokenData.holderCount || 0,
+            topHoldersPercentage: tokenData.audit?.topHoldersPercentage || 0,
+            devHoldingPercentage: tokenData.audit?.devBalancePercentage || 0,
+            lastUpdate: new Date()
+          });
+          
+          console.log(`✅ JUPITER: Updated all data for ${mint.slice(0, 8)}... - Price: $${tokenData.usdPrice}, MC: $${marketCap.toLocaleString()}, LP: $${tokenData.liquidity?.toLocaleString() || 'N/A'}`);
+        } else {
+          console.log(`⚠️ JUPITER: No market data found for ${mint.slice(0, 8)}...`);
+        }
+      } else {
+        console.log(`❌ JUPITER: API failed with status ${response.status}`);
+      }
+    } catch (error) {
+      console.error(`❌ JUPITER: Error fetching market data for ${mint.slice(0, 8)}...:`, error);
+    } finally {
+      if (isInitial) {
+        setJupiterLoading(false);
+      } else {
+        setJupiterRefreshing(false);
+      }
+    }
+  };
 
   // Function to fetch holder count
   const fetchHolderCount = async (mint: string) => {
@@ -1125,7 +1303,11 @@ function InsightsColumn({
       
       // Try our server-side holder endpoint first (most reliable)
       try {
-        const serverResponse = await fetch(`${SERVER_BASE_URL}/api/tokens/${mint}/holders?limit=1000`);
+        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+          (process.env.NODE_ENV === 'production' 
+            ? 'https://server-production-d3da.up.railway.app'
+            : 'http://localhost:8080');
+        const serverResponse = await fetch(`${serverUrl}/api/tokens/${mint}/holders?limit=1000`);
         if (serverResponse.ok) {
           const serverData = await serverResponse.json();
           if (serverData.holders && Array.isArray(serverData.holders)) {
@@ -1241,6 +1423,22 @@ function InsightsColumn({
     }
   }, [focusToken?.mint]);
 
+  // Fetch Jupiter market data when focusToken changes
+  useEffect(() => {
+    if (focusToken && focusToken.mint) {
+      fetchJupiterMarketData(focusToken.mint, true);
+    } else {
+      setJupiterData(null);
+    }
+  }, [focusToken?.mint]);
+
+  // Refetch data when timeframe changes
+  useEffect(() => {
+    if (focusToken && focusToken.mint && jupiterData) {
+      fetchJupiterMarketData(focusToken.mint, false);
+    }
+  }, [selectedTimeframe]);
+
   // Auto-refresh holder count every 5 seconds
   useEffect(() => {
     if (!focusToken || !focusToken.mint) return;
@@ -1248,6 +1446,18 @@ function InsightsColumn({
     const interval = setInterval(() => {
       // console.log(`🔄 Auto-refreshing holder count for ${focusToken.mint}`);
       fetchHolderCount(focusToken.mint);
+    }, 5000); // 5 seconds
+
+    return () => clearInterval(interval);
+  }, [focusToken?.mint]);
+
+  // Auto-refresh Jupiter market data every 5 seconds
+  useEffect(() => {
+    if (!focusToken || !focusToken.mint) return;
+
+    const interval = setInterval(() => {
+      console.log(`🔄 JUPITER: Auto-refreshing all market data for ${focusToken.mint.slice(0, 8)}...`);
+      fetchJupiterMarketData(focusToken.mint, false);
     }, 5000); // 5 seconds
 
     return () => clearInterval(interval);
@@ -1263,10 +1473,6 @@ function InsightsColumn({
   const [lastAiUpdate, setLastAiUpdate] = useState<Date | null>(null);
 
   // Server API base URL
-  const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 
-    (process.env.NODE_ENV === 'production' 
-      ? 'https://server-production-d3da.up.railway.app' 
-      : 'http://localhost:8080');
 
   // Helper function to format values with fallbacks
   const formatValue = (value: any, fallback: string = "N/A") => {
@@ -1287,7 +1493,11 @@ function InsightsColumn({
 
     setAiLoading(true);
     try {
-      const response = await fetch(`${SERVER_BASE_URL}/api/grok/retrocausality/${focusToken.mint}`, {
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+        (process.env.NODE_ENV === 'production' 
+          ? 'https://server-production-d3da.up.railway.app'
+          : 'http://localhost:8080');
+      const response = await fetch(`${serverUrl}/api/grok/retrocausality/${focusToken.mint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1313,7 +1523,7 @@ function InsightsColumn({
     } finally {
       setAiLoading(false);
     }
-  }, [focusToken?.mint, SERVER_BASE_URL]);
+  }, [focusToken?.mint]);
 
   // 5-second polling for AI analysis updates (as requested)
   useEffect(() => {
@@ -1534,70 +1744,221 @@ function InsightsColumn({
                 </svg>
               }
             >
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Confidence</div>
-                  <ConfidenceBar value={metrics?.confidence || 0} />
-                </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Marketcap</div>
-                  <div className="text-white text-[12px] font-mono">
-                    {focusToken.is_on_curve ? '— (on curve)' : (focusToken.marketcap && focusToken.marketcap !== 'null' && focusToken.marketcap !== '0' ? `$${formatMarketcap(parseFloat(focusToken.marketcap))}` : '—')}
+              {/* Timeframe Selection Buttons */}
+              <div className="flex space-x-1 mb-3">
+                {(['5m', '1h', '6h', '24h'] as const).map((timeframe) => (
+                  <button
+                    key={timeframe}
+                    onClick={() => setSelectedTimeframe(timeframe)}
+                    className={`px-2 py-1 text-[10px] font-mono rounded transition-colors ${
+                      selectedTimeframe === timeframe
+                        ? 'bg-white/20 text-white'
+                        : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+                    }`}
+                  >
+                    {timeframe}
+                  </button>
+                ))}
+              </div>
+
+              {/* Main Metrics Grid - 3 columns for better organization */}
+              <div className="grid grid-cols-3 gap-3 mb-3">
+                {/* Left Column - Core Metrics */}
+                <div className="space-y-2">
+                  <div>
+                    <div className="text-white/50 text-[11px] font-mono mb-1">Confidence</div>
+                    <ConfidenceBar value={metrics?.confidence || 0} />
                   </div>
-                </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Liquidity</div>
-                  <div className="text-white text-[12px] font-mono">{metrics?.liquidity || "N/A"}</div>
-                </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">24h Vol</div>
-                  <div className="text-white text-[12px] font-mono">
-                    {focusToken.is_on_curve ? '— (on curve)' : (focusToken.volume_24h && focusToken.volume_24h !== 'null' && focusToken.volume_24h !== '0' ? `$${Math.round(parseFloat(focusToken.volume_24h)).toLocaleString()}` : '—')}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Holders</div>
-                  <div className="text-white text-[12px] font-mono flex items-center space-x-1">
-                    {holderLoading ? (
-                      <div className="animate-spin rounded-full h-2 w-2 border-b border-white/60"></div>
-                    ) : (
-                      <div className="flex items-center space-x-1">
-                        <span>{holderCount !== null ? holderCount.toLocaleString() : "N/A"}</span>
-                        {holderCount !== null && holderCount > 0 && (
-                          <span className="text-white/40 text-[10px]" title="Estimated based on market data">
-                            ~
+                  <div>
+                    <div className="text-white/50 text-[11px] font-mono mb-1">Marketcap</div>
+                    <div className="text-white text-[11px] font-mono flex items-center space-x-1">
+                      {jupiterLoading ? (
+                        <div className="animate-spin rounded-full h-2 w-2 border-b border-white/60"></div>
+                      ) : (
+                        <div className="flex items-center space-x-1">
+                          <span>
+                            {jupiterData ? 
+                              `$${formatMarketcap(jupiterData.marketCap)}` : 
+                              (focusToken.is_on_curve ? '— (on curve)' : 
+                               (focusToken.marketcap && focusToken.marketcap !== 'null' && focusToken.marketcap !== '0' ? `$${formatMarketcap(parseFloat(focusToken.marketcap))}` : '—'))
+                            }
                           </span>
-                        )}
+                          {jupiterRefreshing && (
+                            <div className="animate-spin rounded-full h-2 w-2 border-b border-white/40"></div>
+                          )}
+                          {jupiterData && !jupiterRefreshing && (
+                            <span className="text-white/30 text-[9px]">(live)</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-white/50 text-[11px] font-mono mb-1">Liquidity</div>
+                    <div className="text-white text-[11px] font-mono flex items-center space-x-1">
+                      {jupiterLoading ? (
+                        <div className="animate-spin rounded-full h-2 w-2 border-b border-white/60"></div>
+                      ) : (
+                        <div className="flex items-center space-x-1">
+                          <span>
+                            {jupiterData ? 
+                              `$${jupiterData.liquidity.toLocaleString()}` : 
+                              (metrics?.liquidity || "N/A")
+                            }
+                          </span>
+                          {jupiterRefreshing && (
+                            <div className="animate-spin rounded-full h-2 w-2 border-b border-white/40"></div>
+                          )}
+                          {jupiterData && !jupiterRefreshing && (
+                            <span className="text-white/30 text-[9px]">
+                              ({Math.floor((Date.now() - jupiterData.lastUpdate.getTime()) / 1000)}s)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-white/50 text-[11px] font-mono mb-1">Holders</div>
+                    <div className="text-white text-[11px] font-mono flex items-center space-x-1">
+                      {jupiterLoading ? (
+                        <div className="animate-spin rounded-full h-2 w-2 border-b border-white/60"></div>
+                      ) : (
+                        <div className="flex items-center space-x-1">
+                          <span>
+                            {jupiterData ? 
+                              jupiterData.holderCount.toLocaleString() : 
+                              (holderCount !== null ? holderCount.toLocaleString() : "N/A")
+                            }
+                          </span>
+                          {jupiterRefreshing && (
+                            <div className="animate-spin rounded-full h-2 w-2 border-b border-white/40"></div>
+                          )}
+                          {jupiterData && !jupiterRefreshing && (
+                            <span className="text-white/30 text-[9px]">
+                              ({Math.floor((Date.now() - jupiterData.lastUpdate.getTime()) / 1000)}s)
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {/* Holder Distribution - Always visible */}
+                    <div className="text-white/50 text-[10px] font-mono mt-1 flex items-center space-x-3">
+                      <span className="flex items-center space-x-1">
+                        <span>Top:</span>
+                        <span className="text-yellow-400">
+                          {jupiterData && jupiterData.topHoldersPercentage > 0 
+                            ? `${jupiterData.topHoldersPercentage.toFixed(1)}%`
+                            : 'N/A'
+                          }
+                        </span>
+                      </span>
+                      <span className="flex items-center space-x-1">
+                        <span>Dev:</span>
+                        <span className="text-orange-400">
+                          {jupiterData && jupiterData.devHoldingPercentage > 0 
+                            ? `${jupiterData.devHoldingPercentage.toFixed(1)}%`
+                            : 'sold'
+                          }
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Middle Column - Price & Volume */}
+                <div className="space-y-2">
+                  <div>
+                    <div className="text-white/50 text-[11px] font-mono mb-1">Price</div>
+                    <div className="text-white text-[11px] font-mono flex items-center space-x-1">
+                      {jupiterLoading ? (
+                        <div className="animate-spin rounded-full h-2 w-2 border-b border-white/60"></div>
+                      ) : (
+                        <div className="flex items-center space-x-1">
+                          <span>
+                            {jupiterData ? 
+                              `$${jupiterData.usdPrice.toFixed(8)}` : 
+                              (focusToken.price_usd ? `$${parseFloat(focusToken.price_usd).toFixed(8)}` : 'N/A')
+                            }
+                          </span>
+                          {jupiterRefreshing && (
+                            <div className="animate-spin rounded-full h-2 w-2 border-b border-white/40"></div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {/* Price Change */}
+                    {jupiterData && (
+                      <div className="text-white/40 text-[9px] font-mono mt-0.5">
+                        {selectedTimeframe}: <span className={`${jupiterData.priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {jupiterData.priceChange >= 0 ? '+' : ''}{jupiterData.priceChange.toFixed(2)}%
+                        </span>
                       </div>
                     )}
-                    {lastHolderUpdate && (
-                      <span className="text-white/30 text-[10px]">
-                        ({Math.floor((Date.now() - lastHolderUpdate.getTime()) / 1000)}s ago)
-                      </span>
-                    )}
+                  </div>
+                  <div>
+                    <div className="text-white/50 text-[11px] font-mono mb-1">{selectedTimeframe} Volume</div>
+                    <div className="text-white text-[11px] font-mono">
+                      {jupiterLoading ? (
+                        <div className="animate-spin rounded-full h-2 w-2 border-b border-white/60"></div>
+                      ) : jupiterData ? (
+                        <div className="space-y-0.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-green-400 text-[10px]">Buy:</span>
+                            <span className="text-[10px]">${jupiterData.volume.buy.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-red-400 text-[10px]">Sell:</span>
+                            <span className="text-[10px]">${jupiterData.volume.sell.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-white/60 border-t border-white/10 pt-0.5">
+                            <span className="text-[10px]">Total:</span>
+                            <span className="text-[10px]">${jupiterData.volume.total.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-[10px]">
+                          {focusToken.is_on_curve ? '— (on curve)' : '—'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-white/50 text-[12px] font-mono mb-1">Age</div>
-                  <div className="text-white text-[12px] font-mono">
-                    {(() => {
-                      const createdDate = new Date(focusToken.created_at || focusToken.createdAt || new Date());
-                      const now = new Date();
-                      const diffInSeconds = Math.floor((now.getTime() - createdDate.getTime()) / 1000);
-                      
-                      if (diffInSeconds < 60) {
-                        return `${diffInSeconds}s ago`;
-                      } else if (diffInSeconds < 3600) {
-                        const minutes = Math.floor(diffInSeconds / 60);
-                        return `${minutes}m ago`;
-                      } else if (diffInSeconds < 86400) {
-                        const hours = Math.floor(diffInSeconds / 3600);
-                        return `${hours}h ago`;
-                      } else {
-                        const days = Math.floor(diffInSeconds / 86400);
-                        return `${days}d ago`;
-                      }
-                    })()}
+
+                {/* Right Column - Age & Status */}
+                <div className="space-y-2">
+                  <div>
+                    <div className="text-white/50 text-[11px] font-mono mb-1">Age</div>
+                    <div className="text-white text-[11px] font-mono">
+                      {(() => {
+                        const createdDate = new Date(focusToken.created_at || focusToken.createdAt || new Date());
+                        const now = new Date();
+                        const diffInSeconds = Math.floor((now.getTime() - createdDate.getTime()) / 1000);
+                        
+                        if (diffInSeconds < 60) {
+                          return `${diffInSeconds}s ago`;
+                        } else if (diffInSeconds < 3600) {
+                          const minutes = Math.floor(diffInSeconds / 60);
+                          return `${minutes}m ago`;
+                        } else if (diffInSeconds < 86400) {
+                          const hours = Math.floor(diffInSeconds / 3600);
+                          return `${hours}h ago`;
+                        } else {
+                          const days = Math.floor(diffInSeconds / 86400);
+                          return `${days}d ago`;
+                        }
+                      })()}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-white/50 text-[11px] font-mono mb-1">Status</div>
+                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-[9px] font-mono border ${
+                      focusToken.is_on_curve || focusToken.status === 'curve'
+                        ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+                        : 'bg-green-500/15 text-green-300 border-green-500/30'
+                    }`}>
+                      {focusToken.is_on_curve || focusToken.status === 'curve' ? 'CURVE' : 'ACTIVE'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2440,7 +2801,11 @@ export const Scope = ({
         if (token) {
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for mystical companion responses
-            const serverResponse = await fetch(`${SERVER_BASE_URL}/api/grok/chat/${token.mint}`, {
+            const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+              (process.env.NODE_ENV === 'production' 
+                ? 'https://server-production-d3da.up.railway.app'
+                : 'http://localhost:8080');
+            const serverResponse = await fetch(`${serverUrl}/api/grok/chat/${token.mint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -2462,7 +2827,11 @@ export const Scope = ({
         } else {
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for general chat
-            const serverResponse = await fetch(`${SERVER_BASE_URL}/api/grok/chat/${attachedCompanion.tokenMint}`, {
+            const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+              (process.env.NODE_ENV === 'production' 
+                ? 'https://server-production-d3da.up.railway.app'
+                : 'http://localhost:8080');
+            const serverResponse = await fetch(`${serverUrl}/api/grok/chat/${attachedCompanion.tokenMint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -2486,7 +2855,11 @@ export const Scope = ({
         console.log('Using general companion response for:', currentCompanion);
         if (selectedAPI === 'server-grok') {
           // Use server-side Grok API for general chat
-          const serverResponse = await fetch(`${SERVER_BASE_URL}/api/grok/chat`, {
+          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
+            (process.env.NODE_ENV === 'production' 
+              ? 'https://server-production-d3da.up.railway.app'
+              : 'http://localhost:8080');
+          const serverResponse = await fetch(`${serverUrl}/api/grok/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
