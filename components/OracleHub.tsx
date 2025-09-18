@@ -348,7 +348,7 @@ Respond with ONLY "YES" if the conversation feels complete and ready for archivi
       
       const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
         (process.env.NODE_ENV === 'production' 
-          ? 'https://testillusioserver-production-3833.up.railway.app'
+          ? 'https://servertest-production-6715.up.railway.app'
           : 'http://localhost:8080');
       
       const response = await fetch(`${serverUrl}/api/grok/oracle/conversation`, {
