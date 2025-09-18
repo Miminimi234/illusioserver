@@ -55,6 +55,19 @@ export interface TransformedTokenData {
   price_usd?: number;
   volume_24h?: number;
   liquidity?: number;
+  // Additional Jupiter API fields
+  fdv?: number;
+  holderCount?: number;
+  priceChange24h?: number;
+  numTraders24h?: number;
+  numBuys24h?: number;
+  numSells24h?: number;
+  netBuyers24h?: number;
+  bondingCurve?: number;
+  launchpad?: string;
+  organicScore?: number;
+  organicScoreLabel?: string;
+  audit?: any;
   source: string;
   // Social media links from metadata
   website?: string;
@@ -195,14 +208,26 @@ export const useServerData = (isOpen: boolean) => {
           metadataUri: undefined,
           isOnCurve: jupiterToken.launchpad === 'pump.fun' || jupiterToken.bondingCurve > 0,
           bondingCurveAddress: jupiterToken.firstPool.id,
-          marketcap: jupiterToken.mcap,
+          marketcap: jupiterToken.mcap || jupiterToken.fdv,
           price_usd: jupiterToken.usdPrice,
           volume_24h: jupiterToken.stats24h?.buyVolume || 0,
           liquidity: jupiterToken.liquidity,
+          fdv: jupiterToken.fdv,
+          holderCount: jupiterToken.holderCount,
+          priceChange24h: jupiterToken.stats24h?.priceChange || 0,
+          numTraders24h: jupiterToken.stats24h?.numTraders || 0,
+          numBuys24h: jupiterToken.stats24h?.numBuys || 0,
+          numSells24h: jupiterToken.stats24h?.numSells || 0,
+          netBuyers24h: jupiterToken.stats24h?.numNetBuyers || 0,
+          bondingCurve: jupiterToken.bondingCurve,
+          launchpad: jupiterToken.launchpad,
+          organicScore: jupiterToken.organicScore,
+          organicScoreLabel: jupiterToken.organicScoreLabel,
+          audit: jupiterToken.audit,
           source: 'jupiter',
           website: jupiterToken.website,
           twitter: jupiterToken.twitter,
-          telegram: undefined,
+          telegram: jupiterToken.telegram,
           links: {
             dexscreener: `https://dexscreener.com/solana/${jupiterToken.id}`,
             jupiter: `https://jup.ag/swap/SOL-${jupiterToken.id}`,
@@ -291,14 +316,26 @@ export const useServerData = (isOpen: boolean) => {
           metadataUri: undefined,
           isOnCurve: jupiterToken.launchpad === 'pump.fun' || jupiterToken.bondingCurve > 0,
           bondingCurveAddress: jupiterToken.firstPool.id,
-          marketcap: jupiterToken.mcap,
+          marketcap: jupiterToken.mcap || jupiterToken.fdv,
           price_usd: jupiterToken.usdPrice,
           volume_24h: jupiterToken.stats24h?.buyVolume || 0,
           liquidity: jupiterToken.liquidity,
+          fdv: jupiterToken.fdv,
+          holderCount: jupiterToken.holderCount,
+          priceChange24h: jupiterToken.stats24h?.priceChange || 0,
+          numTraders24h: jupiterToken.stats24h?.numTraders || 0,
+          numBuys24h: jupiterToken.stats24h?.numBuys || 0,
+          numSells24h: jupiterToken.stats24h?.numSells || 0,
+          netBuyers24h: jupiterToken.stats24h?.numNetBuyers || 0,
+          bondingCurve: jupiterToken.bondingCurve,
+          launchpad: jupiterToken.launchpad,
+          organicScore: jupiterToken.organicScore,
+          organicScoreLabel: jupiterToken.organicScoreLabel,
+          audit: jupiterToken.audit,
           source: 'jupiter',
           website: jupiterToken.website,
           twitter: jupiterToken.twitter,
-          telegram: undefined,
+          telegram: jupiterToken.telegram,
           links: {
             dexscreener: `https://dexscreener.com/solana/${jupiterToken.id}`,
             jupiter: `https://jup.ag/swap/SOL-${jupiterToken.id}`,
