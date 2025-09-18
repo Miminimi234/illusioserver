@@ -2,10 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useWebSocket } from "./useWebSocket";
 
 // Server API base URL
-const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 
-  (process.env.NODE_ENV === 'production' 
-    ? 'https://server-production-d3da.up.railway.app' 
-    : 'http://localhost:8080');
+const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
 
 // Types matching the server API
 export interface ServerTokenData {
@@ -132,10 +129,7 @@ export const useServerData = (isOpen: boolean) => {
   const [queuedTokens, setQueuedTokens] = useState<TransformedTokenData[]>([]);
 
   // WebSocket connection for real-time updates
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 
-    (process.env.NODE_ENV === 'production' 
-      ? 'wss://server-production-d3da.up.railway.app/ws' 
-      : 'ws://localhost:8080/ws');
+  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080/ws';
   const { isConnected: wsConnected, lastMessage } = useWebSocket(wsUrl);
 
   // Fetch tokens from server

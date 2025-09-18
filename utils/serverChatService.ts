@@ -18,11 +18,8 @@ class ServerChatService {
   private serverUrl: string;
 
   constructor() {
-    // Use environment variable for server URL, fallback to Railway for production
-    this.serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
-      (process.env.NODE_ENV === 'production' 
-        ? 'https://server-production-d3da.up.railway.app'
-        : 'http://localhost:8080');
+    // Use environment variable for server URL
+    this.serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
   }
 
   async analyzeToken(

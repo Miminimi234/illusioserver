@@ -346,10 +346,7 @@ Respond with ONLY "YES" if the conversation feels complete and ready for archivi
       // Build context from recent messages
       const context = recentMessages.slice(-3).map(msg => `${msg.agent}: ${msg.message}`).join('\n');
       
-      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
-        (process.env.NODE_ENV === 'production' 
-          ? 'https://server-production-d3da.up.railway.app'
-          : 'http://localhost:8080');
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
       
       const response = await fetch(`${serverUrl}/api/grok/oracle/conversation`, {
         method: 'POST',

@@ -65,10 +65,7 @@ export default function TokenHolders({ searchQuery, isSearching, onHoldersUpdate
     const fetchTokenData = async () => {
       setLoading(true);
       try {
-        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
-          (process.env.NODE_ENV === 'production' 
-            ? 'https://server-production-d3da.up.railway.app'
-            : 'http://localhost:8080');
+        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
         
         const response = await fetch(`${serverUrl}/api/tokens/search?q=${encodeURIComponent(searchQuery)}&limit=1`);
         

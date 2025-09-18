@@ -1303,10 +1303,7 @@ function InsightsColumn({
       
       // Try our server-side holder endpoint first (most reliable)
       try {
-        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
-          (process.env.NODE_ENV === 'production' 
-            ? 'https://server-production-d3da.up.railway.app'
-            : 'http://localhost:8080');
+        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
         const serverResponse = await fetch(`${serverUrl}/api/tokens/${mint}/holders?limit=1000`);
         if (serverResponse.ok) {
           const serverData = await serverResponse.json();
@@ -1493,10 +1490,7 @@ function InsightsColumn({
 
     setAiLoading(true);
     try {
-      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
-        (process.env.NODE_ENV === 'production' 
-          ? 'https://server-production-d3da.up.railway.app'
-          : 'http://localhost:8080');
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
       const response = await fetch(`${serverUrl}/api/grok/retrocausality/${focusToken.mint}`, {
         method: 'POST',
         headers: {
@@ -2801,10 +2795,7 @@ export const Scope = ({
         if (token) {
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for mystical companion responses
-            const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
-              (process.env.NODE_ENV === 'production' 
-                ? 'https://server-production-d3da.up.railway.app'
-                : 'http://localhost:8080');
+            const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
             const serverResponse = await fetch(`${serverUrl}/api/grok/chat/${token.mint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -2827,10 +2818,7 @@ export const Scope = ({
         } else {
           if (selectedAPI === 'server-grok') {
             // Use server-side Grok API for general chat
-            const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
-              (process.env.NODE_ENV === 'production' 
-                ? 'https://server-production-d3da.up.railway.app'
-                : 'http://localhost:8080');
+            const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
             const serverResponse = await fetch(`${serverUrl}/api/grok/chat/${attachedCompanion.tokenMint}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -2855,10 +2843,7 @@ export const Scope = ({
         console.log('Using general companion response for:', currentCompanion);
         if (selectedAPI === 'server-grok') {
           // Use server-side Grok API for general chat
-          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 
-            (process.env.NODE_ENV === 'production' 
-              ? 'https://server-production-d3da.up.railway.app'
-              : 'http://localhost:8080');
+          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
           const serverResponse = await fetch(`${serverUrl}/api/grok/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

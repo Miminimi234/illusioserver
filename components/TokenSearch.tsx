@@ -20,10 +20,7 @@ interface TokenSearchProps {
   className?: string;
 }
 
-const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 
-  (process.env.NODE_ENV === 'production' 
-    ? 'https://server-production-d3da.up.railway.app'
-    : 'http://localhost:8080');
+const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
 
 // Validation function to check if search query looks like a token address or name
 const isValidTokenQuery = (query: string): boolean => {
