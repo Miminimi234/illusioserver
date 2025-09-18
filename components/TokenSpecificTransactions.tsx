@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import CreationTimeDisplay from './CreationTimeDisplay';
 import ImageWithFallback from './ImageWithFallback';
 
-const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:8080';
+const SERVER_BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://testillusioserver-production-3833.up.railway.app'
+    : 'http://localhost:8080');
 
 interface TokenData {
   id: number;
