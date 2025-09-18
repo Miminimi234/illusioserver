@@ -22,9 +22,11 @@
     "next": "^14.2.32",
     "p-queue": "^8.1.0",
     "p5": "^1.11.10",
+    "postcss": "^8",
     "react": "^18",
     "react-dom": "^18",
-    "styled-jsx": "^5.1.7"
+    "styled-jsx": "^5.1.7",
+    "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -32,8 +34,6 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }
 }
